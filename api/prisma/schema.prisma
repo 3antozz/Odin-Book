@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  Int             @id @default(autoincrement())
+  username            String          @unique
+  password            String
+  first_name          String
+  last_name           String
+  picture_url         String?
+  bio                 String?
+  join_date           DateTime        @default(now())
+  posts               Post[]
+  comments            Comment[]
+  likes               Like[]
+  sent_requests       Request[]       @relation("Sent_Requests")
+  received_requests   Request[]       @relation("Received_Requests")
+  followers           Follow[]        @relation("UserFollowers")
+  following           Follow[]        @relation("UserFollowing")
+}
+
+model Follow {
+  id          Int             @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+  follower    User            @relation("UserFollowers", fields: [followerId], references: [id])
+  following   User            @relation("UserFollowing", fields: [followingId], references: [id])
+  createdAt   DateTime        @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Post {
+  id              Int              @id @default(autoincrement())
+  author          User             @relation(fields: [authorId], references: [id])
+  authorId        Int
+  content         String?
+  picture_url     String?
+  createdAt    DateTime         @default(now())
+  comments        Comment[]
+  likes           Like[]
+}
+
+model Comment {
+  id              Int              @id @default(autoincrement())
+  author          User             @relation(fields: [authorId], references: [id])
+  authorId        Int
+  content         String?
+  picture_url     String?
+  creationDate    DateTime         @default(now())
+  post            Post?            @relation(fields: [postId], references: [id])
+  postId          Int?
+  comments        Comment[]        @relation("CommentOnComment")
+  commentOn       Comment?         @relation("CommentOnComment", fields: [commentOnId], references: [id])
+  commentOnId     Int?   
+  likes           Like[] 
+}
+
+model Like {
+  id              Int             @id @default(autoincrement())
+  user            User            @relation(fields: [userId], references: [id])
+  userId          Int
+  post            Post?           @relation(fields: [postId], references: [id])
+  postId          Int?
+  comment         Comment?        @relation(fields: [commentId], references: [id])
+  commentId       Int?
+  createdAt       DateTime        @default(now())
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+}
+
+model Request {
+  id              Int             @id @default(autoincrement())
+  sender          User            @relation("Sent_Requests", fields: [senderId], references: [id])
+  senderId        Int
+  receiver        User            @relation("Received_Requests", fields: [receiverId], references: [id])
+  receiverId      Int
+  createdAt       DateTime        @default(now())
+
+  @@unique([senderId, receiverId])
+}
