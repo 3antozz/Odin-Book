@@ -1,0 +1,40 @@
+.backdrop {
+    position: fixed;
+    height: 100dvh;
+    width: 100vw;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: rgba(0, 0, 0, 0.464);
+    z-index: 9999999;
+    align-content: center;
+    top: 0;
+    left: 0;
+    border: none;
+}
+
+.image {
+    width: fit-content;
+    margin: auto;
+    position: relative;
+    max-width: 95%;
+    max-height: 95%;
+}
+.close {
+    position: absolute;
+    top: -22px;
+    right: -25px;
+    background: none;
+    border: none;
+    transition: transform 150ms ease;
+    padding: 0;
+    margin: 0;
+}
+
+.close:hover {
+    cursor: pointer;
+    transform: scale(1.5);
+}
+
+.close svg:hover {
+    stroke: red;
+}
