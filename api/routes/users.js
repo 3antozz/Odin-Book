@@ -1,16 +1,13 @@
 const { Router } = require('express')
 const asyncHandler = require('express-async-handler')
-const db = require('../db/queries');
 const fns = require('./fns');
+const controller = require('../controllers/users')
 
 const router = Router();
 
 
 
-router.get('/me', fns.checkAuth, asyncHandler(async(req, res) => {
-    const user = await db.getUserNoPw(req.user.username)
-    return res.send({user})
-}))
+router.get('/me', fns.checkAuth, asyncHandler(controller.getClient))
 
 
 module.exports = router;

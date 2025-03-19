@@ -10,6 +10,9 @@ const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
 const prisma = require('./db/client')
 const authRouter = require('./routes/auth')
 const usersRouter = require('./routes/users')
+const followageRouter = require('./routes/followage')
+const postsRouter = require('./routes/posts')
+const commentsRouter = require('./routes/comments')
 
 const app = express();
 const server = createServer(app);
@@ -77,6 +80,9 @@ io.on('connection', (socket) => {
 
 app.use('/', authRouter);
 app.use('/users', usersRouter);
+app.use('/followage', followageRouter);
+app.use('/posts', postsRouter);
+app.use('/comments', commentsRouter);
 
 
 app.use((req, res, next) => {
