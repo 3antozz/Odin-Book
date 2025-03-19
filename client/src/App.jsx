@@ -5,13 +5,13 @@ import AuthLayout from './components/auth/layout.jsx';
 import Login from './components/auth/login.jsx';
 import Register from './components/auth/register.jsx';
 import ErrorPage from './components/error/Error.jsx'
+import SetPassword from './components/auth/set-password.jsx';
 import { io } from "socket.io-client";
+import Index from './components/index/index.jsx';
 import './App.css'
 
 function App() {
-  const token = useRef(null)
   const [user, setUser] = useState(null)
-  const timeoutRef = useRef(null);
   const [isFetched, setFetched] = useState(false)
   const [isAuthenticated, setAuthentication] = useState(false)
   const socket = useRef(null)
@@ -20,16 +20,15 @@ function App() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const request = await fetch(`${import.meta.env.VITE_API_URL}/users/user`, {
-          headers: {
-            'Authorization': `Bearer ${token.current}`
-          }
+        const request = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
+          credentials: 'include'
         })
         if(!request.ok) {
           const error = new Error('An error has occured, please try again later')
           throw error;
         }
         const response = await request.json();
+        console.log(response);
         setUser(response.user);
         setFetched(true)
         setAuthentication(true)
@@ -38,12 +37,12 @@ function App() {
         setFetched(false)
       }
     }
-    if(!isFetched && isAuthenticated) {
+    if(!isFetched && !isAuthenticated) {
       if(!user) {
         fetchUser();
       }
     }
-  }, [isFetched, user, isAuthenticated, token])
+  }, [isFetched, user, isAuthenticated])
 
   useEffect(() => {
     if(user && isAuthenticated && !socketOn) {
@@ -57,12 +56,13 @@ function App() {
   }, [isAuthenticated, socketOn, user])
 
   return (
-    <AuthContext.Provider value={{token, user, setUser, setAuthentication, socketOn, socket, timeoutRef}}>
+    <AuthContext.Provider value={{user, setUser, setAuthentication, socketOn, socket}}>
         <Routes>
-            <Route path="/" element={<Messenger />} />
+            <Route path="/" element={< Index />} />
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/set-password/:userId" element={<SetPassword />} />
             </Route>
             <Route path="*" element={<ErrorPage />} />
         </Routes>

@@ -1,31 +1,33 @@
 import styles from './layout.module.css'
 import { useState } from "react"
-import { useNavigate, Link } from "react-router"
+import { useNavigate, Link, useParams } from "react-router"
 import { useContext } from 'react'
 import { AuthContext } from "../../contexts"
 import Popup from "../popup/popup"
 import { LoaderCircle } from 'lucide-react'
-export default function Login () {
+export default function SetPassword () {
     const navigate = useNavigate();
-    const { setAuthentication } = useContext(AuthContext)
-    const [username, setUsername] = useState("")
-    const [password, setPassword] = useState("")
+    const { userId } = useParams();
+    const { user, setAuthentication } = useContext(AuthContext);
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState(null);
-    const [success, setSuccess] = useState(false)
+    const [success, setSuccess] = useState(false);
     const handleSubmit = async(e) => {
         e.preventDefault();
         try {
             setLoading(true)
-            const request = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
+            const request = await fetch(`${import.meta.env.VITE_API_URL}/set-password`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    username,
-                    password
+                    userId,
+                    password,
+                    confirm_password: confirmPassword
                 })
             })
             const response = await request.json();
@@ -53,14 +55,25 @@ export default function Login () {
             } else {
                 setErrors([err.message])
             }
+
         } finally {
             setLoading(false);
         }
     }
+
+    if(!user || user.id != userId) {
+        return <h1>Unauthrorized Access</h1>
+    }
+
+    if(user?.pw_set) {
+        return <h1>Password already set</h1>
+    }
+
+
     return (
         <>
         <Popup shouldRender={success} close={setSuccess} borderColor='#00d846'>
-            <p>Login successful...</p>
+            <p>Password Set!</p>
         </Popup>
         <form onSubmit={handleSubmit} className={styles.login}>
             {errors && 
@@ -68,19 +81,16 @@ export default function Login () {
                 {errors.map((error, index) => <li key={index}><p>✘ {error}</p></li>)}
             </ul>
             }
-            <div className={styles.input}>
-                <label htmlFor="username" hidden>Username</label>
-                <input type="text" id="username" required value={username} placeholder="Username" onChange={(e) => setUsername(e.target.value)}  />
-            </div>
             <div>
                 <label htmlFor="password" hidden>Password</label>
-                <input type="password" id="password" required value={password} placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+                <input type="password" id="password" placeholder="Password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            <button disabled={success ? true : loading ? true : false}>{loading ? <LoaderCircle size={40} color='white' className={styles.loading}/> : 'Log in'}</button>
             <div>
-                <Link to='/register'>Create an Account</Link> 
-                <button onClick={() => window.location.href=`${import.meta.env.VITE_API_URL}/auth/github`}>Sign in with GitHub</button> 
-                <Link to='/'>Public Chat</Link>  
+                <label htmlFor="confirm_password" hidden>Confirm Password</label>
+                <input type="password" id="confirm_password" placeholder="Confirm Password" required minLength={6} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            </div>
+            <div>
+                <button disabled={success ? true : loading ? true : false}>{loading ? <LoaderCircle size={40} color='white' className={styles.loading}/> : 'Submit'}</button>
             </div>
         </form>
         </>

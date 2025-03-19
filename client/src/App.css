@@ -36,3 +36,12 @@ p {
 #root, #__next {
   isolation: isolate;
 }
+
+body {
+  height: 100dvh;
+  background-color: #181818;
+  /* #181818 */
+  color: white;
+  font-family:  "Roboto", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  align-content: center;
+}
