@@ -6,9 +6,15 @@ const controller = require('../controllers/posts')
 
 const router = Router();
 
+router.get('/following', fns.checkAuth, asyncHandler(controller.getFollowingPosts))
+
+router.get('/all', asyncHandler(controller.getAllPosts))
+
 router.post('/text', fns.checkAuth, asyncHandler(controller.createTextPost))
 
 router.post('/image', fns.checkAuth, upload.single('image'), asyncHandler(controller.createImagePost))
+
+router.get('/:postId', asyncHandler(controller.getPost))
 
 router.delete('/:postId', fns.checkAuth, asyncHandler(controller.deletePost))
 

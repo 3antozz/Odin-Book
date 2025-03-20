@@ -1,6 +1,23 @@
 const db = require('../db/queries');
 const { cloudinary } = require('../routes/uploadConfig')
 
+exports.getPost = async(req, res) => {
+    const postId = +req.params.postId;
+    const post = db.getFullPost(postId);
+    return res.json({post});
+}
+
+exports.getAllPosts = async(req, res) => {
+    const posts = await db.getAllPosts();
+    res.json({posts})
+}
+
+exports.getFollowingPosts = async(req, res) => {
+    const userId = req.user.id;
+    const posts = await db.getFollowingPosts(userId);
+    res.json({posts})
+}
+
 exports.createTextPost = async(req, res) => {
     const userId = req.user.id;
     const { content } = req.body;
