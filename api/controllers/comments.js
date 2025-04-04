@@ -1,15 +1,18 @@
 const db = require('../db/queries');
 const { cloudinary } = require('../routes/uploadConfig')
+const fns = require('../routes/fns');
 
 exports.createPostTextComment = async(req, res) => {
     const userId = req.user.id;
     const postId = +req.params.postId;
     const { content, authorId } = req.body;
-    const comment = await db.createPostComment(userId, postId, content);
+    const { comment, notification } = await db.createPostComment(userId, postId, content);
+    const date = fns.formatDate(comment.createdAt)
+    comment.createdAt = date;
     const io = req.app.get('io');
-    io.to(`user${authorId}`).emit('new post comment', comment.comment);
-    io.to(`user${authorId}`).emit('notification', comment.notification);
-    res.json({comment: comment.comment})
+    io.to(`user${authorId}`).emit('new post comment', comment);
+    io.to(`user${authorId}`).emit('notification', notification);
+    res.json({comment})
 }
 
 exports.createPostImageComment = async(req, res) => {
@@ -32,36 +35,40 @@ exports.createPostImageComment = async(req, res) => {
             return resolve(uploadResult);
         }).end(req.file.buffer);
     });
-    const comment = await db.createPostComment(userId, postId, content, uploadResult.secure_url, uploadResult.public_id);
+    const { comment, notification } = await db.createPostComment(userId, postId, content, uploadResult.secure_url, uploadResult.public_id);
+    const date = fns.formatDate(comment.createdAt)
+    comment.createdAt = date;
     const io = req.app.get('io');
-    io.to(`user${authorId}`).emit('new post comment', comment.comment);
-    io.to(`user${authorId}`).emit('notification', comment.notification);
-    res.json({comment: comment.comment})
+    io.to(`user${authorId}`).emit('new post comment', comment);
+    io.to(`user${authorId}`).emit('notification', notification);
+    res.json({comment})
 }
 
 exports.createCommentTextComment = async(req, res) => {
     const userId = req.user.id;
     const commentId = +req.params.commentId;
-    const { content } = req.body;
-    const comment = await db.getComment(commentId)
-    let newComment;
-    if(comment.postId) {
-        newComment = await db.createCommentOnComment(userId, comment.postId, content)
+    const { postId, content } = req.body;
+    const existingComment = await db.getComment(commentId)
+    let comment;
+    let notification;
+    if(!existingComment.commentOnId) {
+        ({comment, notification} = await db.createCommentOnComment(userId, +postId, existingComment.postId, content))
     } else {
-        newComment = await db.createCommentOnComment(userId, comment.commentOnId, content)
+        ({comment, notification} = await db.createCommentOnComment(userId, +postId, existingComment.commentOnId, content))
     }
     const io = req.app.get('io');
-    io.to(`comment${comment.id}`).emit('new comment comment', comment);
-    newComment.comment.commentOn.comments.forEach((comment) => io.to(`user${comment.authorId}`).emit('notification', newComment.notification))
-    res.json({comment: newComment.comment})
+    io.to(`comment${existingComment.id}`).emit('new comment comment', existingComment);
+    comment.commentOn.comments.forEach((comment) => io.to(`user${comment.authorId}`).emit('notification', notification))
+    res.json({comment})
 }
 
 exports.createCommentImageComment = async(req, res) => {
     const userId = req.user.id;
     const commentId = +req.params.commentId;
-    const { content } = req.body;
-    const comment = await db.getComment(commentId)
-    let newComment;
+    const { postId, content } = req.body;
+    const existingComment = await db.getComment(commentId)
+    let comment;
+    let notification
     const options = {
         use_filename: false,
         overwrite: false,
@@ -78,15 +85,15 @@ exports.createCommentImageComment = async(req, res) => {
             return resolve(uploadResult);
         }).end(req.file.buffer);
     });
-    if(comment.postId) {
-        newComment = await db.createCommentOnComment(userId, comment.postId, content, uploadResult.secure_url, uploadResult.public_id)
+    if(!existingComment.commentOnId) {
+        ({comment, notification} = await db.createCommentOnComment(userId, +postId, existingComment.postId, content, uploadResult.secure_url, uploadResult.public_id))
     } else {
-        newComment = await db.createCommentOnComment(userId, comment.commentOnId, content, uploadResult.secure_url, uploadResult.public_i)
+        ({comment, notification} = await db.createCommentOnComment(userId, +postId, existingComment.commentOnId, content, uploadResult.secure_url, uploadResult.public_i))
     }
     const io = req.app.get('io');
-    io.to(`comment${comment.id}`).emit('new comment comment', comment);
-    newComment.comment.commentOn.comments.forEach((comment) => io.to(`user${comment.authorId}`).emit('notification', newComment.notification))
-    res.json({comment: newComment.comment})
+    io.to(`comment${existingComment.id}`).emit('new comment comment', existingComment);
+    comment.commentOn.comments.forEach((comment) => io.to(`user${comment.authorId}`).emit('notification', notification))
+    res.json({comment})
 }
 
 exports.deleteComment = async(req, res) => {

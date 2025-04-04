@@ -13,10 +13,10 @@ export default function Sidebar () {
                     <House size={30} />
                     <p>Home</p>
                 </NavLink>
-                <NavLink to='/notifications'>
+                {user &&<NavLink to='/notifications'>
                     <Bell size={30} />
                     <p>Notifications</p>
-                </NavLink>
+                </NavLink>}
                 {user && 
                 <NavLink to={`/profile/${user.id}`}>
                     <User size={30} />

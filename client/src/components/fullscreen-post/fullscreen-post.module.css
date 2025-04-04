@@ -1,16 +1,31 @@
+.container {
+    border: 2px solid grey;
+    border-radius: 10px;
+}
+
+.main {
+    width: 50rem;
+    margin: auto;
+}
+
+.main header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
 .post {
-    border-bottom: 2px solid grey;
+    background-color: #181818;
+    color: white;
     padding: 1rem;
     border-radius: 10px;
     display: flex;
     gap: 1rem;
+    border-bottom: 1px solid grey;
     text-decoration: none;
     color: inherit;
-    cursor: pointer;
-}
-
-.post:hover {
-    background-color: rgba(30, 26, 24);
+    margin-bottom: 2rem;
 }
 
 .post > img {
@@ -18,20 +33,6 @@
     border-radius: 50%;
     flex-shrink: 0;
     align-self: flex-start;
-}
-
-.info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.info > p:first-of-type {
-    font-weight: bold;
-}
-
-.info > p:last-of-type {
-    color: rgb(149, 149, 149);
 }
 
 .interactions {
@@ -44,8 +45,8 @@
 .interactions > button {
     background: none;
     border: none;
-    padding: 0;
     cursor: pointer;
+    padding: 0;
     color: inherit;
     transition: transform 200ms ease;
 
@@ -71,7 +72,24 @@
     align-items: center;
 }
 
+.info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.close {
+    background: none;
+    border: none;
+    transition: transform 150ms ease;
+    padding: 0;
+    margin: 0;
+}
 
-.right > div {
-    margin-bottom: 0.2rem;
+.close:hover {
+    cursor: pointer;
+    transform: scale(1.5);
+}
+
+.close svg:hover {
+    stroke: red;
 }

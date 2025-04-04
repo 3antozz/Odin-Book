@@ -1,4 +1,4 @@
-.post {
+.comment {
     border-bottom: 2px solid grey;
     padding: 1rem;
     border-radius: 10px;
@@ -13,7 +13,7 @@
     background-color: rgba(30, 26, 24);
 }
 
-.post > img {
+.comment > img {
     width: 3rem;
     border-radius: 50%;
     flex-shrink: 0;
@@ -37,14 +37,13 @@
 .interactions {
     display: flex;
     align-items: center;
-    margin-top: 0.8rem;
     gap: 1rem;
+    margin-top: 0.8rem;
 }
 
 .interactions > button {
     background: none;
     border: none;
-    padding: 0;
     cursor: pointer;
     color: inherit;
     transition: transform 200ms ease;
@@ -69,8 +68,8 @@
 .likes, .comments {
     display: flex;
     align-items: center;
+    gap: 0.2rem;
 }
-
 
 .right > div {
     margin-bottom: 0.2rem;

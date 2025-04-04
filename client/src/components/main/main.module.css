@@ -1,16 +1,11 @@
-.main {
-    display: flex;
+main {
+    margin-top: 60px !important;
 }
 
-main {
-    margin: 0 20vw;
-    margin-top: 100px;
+.main {
+    padding: 2vw;
 }
 
 
 @media (max-width: 800px) {
-    main {
-        margin: 0 2vw;
-        margin-top: 100px;
-    }
 }

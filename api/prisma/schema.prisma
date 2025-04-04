@@ -60,7 +60,7 @@ model Post {
   content         String?
   picture_url     String?
   public_id       String?
-  createdAt    DateTime         @default(now())
+  createdAt       DateTime         @default(now())
   comments        Comment[]
   likes           Like[]
 }
@@ -72,9 +72,9 @@ model Comment {
   content         String?
   picture_url     String?
   public_id       String?
-  creationDate    DateTime         @default(now())
-  post            Post?            @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  postId          Int?
+  createdAt       DateTime         @default(now())
+  post            Post             @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId          Int
   comments        Comment[]        @relation("CommentOnComment")
   commentOn       Comment?         @relation("CommentOnComment", fields: [commentOnId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   commentOnId     Int?   

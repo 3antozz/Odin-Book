@@ -1,6 +1,7 @@
 .sidebar {
     position: fixed;
     display: flex;
+    top: 0;
     justify-content: space-between;
     width: 100%;
     padding: 0.5rem 2vw;
@@ -78,6 +79,9 @@ nav > a:hover, .logout:hover, .login:hover {
 @media (max-width: 550px) {
     .sidebar {
         padding: 0.5rem 0.2rem;
+    }
+    .sidebar h2 {
+        font-size: 1.1rem;
     }
     .sidebar a > svg, .sidebar button > svg {
         width: 1.7rem;

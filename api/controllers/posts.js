@@ -3,8 +3,47 @@ const { cloudinary } = require('../routes/uploadConfig')
 const fns = require('../routes/fns');
 
 exports.getPost = async(req, res) => {
+    const userId = req.user.id
     const postId = +req.params.postId;
-    const post = db.getFullPost(postId);
+    const post = await db.getFullPost(postId);
+    const date = fns.formatDate(post.createdAt)
+    post.createdAt = date;
+    const formattedDates = post.comments.map(comment => {
+        const date = fns.formatDate(comment.createdAt)
+        comment.createdAt = date;
+        const formattedComments = comment.comments.map(comment => {
+            const date = fns.formatDate(comment.createdAt)
+            comment.createdAt = date;
+            return comment;
+        })
+        comment.comments = formattedComments;
+        return comment
+    })
+    post.comments = formattedDates;
+    if(userId) {
+        for(const like of post.likes) {
+            if(like.userId === userId) {
+                post.isLiked = true;
+                break;
+            }
+        }
+        for(const comment1 of post.comments) {
+            for(const like of comment1.likes) {
+                if(like.userId === userId) {
+                    comment1.isLiked = true;
+                    break;
+                }
+            }
+            for(const comment2 of comment1.comments) {
+                for(const like of comment2.likes) {
+                    if(like.userId === userId) {
+                        comment2.isLiked = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
     return res.json({post});
 }
 
@@ -19,10 +58,8 @@ exports.getFollowingPosts = async(req, res) => {
     const formattedPosts = posts.map(post => {
         const date = fns.formatDate(post.createdAt)
         post.createdAt = date;
-        for(const like of post.likes) {
-            if(like.userId === userId) {
-                post.isLiked = true;
-            }
+        if(post.likes.length > 0) {
+            post.isLiked = true;
         }
         return post;
     })

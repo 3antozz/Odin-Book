@@ -64,6 +64,7 @@ const main = async() => {
     const commentsComments = [];
     for(let i=0; i < 15; i++) {
         try {
+            const index = Math.floor(Math.random() * postsComments.length);
             const comment = await prisma.comment.create({
                 data: {
                     author: {
@@ -72,9 +73,14 @@ const main = async() => {
                         }
                     },
                     content: faker.lorem.paragraph(1),
+                    post: {
+                        connect: {
+                            id: postsComments[index].postId
+                        }
+                    },
                     commentOn: {
                         connect: {
-                            id: postsComments[Math.floor(Math.random() * postsComments.length)].id
+                            id: postsComments[index].id
                         }
                     }
                 }
@@ -157,7 +163,7 @@ async function antozz_following () {
         try {
             await prisma.follow.create({
                 data: {
-                    followerId: 2,
+                    followerId: 16,
                     followingId: users[Math.floor(Math.random() * users.length)].id,
                 }
             })
@@ -170,7 +176,7 @@ async function antozz_following () {
 async function antozz () {
     const antozz = await prisma.user.findUnique({
         where: {
-            id: 5
+            username: '3antozz'
         },
         include: {
             following: true,
@@ -180,7 +186,7 @@ async function antozz () {
     })
     console.log(antozz)
 }
-// antozz_following();
-antozz();
+antozz_following();
+// antozz();
 
 // main().then(() => console.log('Seeding completed.')).catch((e) => console.error(e))

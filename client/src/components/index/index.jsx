@@ -1,45 +1,16 @@
 import styles from './index.module.css'
-import { useState, useContext, useEffect, useMemo } from 'react'
+import { useState, useContext, useMemo } from 'react'
 import { useOutletContext } from 'react-router'
 import Post from '../post/post'
 import { AuthContext } from '../../contexts'
 export default function Index () {
     const { user, socket, socketOn } = useContext(AuthContext);
-    const { posts, setPosts } = useOutletContext();
+    const { posts, setPosts, handlePostClick } = useOutletContext();
     const postsArray = useMemo(() => Object.values(posts).reverse(), [posts])
-    const handlePostClick = async(e) => {
-        const button = e.target.closest('button')
-        if (button && button.dataset.func === 'like') {
-            const postId = +button.id;
-            try {
-                socket.current.emit('post like', postId, (like) => {
-                    setPosts(prev => ({...prev, [postId]: {...prev[postId], likes: [like, ...prev[postId].likes] , isLiked: true}}))
-                })
-            } catch(err) {
-                console.log(err)
-            }
-        }
-        if (button && button.dataset.func === 'unlike') {
-            const postId = +button.id;
-            try {
-                socket.current.emit('post unlike', postId, (status) => {
-                    if(status === true) {
-                        setPosts(prev => {
-                            const index = prev[postId].likes.findIndex((like) => like.userId === user.id)
-                            prev[postId].likes.splice(index, 1)
-                            return {...prev, [postId]: {...prev[postId], isLiked: false}}
-                        })
-                    }
-                })
-            } catch(err) {
-                console.log(err)
-            }
-        }
-    }
     return (
-        <main className={styles.main} onClick={handlePostClick}>
+        <main className={styles.main}>
             <AddPost setPosts={setPosts} />
-            {postsArray.map(post => <Post key={post.id} post={post} />)}
+            {postsArray.map(post => <Post key={post.id} post={post} setPosts={setPosts} handlePostClick={handlePostClick} />)}
         </main>
     )
 }

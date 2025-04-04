@@ -11,6 +11,7 @@ import Main from './components/main/main.jsx';
 import Notifications from './components/notifications/notifications.jsx';
 import Profile from './components/profile/profile.jsx';
 import Index from './components/index/index.jsx'
+import FullscreenPost from './components/fullscreen-post/fullscreen-post.jsx'
 import './App.css'
 function App() {
   const [user, setUser] = useState(null)
@@ -64,6 +65,7 @@ function App() {
               <Route index element={<Index />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/profile/:userId" element={<Profile />} />
+              <Route path="/post/:postId" element={<FullscreenPost />} />
             </Route>
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />

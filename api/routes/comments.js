@@ -10,9 +10,9 @@ router.post('/post/:postId/text', fns.checkAuth, asyncHandler(controller.createP
 
 router.post('/post/:postId/image', fns.checkAuth, upload.single('image'), asyncHandler(controller.createPostImageComment))
 
-router.post('/comment/:commentId/text', fns.checkAuth, asyncHandler(controller.createCommentTextComment))
+router.post('/:commentId/text', fns.checkAuth, asyncHandler(controller.createCommentTextComment))
 
-router.post('/comment/:commentId/image', fns.checkAuth, upload.single('image'), asyncHandler(controller.createCommentImageComment))
+router.post('/:commentId/image', fns.checkAuth, upload.single('image'), asyncHandler(controller.createCommentImageComment))
 
 router.delete('/:commentId', fns.checkAuth, asyncHandler(controller.deleteComment))
 

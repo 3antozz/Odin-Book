@@ -1,4 +1,6 @@
 .main {
     border: 2px solid grey;
     border-radius: 10px;
+    max-width: 50rem;
+    margin: 0 auto;
 }

@@ -4,7 +4,7 @@ import { Outlet } from 'react-router'
 import { useState, useEffect, useContext } from 'react'
 import { AuthContext } from '../../contexts'
 export default function Main () {
-    const { user } = useContext(AuthContext);
+    const { user, socket } = useContext(AuthContext);
     const [posts, setPosts] = useState({})
     const [isFetched, setFetched] = useState(false)
     const [postsLoading, setPostsLoading] = useState(false)

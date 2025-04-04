@@ -133,12 +133,12 @@ exports.getProfile = async(userId) => {
                                     },
                                 },
                                 orderBy: {
-                                    creationDate: 'desc'
+                                    createdAt: 'desc'
                                 }
                             }
                         },
                         orderBy: {
-                            creationDate: 'desc'
+                            createdAt: 'desc'
                         }
                     }
                 },
@@ -433,12 +433,12 @@ exports.getFullPost = async(id) => {
                             },
                         },
                         orderBy: {
-                            creationDate: 'desc'
+                            createdAt: 'desc'
                         }
                     }
                 },
                 orderBy: {
-                    creationDate: 'desc'
+                    createdAt: 'desc'
                 }
             }
         }
@@ -550,12 +550,12 @@ exports.getAllPosts = async() => {
                             },
                         },
                         orderBy: {
-                            creationDate: 'desc'
+                            createdAt: 'desc'
                         }
                     }
                 },
                 orderBy: {
-                    creationDate: 'desc'
+                    createdAt: 'desc'
                 }
             }
         },
@@ -584,6 +584,12 @@ exports.getFollowingPosts = async(userId) => {
             ]
         },
         include: {
+            _count: {
+                select: {
+                    comments: true,
+                    likes: true
+                }
+            },
             author: {
                 omit: {
                     password: true,
@@ -593,113 +599,158 @@ exports.getFollowingPosts = async(userId) => {
                 }
             },
             likes: {
-                include: {
-                    user: {
-                        omit: {
-                            password: true,
-                            bio: true,
-                            pw_set: true,
-                            username: true
-                        } 
-                    }
-                },
-                orderBy: [
-                    {
-                        user: {
-                            first_name: 'asc'
-                        }
-                    },
-                    {
-                        user: {
-                            last_name: 'asc'
-                        },
-                    }
-                ]
+                where: {
+                    userId
+                }
             },
             comments: {
-                include: {
-                    author: {
-                        omit: {
-                            password: true,
-                            bio: true,
-                            pw_set: true,
-                            username: true
-                        }
-                    },
-                    likes: {
-                        include: {
-                            user: {
-                                omit: {
-                                    password: true,
-                                    bio: true,
-                                    pw_set: true,
-                                    username: true
-                                } 
-                            }
-                        },
-                        orderBy: [
-                            {
-                                user: {
-                                    first_name: 'asc'
-                                }
-                            },
-                            {
-                                user: {
-                                    last_name: 'asc'
-                                },
-                            }
-                        ]
-                    },
-                    comments: {
-                        include: {
-                            author: {
-                                omit: {
-                                    password: true,
-                                    bio: true,
-                                    pw_set: true,
-                                    username: true
-                                }
-                            },
-                            likes: {
-                                include: {
-                                    user: {
-                                        omit: {
-                                            password: true,
-                                            bio: true,
-                                            pw_set: true,
-                                            username: true
-                                        } 
-                                    }
-                                },
-                                orderBy: [
-                                    {
-                                        user: {
-                                            first_name: 'asc'
-                                        }
-                                    },
-                                    {
-                                        user: {
-                                            last_name: 'asc'
-                                        },
-                                    }
-                                ]
-                            },
-                        },
-                        orderBy: {
-                            creationDate: 'desc'
+                select: {
+                    _count: {
+                        select: {
+                            comments: true
                         }
                     }
                 },
-                orderBy: {
-                    creationDate: 'desc'
-                }
             }
         },
-        orderBy: {
-            createdAt: 'desc'
-        }
     })
 }
+
+// exports.getFollowingPosts = async(userId) => {
+//     return await prisma.post.findMany({
+//         where: {
+//             OR: [
+//                 {
+//                     author: {
+//                         followers: {
+//                             some: {
+//                                 followerId: userId
+//                             }
+//                         }
+//                     }
+//                 },
+//                 {
+//                     authorId: userId
+//                 }
+//             ]
+//         },
+//         include: {
+//             author: {
+//                 omit: {
+//                     password: true,
+//                     bio: true,
+//                     pw_set: true,
+//                     username: true
+//                 }
+//             },
+//             likes: {
+//                 include: {
+//                     user: {
+//                         omit: {
+//                             password: true,
+//                             bio: true,
+//                             pw_set: true,
+//                             username: true
+//                         } 
+//                     }
+//                 },
+//                 orderBy: [
+//                     {
+//                         user: {
+//                             first_name: 'asc'
+//                         }
+//                     },
+//                     {
+//                         user: {
+//                             last_name: 'asc'
+//                         },
+//                     }
+//                 ]
+//             },
+//             comments: {
+//                 include: {
+//                     author: {
+//                         omit: {
+//                             password: true,
+//                             bio: true,
+//                             pw_set: true,
+//                             username: true
+//                         }
+//                     },
+//                     likes: {
+//                         include: {
+//                             user: {
+//                                 omit: {
+//                                     password: true,
+//                                     bio: true,
+//                                     pw_set: true,
+//                                     username: true
+//                                 } 
+//                             }
+//                         },
+//                         orderBy: [
+//                             {
+//                                 user: {
+//                                     first_name: 'asc'
+//                                 }
+//                             },
+//                             {
+//                                 user: {
+//                                     last_name: 'asc'
+//                                 },
+//                             }
+//                         ]
+//                     },
+//                     comments: {
+//                         include: {
+//                             author: {
+//                                 omit: {
+//                                     password: true,
+//                                     bio: true,
+//                                     pw_set: true,
+//                                     username: true
+//                                 }
+//                             },
+//                             likes: {
+//                                 include: {
+//                                     user: {
+//                                         omit: {
+//                                             password: true,
+//                                             bio: true,
+//                                             pw_set: true,
+//                                             username: true
+//                                         } 
+//                                     }
+//                                 },
+//                                 orderBy: [
+//                                     {
+//                                         user: {
+//                                             first_name: 'asc'
+//                                         }
+//                                     },
+//                                     {
+//                                         user: {
+//                                             last_name: 'asc'
+//                                         },
+//                                     }
+//                                 ]
+//                             },
+//                         },
+//                         orderBy: {
+//                             createdAt: 'desc'
+//                         }
+//                     }
+//                 },
+//                 orderBy: {
+//                     createdAt: 'desc'
+//                 }
+//             }
+//         },
+//         orderBy: {
+//             createdAt: 'desc'
+//         }
+//     })
+// }
 
 exports.getPost = async(id) => {
     return await prisma.post.findUnique({
@@ -731,10 +782,20 @@ exports.createPost = async(userId, content = null, picture_url = null, public_id
                     username: true
                 }
             },
-            comments: {
-                include: {
+            _count: {
+                select: {
                     comments: true,
+                    likes: true
                 }
+            },
+            comments: {
+                select: {
+                    _count: {
+                        select: {
+                            comments: true
+                        }
+                    }
+                },
             },
             likes: true
         }
@@ -827,11 +888,21 @@ exports.createPostComment = async(userId, postId, content = null, picture_url = 
             public_id
         },
         include: {
+            author: {
+                omit: {
+                    password: true,
+                    bio: true,
+                    pw_set: true,
+                    username: true
+                }
+            },
             post: {
                 select: {
                     authorId: true
                 }
-            }
+            },
+            comments: true,
+            likes: true
         }
     })
     const notification = await prisma.notification.create({
@@ -845,12 +916,17 @@ exports.createPostComment = async(userId, postId, content = null, picture_url = 
     return {comment, notification}
 }
 
-exports.createCommentOnComment = async(userId, commentId, content = null, picture_url = null, public_id = null) => {
+exports.createCommentOnComment = async(userId, postId, commentId, content = null, picture_url = null, public_id = null) => {
     const comment =  await prisma.comment.create({
         data: {
             author: {
                 connect: {
                     id: userId
+                }
+            },
+            post: {
+                connect: {
+                    id: postId
                 }
             },
             commentOn: {
@@ -863,6 +939,14 @@ exports.createCommentOnComment = async(userId, commentId, content = null, pictur
             public_id
         },
         include: {
+            author: {
+                omit: {
+                    password: true,
+                    bio: true,
+                    pw_set: true,
+                    username: true
+                }
+            },
             commentOn: {
                 select: {
                     authorId: true,
@@ -872,7 +956,9 @@ exports.createCommentOnComment = async(userId, commentId, content = null, pictur
                         }
                     }
                 }
-            }
+            },
+            comments: true,
+            likes: true
         }
     })
     const notificationsData = comment.commentOn.comments.map((comment) => ({
