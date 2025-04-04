@@ -4,7 +4,7 @@ exports.checkAuth = (req, res, next) => {
         next();
     } else {
         const error = new Error('You need to login to access this page');
-        error.status = 401;
+        error.code = 401;
         next(error); 
     }
 }

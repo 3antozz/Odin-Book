@@ -1,5 +1,6 @@
 const db = require('../db/queries');
 const { cloudinary } = require('../routes/uploadConfig')
+const fns = require('../routes/fns');
 
 exports.getPost = async(req, res) => {
     const postId = +req.params.postId;
@@ -15,13 +16,25 @@ exports.getAllPosts = async(req, res) => {
 exports.getFollowingPosts = async(req, res) => {
     const userId = req.user.id;
     const posts = await db.getFollowingPosts(userId);
-    res.json({posts})
+    const formattedPosts = posts.map(post => {
+        const date = fns.formatDate(post.createdAt)
+        post.createdAt = date;
+        for(const like of post.likes) {
+            if(like.userId === userId) {
+                post.isLiked = true;
+            }
+        }
+        return post;
+    })
+    res.json({posts: formattedPosts})
 }
 
 exports.createTextPost = async(req, res) => {
     const userId = req.user.id;
     const { content } = req.body;
     const post = await db.createPost(userId, content)
+    const date = fns.formatDate(post.createdAt)
+    post.createdAt = date;
     const io = req.app.get('io');
     io.emit('new post', post);
     res.json({post});
@@ -68,19 +81,29 @@ exports.createImagePost = async(req, res) => {
     res.json({post});
 }
 
-exports.likePost = async(req, res) => {
-    const userId = req.username.id;
-    const postId = +req.params.postId;
+// exports.likePost = async(req, res) => {
+//     const userId = req.username.id;
+//     const postId = +req.params.postId;
+//     const { like, notification } = await db.likePost(userId, postId)
+//     const io = req.app.get('io');
+//     io.to(`user${like.post.authorId}`).emit('new like', postId);
+//     io.to(`user${like.post.authorId}`).emit('notification', notification);
+//     res.json({done: true})
+// }
+
+exports.likePost = async(userId, postId) => {
     const { like, notification } = await db.likePost(userId, postId)
-    const io = req.app.get('io');
-    io.to(`user${like.post.authorId}`).emit('new like', postId);
-    io.to(`user${like.post.authorId}`).emit('notification', notification);
-    res.json({done: true})
+    return { like, notification };
 }
 
-exports.removePostLike = async(req, res) => {
-    const userId = req.username.id;
-    const postId = +req.params.postId;
+exports.removePostLike = async(userId, postId) => {
     await db.removePostLike(userId, postId)
-    res.json({done: true})
+    return true;
 }
+
+// exports.removePostLike = async(req, res) => {
+//     const userId = req.username.id;
+//     const postId = +req.params.postId;
+//     await db.removePostLike(userId, postId)
+//     res.json({done: true})
+// }

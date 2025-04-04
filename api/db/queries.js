@@ -50,12 +50,18 @@ exports.getProfile = async(userId) => {
                                 } 
                             }
                         },
-                        orderBy: {
-                            user: {
-                                first_name: 'asc',
-                                last_name: 'asc'
+                        orderBy: [
+                            {
+                                user: {
+                                    first_name: 'asc'
+                                }
+                            },
+                            {
+                                user: {
+                                    last_name: 'asc'
+                                },
                             }
-                        }
+                        ]
                     },
                     comments: {
                         include: {
@@ -78,12 +84,18 @@ exports.getProfile = async(userId) => {
                                         } 
                                     }
                                 },
-                                orderBy: {
-                                    user: {
-                                        first_name: 'asc',
-                                        last_name: 'asc'
+                                orderBy: [
+                                    {
+                                        user: {
+                                            first_name: 'asc'
+                                        }
+                                    },
+                                    {
+                                        user: {
+                                            last_name: 'asc'
+                                        },
                                     }
-                                }
+                                ]
                             },
                             comments: {
                                 include: {
@@ -106,12 +118,18 @@ exports.getProfile = async(userId) => {
                                                 } 
                                             }
                                         },
-                                        orderBy: {
-                                            user: {
-                                                first_name: 'asc',
-                                                last_name: 'asc'
+                                        orderBy: [
+                                            {
+                                                user: {
+                                                    first_name: 'asc'
+                                                }
+                                            },
+                                            {
+                                                user: {
+                                                    last_name: 'asc'
+                                                },
                                             }
-                                        }
+                                        ]
                                     },
                                 },
                                 orderBy: {
@@ -163,6 +181,8 @@ exports.getUserNoPw = async(username) => {
         },
         include: {
             received_requests: true,
+            notifications_received: true,
+            sent_requests: true
         }
     })
 }
@@ -330,12 +350,18 @@ exports.getFullPost = async(id) => {
                         } 
                     }
                 },
-                orderBy: {
-                    user: {
-                        first_name: 'asc',
-                        last_name: 'asc'
+                orderBy: [
+                    {
+                        user: {
+                            first_name: 'asc'
+                        }
+                    },
+                    {
+                        user: {
+                            last_name: 'asc'
+                        },
                     }
-                }
+                ]
             },
             comments: {
                 include: {
@@ -358,12 +384,18 @@ exports.getFullPost = async(id) => {
                                 } 
                             }
                         },
-                        orderBy: {
-                            user: {
-                                first_name: 'asc',
-                                last_name: 'asc'
+                        orderBy: [
+                            {
+                                user: {
+                                    first_name: 'asc'
+                                }
+                            },
+                            {
+                                user: {
+                                    last_name: 'asc'
+                                },
                             }
-                        }
+                        ]
                     },
                     comments: {
                         include: {
@@ -386,12 +418,18 @@ exports.getFullPost = async(id) => {
                                         } 
                                     }
                                 },
-                                orderBy: {
-                                    user: {
-                                        first_name: 'asc',
-                                        last_name: 'asc'
+                                orderBy: [
+                                    {
+                                        user: {
+                                            first_name: 'asc'
+                                        }
+                                    },
+                                    {
+                                        user: {
+                                            last_name: 'asc'
+                                        },
                                     }
-                                }
+                                ]
                             },
                         },
                         orderBy: {
@@ -429,12 +467,18 @@ exports.getAllPosts = async() => {
                         } 
                     }
                 },
-                orderBy: {
-                    user: {
-                        first_name: 'asc',
-                        last_name: 'asc'
+                orderBy: [
+                    {
+                        user: {
+                            first_name: 'asc'
+                        }
+                    },
+                    {
+                        user: {
+                            last_name: 'asc'
+                        },
                     }
-                }
+                ]
             },
             comments: {
                 include: {
@@ -457,12 +501,18 @@ exports.getAllPosts = async() => {
                                 } 
                             }
                         },
-                        orderBy: {
-                            user: {
-                                first_name: 'asc',
-                                last_name: 'asc'
+                        orderBy: [
+                            {
+                                user: {
+                                    first_name: 'asc'
+                                }
+                            },
+                            {
+                                user: {
+                                    last_name: 'asc'
+                                },
                             }
-                        }
+                        ]
                     },
                     comments: {
                         include: {
@@ -485,12 +535,18 @@ exports.getAllPosts = async() => {
                                         } 
                                     }
                                 },
-                                orderBy: {
-                                    user: {
-                                        first_name: 'asc',
-                                        last_name: 'asc'
+                                orderBy: [
+                                    {
+                                        user: {
+                                            first_name: 'asc'
+                                        }
+                                    },
+                                    {
+                                        user: {
+                                            last_name: 'asc'
+                                        },
                                     }
-                                }
+                                ]
                             },
                         },
                         orderBy: {
@@ -517,7 +573,7 @@ exports.getFollowingPosts = async(userId) => {
                     author: {
                         followers: {
                             some: {
-                                id: userId
+                                followerId: userId
                             }
                         }
                     }
@@ -547,12 +603,18 @@ exports.getFollowingPosts = async(userId) => {
                         } 
                     }
                 },
-                orderBy: {
-                    user: {
-                        first_name: 'asc',
-                        last_name: 'asc'
+                orderBy: [
+                    {
+                        user: {
+                            first_name: 'asc'
+                        }
+                    },
+                    {
+                        user: {
+                            last_name: 'asc'
+                        },
                     }
-                }
+                ]
             },
             comments: {
                 include: {
@@ -575,12 +637,18 @@ exports.getFollowingPosts = async(userId) => {
                                 } 
                             }
                         },
-                        orderBy: {
-                            user: {
-                                first_name: 'asc',
-                                last_name: 'asc'
+                        orderBy: [
+                            {
+                                user: {
+                                    first_name: 'asc'
+                                }
+                            },
+                            {
+                                user: {
+                                    last_name: 'asc'
+                                },
                             }
-                        }
+                        ]
                     },
                     comments: {
                         include: {
@@ -603,12 +671,18 @@ exports.getFollowingPosts = async(userId) => {
                                         } 
                                     }
                                 },
-                                orderBy: {
-                                    user: {
-                                        first_name: 'asc',
-                                        last_name: 'asc'
+                                orderBy: [
+                                    {
+                                        user: {
+                                            first_name: 'asc'
+                                        }
+                                    },
+                                    {
+                                        user: {
+                                            last_name: 'asc'
+                                        },
                                     }
-                                }
+                                ]
                             },
                         },
                         orderBy: {
@@ -647,6 +721,22 @@ exports.createPost = async(userId, content = null, picture_url = null, public_id
             content,
             picture_url,
             public_id
+        },
+        include: {
+            author: {
+                omit: {
+                    password: true,
+                    bio: true,
+                    pw_set: true,
+                    username: true
+                }
+            },
+            comments: {
+                include: {
+                    comments: true,
+                }
+            },
+            likes: true
         }
     })
 }
@@ -678,6 +768,14 @@ exports.likePost = async(userId, postId) => {
                 select: {
                     authorId: true
                 }
+            },
+            user: {
+                omit: {
+                    password: true,
+                    bio: true,
+                    pw_set: true,
+                    username: true
+                } 
             }
         }
     })

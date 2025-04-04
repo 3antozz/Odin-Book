@@ -38,10 +38,14 @@ p {
 }
 
 body {
-  height: 100dvh;
   background-color: #181818;
   /* #181818 */
   color: white;
   font-family:  "Roboto", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   align-content: center;
+}
+
+.active {
+  background-color: rgb(66, 65, 65);
+  font-weight: bold;
 }

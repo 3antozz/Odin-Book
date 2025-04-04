@@ -13,6 +13,7 @@ const usersRouter = require('./routes/users')
 const followageRouter = require('./routes/followage')
 const postsRouter = require('./routes/posts')
 const commentsRouter = require('./routes/comments')
+const postsController = require('./controllers/posts')
 
 const app = express();
 const server = createServer(app);
@@ -74,7 +75,32 @@ app.set('io', io)
 
 
 io.on('connection', (socket) => {
-    console.log(socket.id)
+  console.log(socket.handshake.query.userId)
+  socket.on('join rooms', (followingIds) => {
+    socket.join([`user${socket.handshake.query.userId}`, ...followingIds]);
+  })
+  socket.on('post like', async(postId, callback) => {
+    try {
+        const userId = +socket.handshake.query.userId;
+        const {like, notification} = await postsController.likePost(userId, +postId)
+        callback(like)
+        io.to(`user${like.post.authorId}`).emit('new like', like);
+        io.to(`user${like.post.authorId}`).emit('notification', notification);
+    } catch(err) {
+        console.log(err);
+        socket.emit('error', { message: "An error has occured" });
+    }
+  });
+  socket.on('post unlike', async(postId, callback) => {
+    try {
+        const userId = +socket.handshake.query.userId;
+        const response = await postsController.removePostLike(userId, +postId)
+        callback(response)
+    } catch(err) {
+        console.log(err);
+        socket.emit('error', { message: "An error has occured" });
+    }
+  });
 });
 
 

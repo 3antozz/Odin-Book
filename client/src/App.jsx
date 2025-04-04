@@ -7,9 +7,11 @@ import Register from './components/auth/register.jsx';
 import ErrorPage from './components/error/Error.jsx'
 import SetPassword from './components/auth/set-password.jsx';
 import { io } from "socket.io-client";
-import Index from './components/index/index.jsx';
+import Main from './components/main/main.jsx';
+import Notifications from './components/notifications/notifications.jsx';
+import Profile from './components/profile/profile.jsx';
+import Index from './components/index/index.jsx'
 import './App.css'
-
 function App() {
   const [user, setUser] = useState(null)
   const [isFetched, setFetched] = useState(false)
@@ -58,7 +60,11 @@ function App() {
   return (
     <AuthContext.Provider value={{user, setUser, setAuthentication, socketOn, socket}}>
         <Routes>
-            <Route path="/" element={< Index />} />
+            <Route path="/" element={< Main />}>
+              <Route index element={<Index />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/profile/:userId" element={<Profile />} />
+            </Route>
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

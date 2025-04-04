@@ -1,0 +1,16 @@
+.main {
+    display: flex;
+}
+
+main {
+    margin: 0 20vw;
+    margin-top: 100px;
+}
+
+
+@media (max-width: 800px) {
+    main {
+        margin: 0 2vw;
+        margin-top: 100px;
+    }
+}

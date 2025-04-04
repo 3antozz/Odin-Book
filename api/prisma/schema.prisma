@@ -35,8 +35,8 @@ model User {
   likes                     Like[]
   sent_requests             Request[]               @relation("Sent_Requests")
   received_requests         Request[]               @relation("Received_Requests")
-  followers                 Follow[]                @relation("UserFollowers")
-  following                 Follow[]                @relation("UserFollowing")
+  following                 Follow[]                @relation("UserFollowers")
+  followers                 Follow[]                @relation("UserFollowing")
   federatedCredentials      FederatedCredential[]
   notifications_received    Notification[]
   notifications_sent        Notification[]          @relation("NotificationActor")
