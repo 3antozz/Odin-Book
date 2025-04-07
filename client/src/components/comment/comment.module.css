@@ -1,19 +1,27 @@
-.comment {
-    border-bottom: 2px solid grey;
-    padding: 1rem;
-    border-radius: 10px;
+.topComment, .subComment {
     display: flex;
     gap: 1rem;
     text-decoration: none;
     color: inherit;
-    cursor: pointer;
+    padding: 0 1rem;
+    padding-top: 1rem;
+    padding-bottom: 0.2rem;
+}
+
+.subComment {
+    border-top: 1px solid rgba(128, 128, 128, 0.5);
+    padding-left: 5rem;
+}
+
+.comment {
+    border-radius: 10px;
 }
 
 .post:hover {
     background-color: rgba(30, 26, 24);
 }
 
-.comment > img {
+.topComment > img, .subComment > img {
     width: 3rem;
     border-radius: 50%;
     flex-shrink: 0;
@@ -37,8 +45,6 @@
 .interactions {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-top: 0.8rem;
 }
 
 .interactions > button {
@@ -68,7 +74,6 @@
 .likes, .comments {
     display: flex;
     align-items: center;
-    gap: 0.2rem;
 }
 
 .right > div {

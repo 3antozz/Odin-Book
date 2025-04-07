@@ -17,10 +17,10 @@ passport.use(new GitHubStrategy({
     proxy: true,
   }, async function verify(accessToken, refreshToken, profile, cb) {
         try {
-            const user = await db.getGithubUser('https://github.com', profile.id)
+            const user = await db.getGithubUser('Github', profile.id)
             if(!user) {
-                const newUser = await db.createUser(profile.username, "koko", "hehe", null, profile._json.avatar_url, false) 
-                await db.createGithubUser(newUser.id, 'https://github.com', profile.id)
+                const newUser = await db.createUser(profile.username, "temp", "temp", null, profile._json.avatar_url, profile._json.bio, false) 
+                await db.createGithubUser(newUser.id, 'Github', profile.id)
                 return cb(null, newUser)
             } else {
                 return cb(null, user.user)
@@ -81,6 +81,8 @@ const validateRegistration = [
 ];
 
 const validatePassword = [
+    body("first_name").trim().notEmpty().withMessage("First Name must not be empty").bail().isAlpha().withMessage("First Name must only contain alphabet and no spaces").isLength({min: 2, max: 20}).withMessage("First name must be between 2 and 20 characters"),
+    body("last_name").trim().notEmpty().withMessage("Last Name must not be empty").bail().isAlpha().withMessage("Last Name must only contain alphabet and no spaces").isLength({min: 2, max: 20}).withMessage("Last name must be between 2 and 20 characters"),
     body("password").trim().notEmpty().withMessage("Password must not be empty").bail().isLength({min: 6}).withMessage("Password must be atleast 6 characters long"),
     body('confirm_password').custom((value, { req }) => {
         return value === req.body.password;
@@ -125,7 +127,7 @@ router.post('/login', validateLogin, async(req, res, next) => {
 })
 
 router.post('/set-password', fns.checkAuth, validatePassword, asyncHandler(async(req, res, next) => {
-    const { userId, password } = req.body;
+    const { userId, first_name, last_name, password } = req.body;
     if(req.user.id !== +userId) {
         const error = new Error('Unauthorized')
         error.code = 401;
@@ -138,7 +140,7 @@ router.post('/set-password', fns.checkAuth, validatePassword, asyncHandler(async
         return next(errors)
     }
     const hashedPW = await bcrypt.hash(password, 15)
-    const user = await db.updateUserPw(+userId, hashedPW);
+    const user = await db.updateUserPw(+userId, hashedPW, first_name, last_name);
     return res.json({user});
 }))
 

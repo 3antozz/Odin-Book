@@ -14,6 +14,7 @@ const followageRouter = require('./routes/followage')
 const postsRouter = require('./routes/posts')
 const commentsRouter = require('./routes/comments')
 const postsController = require('./controllers/posts')
+const commentsController = require('./controllers/comments')
 
 const app = express();
 const server = createServer(app);
@@ -96,6 +97,28 @@ io.on('connection', (socket) => {
         const userId = +socket.handshake.query.userId;
         const response = await postsController.removePostLike(userId, +postId)
         callback(response)
+    } catch(err) {
+        console.log(err);
+        socket.emit('error', { message: "An error has occured" });
+    }
+  });
+  socket.on('comment like', async(commentId, callback) => {
+    try {
+        const userId = +socket.handshake.query.userId;
+        const {like, notification} = await commentsController.likeComment(userId, +commentId)
+        callback(like)
+        io.to(`user${like.comment.authorId}`).emit('new like', like);
+        io.to(`user${like.comment.authorId}`).emit('notification', notification);
+    } catch(err) {
+        console.log(err);
+        socket.emit('error', { message: "An error has occured" });
+    }
+  });
+  socket.on('comment unlike', async(commentId, callback) => {
+    try {
+        const userId = +socket.handshake.query.userId;
+        const like = await commentsController.removeCommentLike(userId, +commentId)
+        callback(like.id)
     } catch(err) {
         console.log(err);
         socket.emit('error', { message: "An error has occured" });

@@ -15,6 +15,10 @@
     margin-bottom: 1rem;
 }
 
+.info > p:first-of-type {
+    font-weight: bold;
+}
+
 .post {
     background-color: #181818;
     color: white;

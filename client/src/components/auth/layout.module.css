@@ -170,6 +170,28 @@
     margin: auto;
 }
 
+.info > img {
+    width: 3.2rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+em {
+    font-weight: bolder;
+}
+
+/* .info > p {
+    font-size: 1.35rem;
+    font-weight: bold;
+} */
+
+.info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+}
+
 
 @keyframes loading {
     0% {

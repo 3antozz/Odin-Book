@@ -78,7 +78,7 @@ exports.createTextPost = async(req, res) => {
 }
 
 exports.deletePost = async(req, res) => {
-    const userId = req.username.id;
+    const userId = req.user.id;
     const postId = +req.params.postId;
     const post = await db.getPost(postId);
     if(post.authorId !== userId) {
@@ -86,7 +86,7 @@ exports.deletePost = async(req, res) => {
         error.code = 401;
         throw error;
     }
-    await db.deletePost(post.id);
+    await db.removePost(post.id);
     res.json({done: true})
     if(post.public_id) {
         cloudinary.uploader.destroy(post.public_id, (result) => console.log(result))
@@ -119,7 +119,7 @@ exports.createImagePost = async(req, res) => {
 }
 
 // exports.likePost = async(req, res) => {
-//     const userId = req.username.id;
+//     const userId = req.user.id;
 //     const postId = +req.params.postId;
 //     const { like, notification } = await db.likePost(userId, postId)
 //     const io = req.app.get('io');
@@ -139,7 +139,7 @@ exports.removePostLike = async(userId, postId) => {
 }
 
 // exports.removePostLike = async(req, res) => {
-//     const userId = req.username.id;
+//     const userId = req.user.id;
 //     const postId = +req.params.postId;
 //     await db.removePostLike(userId, postId)
 //     res.json({done: true})

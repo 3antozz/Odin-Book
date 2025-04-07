@@ -1,6 +1,6 @@
 import styles from './fullscreen-post.module.css'
 import { memo, useState, useEffect, useContext, useMemo } from 'react'
-import { useParams, Link } from 'react-router';
+import { useParams, Link, useOutletContext } from 'react-router';
 import { AuthContext } from '../../contexts'
 import PropTypes from 'prop-types';
 import { ArrowLeft, Heart, MessageCircle } from 'lucide-react';
@@ -8,8 +8,9 @@ import Comment from '../comment/comment';
 
 const FullscreenPost = memo(function FullscreenPost () {
     const { user, socket } = useContext(AuthContext);
+    const { setPosts } = useOutletContext();
     const { postId }  = useParams()
-    const [posts, setPosts] = useState({})
+    const [posts, setCachedPosts] = useState({})
     const [loading, setLoading] = useState(false)
     const [loadingError, setLoadingError] = useState(false)
     const post = useMemo(() => posts[postId], [postId, posts])
@@ -22,7 +23,7 @@ const FullscreenPost = memo(function FullscreenPost () {
             const postId = +e.currentTarget.id;
             try {
                 socket.current.emit('post like', postId, (like) => {
-                    setPosts(prev => ({...prev, [postId]: {...prev[postId], likes: [like, ...prev[postId].likes], isLiked: true}}))
+                    setCachedPosts(prev => ({...prev, [postId]: {...prev[postId], likes: [like, ...prev[postId].likes], isLiked: true}}))
                 })
             } catch(err) {
                 console.log(err)
@@ -33,15 +34,188 @@ const FullscreenPost = memo(function FullscreenPost () {
             try {
                 socket.current.emit('post unlike', postId, (status) => {
                     if(status === true) {
-                        setPosts(prev => {
-                            const index = prev[postId].likes.findIndex(like => like.authorId === user.id)
-                            prev[postId].likes.splice(index, 1)
-                            return {...prev, [postId]: {...prev[postId], isLiked: false}};
+                        setCachedPosts(prev => {
+                            const index = prev[postId].likes.findIndex(like => like.userId === user.id)
+                            if(index > -1) {
+                                const likes = prev[postId].likes.slice().toSpliced(index, 1)
+                                return {...prev, [postId]: {...prev[postId], likes, isLiked: false}};
+                            }
+                            return prev
                         })
                     }
                 })
             } catch(err) {
                 console.log(err)
+            }
+        }
+    }
+    const handleCommentClick = async(e) => {
+        if (e.currentTarget.dataset.func === 'like') {
+            const postId = +e.currentTarget.dataset.postid;
+            const commentId = +e.currentTarget.id;
+            const commentOn = +e.currentTarget.dataset.commenton;
+            try {
+                socket.current.emit('comment like', commentId, (like) => {
+                    if(!commentOn) {
+                        setCachedPosts(prev => {
+                            const post = prev[postId];
+                            const commentIndex = post.comments.findIndex(comment => comment.id === commentId)
+                            const comments = post.comments.slice();
+                            comments[commentIndex] = {
+                                ...comments[commentIndex],
+                                likes: [like, ...comments[commentIndex].likes],
+                                isLiked: true,
+                              };
+                            return {...prev,
+                                [postId]: {
+                                    ...post,
+                                    comments,
+                                  },
+                            }
+                        })
+                    } else {
+                        setCachedPosts(prev => {
+                            const post = prev[postId];
+                            const commentIndex = post.comments.findIndex(comment => comment.id === commentOn)
+                            const comments = post.comments.slice();
+                            const subComments = comments[commentIndex].comments.slice();
+                            const subCommentIndex = subComments.findIndex(comment => comment.id === commentId)
+                            subComments[subCommentIndex] = {
+                                ...subComments[subCommentIndex],
+                                likes: [like, ...subComments[subCommentIndex].likes],
+                                isLiked: true,
+                            };
+                            comments[commentIndex] = {
+                                ...comments[commentIndex],
+                                comments: subComments,
+                            };
+                            return {...prev,
+                                [postId]: {
+                                    ...post,
+                                    comments,
+                                  },
+                            }
+                        })
+                    }
+                })
+            } catch(err) {
+                console.log(err)
+            }
+        }
+        if (e.currentTarget.dataset.func === 'unlike') {
+            const commentId = +e.currentTarget.id;
+            const postId = +e.currentTarget.dataset.postid;
+            const commentOn = +e.currentTarget.dataset.commenton;
+            try {
+                socket.current.emit('comment unlike', commentId, (likeId) => {
+                    if(!commentOn) {
+                        setCachedPosts(prev => {
+                            const post = prev[postId];
+                            const commentIndex = post.comments.findIndex(comment => comment.id === commentId)
+                            const comments = post.comments.slice();
+                            const likeIndex = comments[commentIndex].likes.findIndex(like => like.id === likeId)
+                            comments[commentIndex] = {
+                                ...comments[commentIndex],
+                                likes: comments[commentIndex].likes.toSpliced(likeIndex, 1),
+                                isLiked: false,
+                              };
+                            return {...prev, 
+                                [postId]: {
+                                    ...post,
+                                    comments,
+                                  },
+                            }
+                        })
+                    } else {
+                        setCachedPosts(prev => {
+                            const post = prev[postId];
+                            const commentIndex = post.comments.findIndex(comment => comment.id === commentOn)
+                            const comments = post.comments.slice();
+                            const subComments = comments[commentIndex].comments.slice();
+                            const subCommentIndex = subComments.findIndex(comment => comment.id === commentId)
+                            const likeIndex = subComments[subCommentIndex].likes.findIndex(like => like.id === likeId)
+                            subComments[subCommentIndex] = {
+                                ...subComments[subCommentIndex],
+                                likes: subComments[subCommentIndex].likes.toSpliced(likeIndex, 1),
+                                isLiked: false,
+                            };
+                            comments[commentIndex] = {
+                                ...comments[commentIndex],
+                                comments: subComments,
+                            };
+                            return {...prev,
+                                [postId]: {
+                                    ...post,
+                                    comments,
+                                  },
+                            }
+                        })
+                    }
+                })
+            } catch(err) {
+                console.log(err)
+            }
+        }
+        if (e.currentTarget.dataset.func === 'delete') {
+            const confirm = window.confirm('Are you sure you want to delete this comment?')
+            if(!confirm) {
+                return;
+            }
+            const postId = +e.currentTarget.dataset.postid;
+            const commentId = +e.currentTarget.id;
+            const commentOn = +e.currentTarget.dataset.commenton;
+            setLoading(true)
+            try {
+                const request = await fetch(`${import.meta.env.VITE_API_URL}/comments/${commentId}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                })
+                const response = await request.json();
+                if(!request.ok) {
+                    const error = new Error('An error has occured, please try again later')
+                    throw error;
+                }
+                console.log(response);
+                if(!commentOn) {
+                    setCachedPosts(prev => {
+                        const post = prev[postId];
+                        const commentIndex = post.comments.findIndex(comment => comment.id === commentId)
+                        const comments = post.comments.slice();
+                        comments.splice(commentIndex, 1)
+                        return {...prev,
+                            [postId]: {
+                                ...post,
+                                comments,
+                              },
+                        }
+                    })
+                } else {
+                    setCachedPosts(prev => {
+                        const post = prev[postId];
+                        const commentIndex = post.comments.findIndex(comment => comment.id === commentOn)
+                        const comments = post.comments.slice();
+                        const subComments = comments[commentIndex].comments.slice();
+                        const subCommentIndex = subComments.findIndex(comment => comment.id === commentId)
+                        subComments.splice(subCommentIndex, 1)
+                        comments[commentIndex] = {
+                            ...comments[commentIndex],
+                            comments: subComments,
+                        };
+                        return {...prev,
+                            [postId]: {
+                                ...post,
+                                comments,
+                            },
+                        }
+                })
+                }
+                setPosts(prev => ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments - 1} , isLiked: true}}))
+                setLoadingError(false)
+            } catch(err) {
+                console.log(err)
+                setLoadingError(true)
+            } finally {
+                setLoading(false)
             }
         }
     }
@@ -58,7 +232,7 @@ const FullscreenPost = memo(function FullscreenPost () {
                   }
                 const response = await request.json();
                 console.log(response)
-                setPosts((prev) => ({...prev, [response.post.id]: response.post}))
+                setCachedPosts((prev) => ({...prev, [response.post.id]: response.post}))
                 setLoadingError(false)
             } catch(err) {
                 console.log(err)
@@ -96,18 +270,24 @@ const FullscreenPost = memo(function FullscreenPost () {
                         <div className={styles.interactions}>
                             <button className={styles.likes} onClick={handlePostClick} id={post.id} data-func={post.isLiked ? "unlike" : "like"}>
                                 <Heart size={35} fill={post.isLiked ? "red" : null} color={post.isLiked ? null : "white"} />
-                                <p>{post.likes.length > 0 ? post.likes.length : ''}</p>
+                                <p style={{visibility: post.likes.length > 0 ? 'visible' : 'hidden'}}>{post.likes.length}</p>
                             </button>
                             <button className={styles.comments} id={post.id} data-func="comment">
                                 <MessageCircle size={35} />
-                                <p>{commentsNumber > 0 ? commentsNumber : ''}</p>
+                                <p style={{visibility: commentsNumber > 0 ? 'visible' : 'hidden'}}>{commentsNumber}</p>
                             </button>
                         </div>
                     </div>
                 </section>
-                <AddComment postId={postId} post={post} setPosts={setPosts} />
+                <AddComment postId={postId} post={post} setCachedPosts={setCachedPosts} setPosts={setPosts} />
                 <section className={styles.commentsContainer}>
-                    {post.comments.map(comment => <Comment key={comment.id} comment={comment} />)}
+                    {post.comments.map((comment, index) => {
+                        let isLast = false;
+                        if(index === post.comments.length - 1) {
+                            isLast = true;
+                        }
+                        return <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setCachedPosts={setCachedPosts} setPosts={setPosts} isLast={isLast} />
+                        })}
                 </section>
             </div>
         </main>
@@ -115,11 +295,11 @@ const FullscreenPost = memo(function FullscreenPost () {
     )
 })
 
-function AddComment ({post, postId, setPosts}) {
+function AddComment ({post, postId, setPosts, setCachedPosts}) {
     const [commentTxt, setCommentTxt] = useState('')
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false)
-    const createPost = async(e) => {
+    const createComment = async(e) => {
         e.preventDefault();
         if(!commentTxt) {
             return;
@@ -143,7 +323,8 @@ function AddComment ({post, postId, setPosts}) {
                 throw error;
             }
             console.log(response);
-            setPosts(prev => ({...prev, [postId]: {...prev[postId], comments: [response.comment, ...prev[postId].comments]}}))
+            setCachedPosts(prev => ({...prev, [postId]: {...prev[postId], comments: [response.comment, ...prev[postId].comments]}}))
+            setPosts(prev => ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments + 1} , isLiked: true}}))
             setError(false)
             setCommentTxt('')
         } catch(err) {
@@ -155,7 +336,7 @@ function AddComment ({post, postId, setPosts}) {
     }
     return (
         <section className={styles.happening}>
-            <form onSubmit={createPost}>
+            <form onSubmit={createComment}>
                 <label htmlFor="post"></label>
                 <textarea placeholder="Post your reply" value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post"></textarea>
                 <button>Reply</button>

@@ -159,18 +159,30 @@ async function antozz_following () {
             }
         }
     })
-    for(let i=0; i < 10; i++) {
+    users.forEach(async user => {
         try {
             await prisma.follow.create({
                 data: {
-                    followerId: 16,
-                    followingId: users[Math.floor(Math.random() * users.length)].id,
+                    followerId: 22,
+                    followingId: user.id,
                 }
             })
         } catch (err) {
             console.log(err)
         }
-    }
+    }) 
+    // for(let i=0; i < 10; i++) {
+    //     try {
+    //         await prisma.follow.create({
+    //             data: {
+    //                 followerId: 16,
+    //                 followingId: users[Math.floor(Math.random() * users.length)].id,
+    //             }
+    //         })
+    //     } catch (err) {
+    //         console.log(err)
+    //     }
+    // }
 }
 
 async function antozz () {

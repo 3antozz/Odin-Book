@@ -9,6 +9,8 @@ export default function SetPassword () {
     const navigate = useNavigate();
     const { userId } = useParams();
     const { user, setAuthentication } = useContext(AuthContext);
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -26,6 +28,8 @@ export default function SetPassword () {
                 },
                 body: JSON.stringify({
                     userId,
+                    first_name: firstName,
+                    last_name: lastName,
                     password,
                     confirm_password: confirmPassword
                 })
@@ -73,14 +77,26 @@ export default function SetPassword () {
     return (
         <>
         <Popup shouldRender={success} close={setSuccess} borderColor='#00d846'>
-            <p>Password Set!</p>
+            <p>Account Created!</p>
         </Popup>
-        <form onSubmit={handleSubmit} className={styles.login}>
+        <form onSubmit={handleSubmit} className={styles.setPw}>
+            <div className={styles.info}>
+                <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.username} profile picture`} />
+                <p>Welcome <em>{user.username}</em> ! Please finish creating an account so you can login with a password in the future!</p>
+            </div>
             {errors && 
             <ul>
                 {errors.map((error, index) => <li key={index}><p>✘ {error}</p></li>)}
             </ul>
             }
+            <div>
+                <label htmlFor="first_name" hidden>First Name</label>
+                <input id="first_name" placeholder="First Name" required minLength={2} maxLength={20} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+            </div>
+            <div>
+                <label htmlFor="last_name" hidden>Last Name</label>
+                <input id="last_name" placeholder="Last Name" required minLength={2} maxLength={20} value={lastName} onChange={(e) => setLastName(e.target.value)} />
+            </div>
             <div>
                 <label htmlFor="password" hidden>Password</label>
                 <input type="password" id="password" placeholder="Password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />

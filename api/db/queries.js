@@ -2,7 +2,7 @@ const prisma = require('./client');
 
 // User Queries ____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 // 
-exports.createUser = async(username, first_name, last_name, password, picture_url = null, pwSet) => {
+exports.createUser = async(username, first_name, last_name, password, picture_url = null, bio = null, pwSet) => {
     return await prisma.user.create({
         data: {
             username,
@@ -10,6 +10,7 @@ exports.createUser = async(username, first_name, last_name, password, picture_ur
             last_name,
             password,
             picture_url,
+            bio,
             pw_set: pwSet
         },
     })
@@ -187,12 +188,14 @@ exports.getUserNoPw = async(username) => {
     })
 }
 
-exports.updateUserPw = async(id, password) => {
+exports.updateUserPw = async(id, password, first_name, last_name) => {
     return await prisma.user.update({
         where: {
             id
         },
         data: {
+            first_name,
+            last_name,
             password,
             pw_set: true
         },
@@ -364,6 +367,9 @@ exports.getFullPost = async(id) => {
                 ]
             },
             comments: {
+                where: {
+                    commentOnId: null
+                },
                 include: {
                     author: {
                         omit: {
@@ -431,6 +437,7 @@ exports.getFullPost = async(id) => {
                                     }
                                 ]
                             },
+                            comments: true
                         },
                         orderBy: {
                             createdAt: 'desc'
@@ -603,15 +610,6 @@ exports.getFollowingPosts = async(userId) => {
                     userId
                 }
             },
-            comments: {
-                select: {
-                    _count: {
-                        select: {
-                            comments: true
-                        }
-                    }
-                },
-            }
         },
     })
 }
@@ -961,14 +959,14 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
             likes: true
         }
     })
-    const notificationsData = comment.commentOn.comments.map((comment) => ({
-        data: {
+    const notificationsData = comment.commentOn.comments.map((comment) => (
+        {
             userId: comment.authorId,
             type: 'Comment',
             actorId: userId,
             commentId,
         }
-    }))
+    ))
     await prisma.notification.createMany({
         data: notificationsData
     })

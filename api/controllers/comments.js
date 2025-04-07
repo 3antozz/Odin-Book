@@ -52,7 +52,7 @@ exports.createCommentTextComment = async(req, res) => {
     let comment;
     let notification;
     if(!existingComment.commentOnId) {
-        ({comment, notification} = await db.createCommentOnComment(userId, +postId, existingComment.postId, content))
+        ({comment, notification} = await db.createCommentOnComment(userId, +postId, existingComment.id, content))
     } else {
         ({comment, notification} = await db.createCommentOnComment(userId, +postId, existingComment.commentOnId, content))
     }
@@ -112,19 +112,28 @@ exports.deleteComment = async(req, res) => {
     }
 }
 
-exports.likeComment = async(req, res) => {
-    const userId = req.username.id;
-    const commentId = +req.params.commentId;
-    const {like, notification} = await db.likeComment(userId, commentId)
-    const io = req.app.get('io');
-    io.to(`user${like.comment.authorId}`).emit('new like', like);
-    io.to(`user${like.comment.authorId}`).emit('notification', notification);
-    res.json({done: true})
+// exports.likeComment = async(req, res) => {
+//     const userId = req.user.id;
+//     const commentId = +req.params.commentId;
+//     const {like, notification} = await db.likeComment(userId, commentId)
+//     const io = req.app.get('io');
+//     io.to(`user${like.comment.authorId}`).emit('new like', like);
+//     io.to(`user${like.comment.authorId}`).emit('notification', notification);
+//     res.json({done: true})
+// }
+
+exports.likeComment = async(userId, commentId) => {
+    return await db.likeComment(userId, commentId)
 }
 
-exports.removeCommentLike = async(req, res) => {
-    const userId = req.username.id;
-    const commentId = +req.params.commentId;
+exports.removeCommentLike = async(userId, commentId) => {
     await db.removeCommentLike(userId, commentId)
-    res.json({done: true})
+    return true;
 }
+
+// exports.removeCommentLike = async(req, res) => {
+//     const userId = req.user.id;
+//     const commentId = +req.params.commentId;
+//     await db.removeCommentLike(userId, commentId)
+//     res.json({done: true})
+// }
