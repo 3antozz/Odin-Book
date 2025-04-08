@@ -1,0 +1,15 @@
+.main header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.close:hover {
+    cursor: pointer;
+    transform: scale(1.5);
+}
+
+.close svg:hover {
+    stroke: red;
+}

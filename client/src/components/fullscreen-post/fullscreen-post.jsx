@@ -1,9 +1,9 @@
 import styles from './fullscreen-post.module.css'
 import { memo, useState, useEffect, useContext, useMemo } from 'react'
-import { useParams, Link, useOutletContext } from 'react-router';
+import { useParams, Link, useOutletContext, useNavigate } from 'react-router';
 import { AuthContext } from '../../contexts'
 import PropTypes from 'prop-types';
-import { ArrowLeft, Heart, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Trash } from 'lucide-react';
 import Comment from '../comment/comment';
 
 const FullscreenPost = memo(function FullscreenPost () {
@@ -13,6 +13,8 @@ const FullscreenPost = memo(function FullscreenPost () {
     const [posts, setCachedPosts] = useState({})
     const [loading, setLoading] = useState(false)
     const [loadingError, setLoadingError] = useState(false)
+    const [postDeleted, setPostDeleted] = useState(false)
+    const navigate = useNavigate()
     const post = useMemo(() => posts[postId], [postId, posts])
     const commentsNumber = useMemo(() => post && post.comments.reduce((total, current) => 
         total + 1 + current.comments.length, 0), [post])
@@ -46,6 +48,42 @@ const FullscreenPost = memo(function FullscreenPost () {
                 })
             } catch(err) {
                 console.log(err)
+            }
+        }
+        if (e.currentTarget.dataset.func === 'delete') {
+            const confirm = window.confirm('Are you sure you want to delete this post?')
+            if(!confirm) {
+                return;
+            }
+            try {
+                const request = await fetch(`${import.meta.env.VITE_API_URL}/posts/${post.id}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                })
+                if(!request.ok) {
+                    const error = new Error('An error has occured, please try again later')
+                    throw error;
+                }
+                const response = await request.json();
+                console.log(response)
+                setPosts(prev => {
+                    const posts = {...prev};
+                    delete posts[post.id]
+                    return posts
+                })
+                setCachedPosts(prev => {
+                    const posts = {...prev};
+                    delete posts[post.id]
+                    return posts
+                })
+                setPostDeleted(true)
+                setLoadingError(false)
+                navigate(-1)
+            } catch(err) {
+                console.log(err)
+                setLoadingError(true)
+            } finally {
+                setLoading(false)
             }
         }
     }
@@ -243,12 +281,12 @@ const FullscreenPost = memo(function FullscreenPost () {
         }
         if(postId) {
             const post = posts[postId];
-            if(!post) {
+            if(!post && !postDeleted) {
                 fetchPost();
             }
         }
-    }, [postId, posts])
-    if(!post) return;
+    }, [postId, posts, postDeleted])
+    if(!post || !user) return;
     return (
         <>
         <main className={styles.main}>
@@ -276,6 +314,11 @@ const FullscreenPost = memo(function FullscreenPost () {
                                 <MessageCircle size={35} />
                                 <p style={{visibility: commentsNumber > 0 ? 'visible' : 'hidden'}}>{commentsNumber}</p>
                             </button>
+                            {post.authorId === user.id &&
+                            <button className={styles.delete} onClick={handlePostClick} id={post.id} data-func="delete" data-author={post.authorId}>
+                                <Trash size={35} />
+                            </button>
+                            }
                         </div>
                     </div>
                 </section>

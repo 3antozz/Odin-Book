@@ -29,9 +29,20 @@ exports.getProfile = async(userId) => {
         where: {
             id: userId
         },
+        omit: {
+            password: true,
+            pw_set: true,
+            username: true
+        },
         include: {
             posts: {
                 include: {
+                    _count: {
+                        select: {
+                            comments: true,
+                            likes: true
+                        }
+                    },
                     author: {
                         omit: {
                             password: true,
@@ -41,107 +52,10 @@ exports.getProfile = async(userId) => {
                         }
                     },
                     likes: {
-                        include: {
-                            user: {
-                                omit: {
-                                    password: true,
-                                    bio: true,
-                                    pw_set: true,
-                                    username: true
-                                } 
-                            }
-                        },
-                        orderBy: [
-                            {
-                                user: {
-                                    first_name: 'asc'
-                                }
-                            },
-                            {
-                                user: {
-                                    last_name: 'asc'
-                                },
-                            }
-                        ]
-                    },
-                    comments: {
-                        include: {
-                            author: {
-                                omit: {
-                                    password: true,
-                                    bio: true,
-                                    pw_set: true,
-                                    username: true
-                                }
-                            },
-                            likes: {
-                                include: {
-                                    user: {
-                                        omit: {
-                                            password: true,
-                                            bio: true,
-                                            pw_set: true,
-                                            username: true
-                                        } 
-                                    }
-                                },
-                                orderBy: [
-                                    {
-                                        user: {
-                                            first_name: 'asc'
-                                        }
-                                    },
-                                    {
-                                        user: {
-                                            last_name: 'asc'
-                                        },
-                                    }
-                                ]
-                            },
-                            comments: {
-                                include: {
-                                    author: {
-                                        omit: {
-                                            password: true,
-                                            bio: true,
-                                            pw_set: true,
-                                            username: true
-                                        }
-                                    },
-                                    likes: {
-                                        include: {
-                                            user: {
-                                                omit: {
-                                                    password: true,
-                                                    bio: true,
-                                                    pw_set: true,
-                                                    username: true
-                                                } 
-                                            }
-                                        },
-                                        orderBy: [
-                                            {
-                                                user: {
-                                                    first_name: 'asc'
-                                                }
-                                            },
-                                            {
-                                                user: {
-                                                    last_name: 'asc'
-                                                },
-                                            }
-                                        ]
-                                    },
-                                },
-                                orderBy: {
-                                    createdAt: 'desc'
-                                }
-                            }
-                        },
-                        orderBy: {
-                            createdAt: 'desc'
+                        where: {
+                            userId
                         }
-                    }
+                    },
                 },
             }
         }
@@ -182,7 +96,27 @@ exports.getUserNoPw = async(username) => {
         },
         include: {
             received_requests: true,
-            notifications_received: true,
+            notifications_received: {
+                // where: {
+                //     user: {
+                //         username: {
+                //             not: {
+                //                 equals: username
+                //             }
+                //         }
+                //     }
+                // },
+                include: {
+                    actor: {
+                        select: {
+                            id: true,
+                            first_name: true,
+                            last_name: true,
+                            picture_url: true
+                        }
+                    }
+                }
+            },
             sent_requests: true
         }
     })
@@ -838,6 +772,9 @@ exports.likePost = async(userId, postId) => {
             }
         }
     })
+    if(like.post.authorId === userId) {
+        return {like, notification: null}
+    }
     const notification = await prisma.notification.create({
         data: {
             userId: like.post.authorId,
@@ -903,6 +840,9 @@ exports.createPostComment = async(userId, postId, content = null, picture_url = 
             likes: true
         }
     })
+    if(comment.post.authorId === userId) {
+        return {comment, notification: null}
+    }
     const notification = await prisma.notification.create({
         data: {
             userId: comment.post.authorId,
@@ -959,7 +899,9 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
             likes: true
         }
     })
-    const notificationsData = comment.commentOn.comments.map((comment) => (
+    const notificationsData = comment.commentOn.comments
+    .filter(comment => comment.authorId !== userId)
+    .map((comment) => (
         {
             userId: comment.authorId,
             type: 'Comment',
@@ -967,9 +909,12 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
             commentId,
         }
     ))
-    await prisma.notification.createMany({
+    const notifications =  await prisma.notification.createMany({
         data: notificationsData
     })
+    if(comment.commentOn.authorId === userId) {
+        return {comment, notification: notifications[0]}
+    }
     const notification = await prisma.notification.create({
         data: {
             userId: comment.commentOn.authorId,
@@ -1019,6 +964,9 @@ exports.likeComment = async(userId, commentId) => {
             }
         }
     })
+    if(like.comment.authorId === userId) {
+        return {like, notification: null}
+    }
     const notification = await prisma.notification.create({
         data: {
             userId: like.comment.authorId,

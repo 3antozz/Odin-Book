@@ -6,6 +6,11 @@ exports.getPost = async(req, res) => {
     const userId = req.user.id
     const postId = +req.params.postId;
     const post = await db.getFullPost(postId);
+    if(!post) {
+        const error = new Error('Data not found')
+        error.code = 400;
+        throw error;
+    }
     const date = fns.formatDate(post.createdAt)
     post.createdAt = date;
     const formattedDates = post.comments.map(comment => {
@@ -81,6 +86,11 @@ exports.deletePost = async(req, res) => {
     const userId = req.user.id;
     const postId = +req.params.postId;
     const post = await db.getPost(postId);
+    if(!post) {
+        const error = new Error('Data not found')
+        error.code = 400;
+        throw error;
+    }
     if(post.authorId !== userId) {
         const error = new Error('Unauthorized')
         error.code = 401;

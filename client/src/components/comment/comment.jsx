@@ -8,6 +8,9 @@ export default function Comment ({comment, handleClick, isSub, isLast, setPosts,
     const { user, socket } = useContext(AuthContext);
     const [commentsOpen, setCommentsOpen] = useState(false);
     const commentsNumber = comment.comments.length;
+    if(!user) {
+        return;
+    }
     return (
         <section className={styles.comment} style={{borderBottom: isSub ? null : isLast ? null : "2px solid grey"}}>
             <section className={isSub ? styles.subComment : styles.topComment}>

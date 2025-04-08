@@ -5,12 +5,12 @@ import Post from '../post/post'
 import { AuthContext } from '../../contexts'
 export default function Index () {
     const { user, socket, socketOn } = useContext(AuthContext);
-    const { posts, setPosts, handlePostClick } = useOutletContext();
+    const { posts, setPosts } = useOutletContext();
     const postsArray = useMemo(() => Object.values(posts).reverse(), [posts])
     return (
         <main className={styles.main}>
             <AddPost setPosts={setPosts} />
-            {postsArray.map(post => <Post key={post.id} post={post} setPosts={setPosts} handlePostClick={handlePostClick} />)}
+            {postsArray.map(post => <Post key={post.id} post={post} setPosts={setPosts} />)}
         </main>
     )
 }

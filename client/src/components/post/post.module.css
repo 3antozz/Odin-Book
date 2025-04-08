@@ -4,8 +4,6 @@
     border-radius: 10px;
     display: flex;
     gap: 1rem;
-    text-decoration: none;
-    color: inherit;
     cursor: pointer;
 }
 
@@ -13,11 +11,37 @@
     background-color: rgba(30, 26, 24);
 }
 
-.post > img {
+.post > a {
+    text-decoration: none;
+}
+
+.info > a {
+    text-decoration: none;
+    color: inherit;
+    font-weight: bold;
+}
+
+.info > a:hover {
+    color: rgb(253, 62, 62);
+}
+
+.post > a > img {
     width: 3rem;
     border-radius: 50%;
-    flex-shrink: 0;
     align-self: flex-start;
+}
+
+.post > a {
+    transition: transform 200ms ease;
+    flex-shrink: 0;
+}
+
+.post > a:hover {
+    transform: scale(1.1);
+}
+
+.post > a:hover img {
+    border: 2px solid red;
 }
 
 .info {
