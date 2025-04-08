@@ -14,10 +14,10 @@ export default function Comment ({comment, handleClick, isSub, isLast, setPosts,
     return (
         <section className={styles.comment} style={{borderBottom: isSub ? null : isLast ? null : "2px solid grey"}}>
             <section className={isSub ? styles.subComment : styles.topComment}>
-                <img src={comment.author.picture_url || '/no-profile-pic.jpg'} alt={`${comment.author.first_name} ${comment.author.last_name} profile picture`} />
+            <Link to={`/profile/${comment.authorId}`}><img src={comment.author.picture_url || '/no-profile-pic.jpg'} alt={`${comment.author.first_name} ${comment.author.last_name} profile picture`} /></Link>
                 <div className={styles.right}>
                     <div className={styles.info}>
-                        <p>{comment.author.first_name} {comment.author.last_name}</p>
+                    <Link to={`/profile/${comment.authorId}`}><p>{comment.author.first_name} {comment.author.last_name}</p></Link>
                         <p>• {comment.createdAt}</p>
                     </div>
                     <div className={styles.content}>
@@ -114,4 +114,15 @@ function AddSubComment ({comment, setPosts, setCachedPosts}) {
 
 Comment.propTypes = {
     comment: PropTypes.object.isRequired,
+    handleClick: PropTypes.func.isRequired,
+    isSub: PropTypes.bool.isRequired,
+    isLast: PropTypes.bool.isRequired,
+    setPosts: PropTypes.func.isRequired,
+    setCachedPosts: PropTypes.func.isRequired,
+}
+
+AddSubComment.propTypes = {
+    comment: PropTypes.object.isRequired,
+    setPosts: PropTypes.func.isRequired,
+    setCachedPosts: PropTypes.func.isRequired,
 }

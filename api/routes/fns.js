@@ -16,3 +16,7 @@ exports.formatDate = (date) => {
 exports.formatDateWithoutTime = (date) => {
     return format(new Date(date), 'PP');
 }
+
+exports.formatDateWithoutTimeAndDay = (date) => {
+    return format(new Date(date), 'MMMM y');
+}

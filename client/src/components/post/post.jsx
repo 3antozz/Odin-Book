@@ -112,10 +112,12 @@ export default function Post ({post, setPosts, setProfile = false}) {
     }
     return (
         <article className={styles.post} role="button" onClick={handlePostClick} tabIndex={0} data-func='comment' id={post.id}>
-            <Link to={`/profile/${post.authorId}`}><img src={post.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} /></Link>
+            <Link to={`/profile/${post.authorId}`}
+            onClick={(e) => e.stopPropagation()}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} /></Link>
             <div className={styles.right}>
                 <div className={styles.info}>
-                    <Link to={`/profile/${post.authorId}`}><p>{post.author.first_name} {post.author.last_name}</p></Link>
+                    <Link to={`/profile/${post.authorId}`} onClick={(e) => e.stopPropagation()
+                }><p>{post.author.first_name} {post.author.last_name}</p></Link>
                     <p>• {post.createdAt}</p>
                 </div>
                 <div className={styles.content}>
@@ -145,4 +147,5 @@ export default function Post ({post, setPosts, setProfile = false}) {
 Post.propTypes = {
     post: PropTypes.object.isRequired,
     setPosts: PropTypes.func.isRequired,
+    setProfile: PropTypes.func.isRequired,
 }

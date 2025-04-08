@@ -59,7 +59,7 @@ nav > a:hover, .logout:hover, .login:hover {
 }
 
 .post:hover {
-    background-color: rgb(197, 197, 197);
+    filter: brightness(0.8);
     transform: scale(1.05);
 }
 

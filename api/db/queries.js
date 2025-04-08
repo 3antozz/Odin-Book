@@ -57,6 +57,33 @@ exports.getProfile = async(userId) => {
                         }
                     },
                 },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            },
+            followers: {
+                select: {
+                    follower: {
+                        select: {
+                            id: true,
+                            first_name: true,
+                            last_name: true,
+                            picture_url: true
+                        }
+                    }
+                }
+            },
+            following: {
+                select: {
+                    following: {
+                        select: {
+                            id: true,
+                            first_name: true,
+                            last_name: true,
+                            picture_url: true
+                        }
+                    }
+                }
             }
         }
     })

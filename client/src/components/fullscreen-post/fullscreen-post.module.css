@@ -15,8 +15,17 @@
     margin-bottom: 1rem;
 }
 
-.info > p:first-of-type {
-    font-weight: bold;
+.info > p:last-of-type {
+    color: rgb(149, 149, 149);
+}
+
+.post > a:hover {
+    transform: scale(1.1);
+}
+
+.post > a:hover img {
+    /* border: 3px solid red; */
+    box-shadow: 0px 0px 4px 4px red;
 }
 
 .post {
@@ -32,11 +41,15 @@
     margin-bottom: 2rem;
 }
 
-.post > img {
+.post > a > img {
     width: 3rem;
     border-radius: 50%;
+}
+
+.post > a {
     flex-shrink: 0;
     align-self: flex-start;
+    transition: transform 200ms ease;
 }
 
 .interactions {
@@ -81,6 +94,17 @@
     align-items: center;
     gap: 1rem;
 }
+
+.info > a {
+    text-decoration: none;
+    color: inherit;
+    font-weight: bold;
+}
+
+.info > a:hover {
+    color: rgb(253, 62, 62);
+}
+
 .close {
     background: none;
     border: none;

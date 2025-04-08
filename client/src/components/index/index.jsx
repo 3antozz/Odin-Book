@@ -2,21 +2,22 @@ import styles from './index.module.css'
 import { useState, useContext, useMemo } from 'react'
 import { useOutletContext } from 'react-router'
 import Post from '../post/post'
+import PropTypes from 'prop-types'
 import { AuthContext } from '../../contexts'
 export default function Index () {
     const { user, socket, socketOn } = useContext(AuthContext);
-    const { posts, setPosts } = useOutletContext();
+    const { posts, setPosts, profiles, setProfiles } = useOutletContext();
     const postsArray = useMemo(() => Object.values(posts).reverse(), [posts])
     return (
         <main className={styles.main}>
-            <AddPost setPosts={setPosts} />
+            <AddPost setPosts={setPosts} profiles={profiles} setProfiles={setProfiles} />
             {postsArray.map(post => <Post key={post.id} post={post} setPosts={setPosts} />)}
         </main>
     )
 }
 
 
-function AddPost ({setPosts}) {
+function AddPost ({setPosts, profiles, setProfiles}) {
     const [postTxt, setPostTxt] = useState('')
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false)
@@ -43,6 +44,14 @@ function AddPost ({setPosts}) {
                 throw error;
             }
             setPosts(prev => ({[response.post.id]: response.post, ...prev}))
+            if(profiles[response.post.authorId]) {
+                setProfiles(prev => {
+                    const profileId = response.post.authorId;
+                    const profile = prev[profileId];
+                    const posts = [response.post, ...profile.posts];
+                    return {...prev, [profileId]: {...prev[profileId], posts}}
+                })
+            }
             setError(false)
             setPostTxt('')
         } catch(err) {
@@ -61,4 +70,10 @@ function AddPost ({setPosts}) {
             </form>
         </section>
     )
+}
+
+AddPost.propTypes = {
+    setPosts: PropTypes.func.isRequired,
+    setProfiles: PropTypes.func.isRequired,
+    profiles: PropTypes.object.isRequired,
 }

@@ -6,6 +6,8 @@ import { AuthContext } from '../../contexts'
 export default function Main () {
     const { user, socket } = useContext(AuthContext);
     const [posts, setPosts] = useState({})
+    const [fullPosts, setFullPosts] = useState({})
+    const [profiles, setProfiles] = useState({})
     const [isFetched, setFetched] = useState(false)
     const [postsLoading, setPostsLoading] = useState(false)
     const [error, setError] = useState(false)
@@ -41,7 +43,7 @@ export default function Main () {
     return (
         <div className={styles.main}>
             <Sidebar />
-            <Outlet context={{posts, setPosts, postsLoading, error}} />
+            <Outlet context={{posts, setPosts, postsLoading, error, fullPosts, setFullPosts, profiles, setProfiles}} />
         </div>
     )
 }

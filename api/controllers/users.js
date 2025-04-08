@@ -14,6 +14,7 @@ exports.getProfile = async(req, res) => {
         error.code = 400;
         throw error;
     }
+    profile.join_date = fns.formatDateWithoutTimeAndDay(profile.join_date);
     const formattedPosts = profile.posts.map(post => {
         const date = fns.formatDate(post.createdAt)
         post.createdAt = date;
@@ -22,6 +23,12 @@ exports.getProfile = async(req, res) => {
         }
         return post;
     })
+    if(req.user) {
+        const isFollowed = profile.followers.findIndex(follower => follower.follower.id === req.user.id)
+        if(isFollowed > -1) {
+            profile.isFollowed = true
+        }
+    }
     profile.posts = formattedPosts
     res.json({profile})
 }

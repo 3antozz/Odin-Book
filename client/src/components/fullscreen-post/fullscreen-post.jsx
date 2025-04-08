@@ -8,14 +8,13 @@ import Comment from '../comment/comment';
 
 const FullscreenPost = memo(function FullscreenPost () {
     const { user, socket } = useContext(AuthContext);
-    const { setPosts } = useOutletContext();
+    const { setPosts, fullPosts, setFullPosts } = useOutletContext();
     const { postId }  = useParams()
-    const [posts, setCachedPosts] = useState({})
     const [loading, setLoading] = useState(false)
     const [loadingError, setLoadingError] = useState(false)
     const [postDeleted, setPostDeleted] = useState(false)
     const navigate = useNavigate()
-    const post = useMemo(() => posts[postId], [postId, posts])
+    const post = useMemo(() => fullPosts[postId], [postId, fullPosts])
     const commentsNumber = useMemo(() => post && post.comments.reduce((total, current) => 
         total + 1 + current.comments.length, 0), [post])
     const handlePostClick = async(e) => {
@@ -25,7 +24,7 @@ const FullscreenPost = memo(function FullscreenPost () {
             const postId = +e.currentTarget.id;
             try {
                 socket.current.emit('post like', postId, (like) => {
-                    setCachedPosts(prev => ({...prev, [postId]: {...prev[postId], likes: [like, ...prev[postId].likes], isLiked: true}}))
+                    setFullPosts(prev => ({...prev, [postId]: {...prev[postId], likes: [like, ...prev[postId].likes], isLiked: true}}))
                 })
             } catch(err) {
                 console.log(err)
@@ -36,7 +35,7 @@ const FullscreenPost = memo(function FullscreenPost () {
             try {
                 socket.current.emit('post unlike', postId, (status) => {
                     if(status === true) {
-                        setCachedPosts(prev => {
+                        setFullPosts(prev => {
                             const index = prev[postId].likes.findIndex(like => like.userId === user.id)
                             if(index > -1) {
                                 const likes = prev[postId].likes.slice().toSpliced(index, 1)
@@ -67,14 +66,14 @@ const FullscreenPost = memo(function FullscreenPost () {
                 const response = await request.json();
                 console.log(response)
                 setPosts(prev => {
-                    const posts = {...prev};
-                    delete posts[post.id]
-                    return posts
+                    const fullPosts = {...prev};
+                    delete fullPosts[post.id]
+                    return fullPosts
                 })
-                setCachedPosts(prev => {
-                    const posts = {...prev};
-                    delete posts[post.id]
-                    return posts
+                setFullPosts(prev => {
+                    const fullPosts = {...prev};
+                    delete fullPosts[post.id]
+                    return fullPosts
                 })
                 setPostDeleted(true)
                 setLoadingError(false)
@@ -95,7 +94,7 @@ const FullscreenPost = memo(function FullscreenPost () {
             try {
                 socket.current.emit('comment like', commentId, (like) => {
                     if(!commentOn) {
-                        setCachedPosts(prev => {
+                        setFullPosts(prev => {
                             const post = prev[postId];
                             const commentIndex = post.comments.findIndex(comment => comment.id === commentId)
                             const comments = post.comments.slice();
@@ -112,7 +111,7 @@ const FullscreenPost = memo(function FullscreenPost () {
                             }
                         })
                     } else {
-                        setCachedPosts(prev => {
+                        setFullPosts(prev => {
                             const post = prev[postId];
                             const commentIndex = post.comments.findIndex(comment => comment.id === commentOn)
                             const comments = post.comments.slice();
@@ -147,7 +146,7 @@ const FullscreenPost = memo(function FullscreenPost () {
             try {
                 socket.current.emit('comment unlike', commentId, (likeId) => {
                     if(!commentOn) {
-                        setCachedPosts(prev => {
+                        setFullPosts(prev => {
                             const post = prev[postId];
                             const commentIndex = post.comments.findIndex(comment => comment.id === commentId)
                             const comments = post.comments.slice();
@@ -165,7 +164,7 @@ const FullscreenPost = memo(function FullscreenPost () {
                             }
                         })
                     } else {
-                        setCachedPosts(prev => {
+                        setFullPosts(prev => {
                             const post = prev[postId];
                             const commentIndex = post.comments.findIndex(comment => comment.id === commentOn)
                             const comments = post.comments.slice();
@@ -215,7 +214,7 @@ const FullscreenPost = memo(function FullscreenPost () {
                 }
                 console.log(response);
                 if(!commentOn) {
-                    setCachedPosts(prev => {
+                    setFullPosts(prev => {
                         const post = prev[postId];
                         const commentIndex = post.comments.findIndex(comment => comment.id === commentId)
                         const comments = post.comments.slice();
@@ -228,7 +227,7 @@ const FullscreenPost = memo(function FullscreenPost () {
                         }
                     })
                 } else {
-                    setCachedPosts(prev => {
+                    setFullPosts(prev => {
                         const post = prev[postId];
                         const commentIndex = post.comments.findIndex(comment => comment.id === commentOn)
                         const comments = post.comments.slice();
@@ -270,7 +269,7 @@ const FullscreenPost = memo(function FullscreenPost () {
                   }
                 const response = await request.json();
                 console.log(response)
-                setCachedPosts((prev) => ({...prev, [response.post.id]: response.post}))
+                setFullPosts((prev) => ({...prev, [response.post.id]: response.post}))
                 setLoadingError(false)
             } catch(err) {
                 console.log(err)
@@ -280,12 +279,12 @@ const FullscreenPost = memo(function FullscreenPost () {
             }
         }
         if(postId) {
-            const post = posts[postId];
+            const post = fullPosts[postId];
             if(!post && !postDeleted) {
                 fetchPost();
             }
         }
-    }, [postId, posts, postDeleted])
+    }, [postId, fullPosts, postDeleted, setFullPosts])
     if(!post || !user) return;
     return (
         <>
@@ -296,10 +295,10 @@ const FullscreenPost = memo(function FullscreenPost () {
             </header>
             <div className={styles.container}>
                 <section className={styles.post}>
-                    <img src={post.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} />
+                <Link to={`/profile/${post.authorId}`}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} /></Link>
                     <div className={styles.right}>
                         <div className={styles.info}>
-                            <p>{post.author.first_name} {post.author.last_name}</p>
+                        <Link to={`/profile/${post.authorId}`}><p>{post.author.first_name} {post.author.last_name}</p></Link>
                             <p>• {post.createdAt}</p>
                         </div>
                         <div className={styles.content}>
@@ -322,14 +321,14 @@ const FullscreenPost = memo(function FullscreenPost () {
                         </div>
                     </div>
                 </section>
-                <AddComment postId={postId} post={post} setCachedPosts={setCachedPosts} setPosts={setPosts} />
+                <AddComment postId={postId} post={post} setFullPosts={setFullPosts} setPosts={setPosts} />
                 <section className={styles.commentsContainer}>
                     {post.comments.map((comment, index) => {
                         let isLast = false;
                         if(index === post.comments.length - 1) {
                             isLast = true;
                         }
-                        return <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setCachedPosts={setCachedPosts} setPosts={setPosts} isLast={isLast} />
+                        return <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setFullPosts={setFullPosts} setPosts={setPosts} isLast={isLast} />
                         })}
                 </section>
             </div>
@@ -338,7 +337,7 @@ const FullscreenPost = memo(function FullscreenPost () {
     )
 })
 
-function AddComment ({post, postId, setPosts, setCachedPosts}) {
+function AddComment ({post, postId, setPosts, setFullPosts}) {
     const [commentTxt, setCommentTxt] = useState('')
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false)
@@ -366,7 +365,7 @@ function AddComment ({post, postId, setPosts, setCachedPosts}) {
                 throw error;
             }
             console.log(response);
-            setCachedPosts(prev => ({...prev, [postId]: {...prev[postId], comments: [response.comment, ...prev[postId].comments]}}))
+            setFullPosts(prev => ({...prev, [postId]: {...prev[postId], comments: [response.comment, ...prev[postId].comments]}}))
             setPosts(prev => ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments + 1} , isLiked: true}}))
             setError(false)
             setCommentTxt('')
@@ -386,6 +385,13 @@ function AddComment ({post, postId, setPosts, setCachedPosts}) {
             </form>
         </section>
     )
+}
+
+AddComment.propTypes = {
+    postId: PropTypes.string.isRequired,
+    post: PropTypes.object.isRequired,
+    setPosts: PropTypes.func.isRequired,
+    setFullPosts: PropTypes.func.isRequired,
 }
 
 
