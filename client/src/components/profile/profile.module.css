@@ -21,8 +21,9 @@
 }
 
 h2 {
+    padding-bottom: 0.5rem;
     text-align: center;
-    margin: 0 3rem;
+    margin: 0 5rem;
     border-bottom: 1px solid grey;
 }
 
@@ -43,8 +44,10 @@ h2 {
 .info {
     padding: 2rem;
     display: flex;
+    flex-direction: column;
+    gap: 1rem;
     align-items: center;
-    gap: 2.5rem;
+    justify-content: center;
     margin-bottom: 0.5rem;
 }
 
@@ -62,7 +65,7 @@ em {
 .followage {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.2rem;
     margin-bottom: 1rem;
     font-size: 1.1rem;
 }
@@ -85,11 +88,12 @@ em {
 .top {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 3rem;
     margin-bottom: 0.8rem;
 }
 
-.top > button {
+.top > button, .request button {
     color: inherit;
     font-weight: bold;
     border-radius: 15px;
@@ -97,9 +101,10 @@ em {
     font-size: 1.05rem;
     cursor: pointer;
     transition: transform 200ms ease;
+    border: 2px solid grey;
 }
 
-.top > button:hover {
+.top > button:hover, .request button:hover {
     transform: scale(1.05);
     filter: brightness(0.8);
 }
@@ -107,12 +112,38 @@ em {
 .joinDate {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.3rem;
     color: rgb(149, 149, 149);
 }
 
 .bottom > * {
     margin-bottom: 0.5rem;
+}
+
+.request > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.request .buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.request button:first-of-type {
+    color: black;
+}
+
+.request button:last-of-type {
+    background-color: #181818;
+}
+
+.request p {
+    font-size: 1.15rem;
 }
 
 

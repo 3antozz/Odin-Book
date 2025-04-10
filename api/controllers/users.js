@@ -8,7 +8,7 @@ exports.getClient = async(req, res) => {
 
 exports.getProfile = async(req, res) => {
     const userId = +req.params.userId;
-    const profile = await db.getProfile(userId)
+    const profile = await db.getProfile(userId, req.user?.id)
     if(!profile) {
         const error = new Error('Data not found')
         error.code = 400;
@@ -24,9 +24,14 @@ exports.getProfile = async(req, res) => {
         return post;
     })
     if(req.user) {
-        const isFollowed = profile.followers.findIndex(follower => follower.follower.id === req.user.id)
-        if(isFollowed > -1) {
+        if(profile.followers.length > 0) {
             profile.isFollowed = true
+        }
+        if(profile.sent_requests.length > 0) {
+            profile.hasRequested = true
+        }
+        if(profile.received_requests.length > 0) {
+            profile.isPending = true
         }
     }
     profile.posts = formattedPosts

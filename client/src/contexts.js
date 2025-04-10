@@ -1,10 +1,9 @@
 import { createContext } from "react";
 export const AuthContext = createContext({
-    token: {},
     user: {},
     setUser: () => {},
+    socket: {},
+    socketOn: false,
+    setAuthentication: () => {},
     logout: () => {}
-})
-
-export const ConversationContext = createContext({
 })

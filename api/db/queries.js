@@ -24,7 +24,7 @@ exports.getUser = async(username) => {
     })
 }
 
-exports.getProfile = async(userId) => {
+exports.getProfile = async(userId, clientId = 0) => {
     return await prisma.user.findUnique({
         where: {
             id: userId
@@ -35,6 +35,12 @@ exports.getProfile = async(userId) => {
             username: true
         },
         include: {
+            _count: {
+                select: {
+                    followers: true,
+                    following: true
+                }
+            },
             posts: {
                 include: {
                     _count: {
@@ -62,27 +68,27 @@ exports.getProfile = async(userId) => {
                 }
             },
             followers: {
+                where: {
+                    followerId: clientId
+                },
                 select: {
-                    follower: {
-                        select: {
-                            id: true,
-                            first_name: true,
-                            last_name: true,
-                            picture_url: true
-                        }
-                    }
+                    id: true
                 }
             },
-            following: {
+            sent_requests: {
+                where: {
+                    receiverId: clientId
+                },
                 select: {
-                    following: {
-                        select: {
-                            id: true,
-                            first_name: true,
-                            last_name: true,
-                            picture_url: true
-                        }
-                    }
+                    status: true
+                }
+            },
+            received_requests: {
+                where: {
+                    senderId: clientId
+                },
+                select: {
+                    status: true
                 }
             }
         }
@@ -214,42 +220,43 @@ exports.sendRequest = async(senderId, receiverId) => {
 
 exports.acceptRequest = async(receiverId, senderId) => {
     const request = await prisma.$transaction([
-        await prisma.user.update({
-            where: {
-                id: receiverId
-            },
+        prisma.follow.create({
             data: {
-                followers: {
-                    connect: {
-                        id: {
-                           senderId 
-                        }
-                    }
-                }
-            }
-        }),
-        await prisma.user.update({
-            where: {
-                id: senderId
+                followerId: senderId,
+                followingId: receiverId,
             },
-            data: {
+            include: {
                 following: {
-                    connect: {
-                        id: {
-                           receiverId 
-                        }
+                    select: {
+                        id: true,
+                        first_name: true,
+                        last_name: true,
+                        picture_url: true
+                    }
+                },
+                follower: {
+                    select: {
+                        id: true,
+                        first_name: true,
+                        last_name: true,
+                        picture_url: true
                     }
                 }
             }
         }),
-        await prisma.request.update({
+        prisma.request.delete({
             where: {
                 senderId_receiverId: {senderId, receiverId}
             },
-            data: {
-                status: 'Accepted'
-            }
         })
+        // await prisma.request.update({
+        //     where: {
+        //         senderId_receiverId: {senderId, receiverId}
+        //     },
+        //     data: {
+        //         status: 'Accepted'
+        //     }
+        // })
     ])
     const notification = await prisma.notification.create({
         data: {
@@ -273,7 +280,10 @@ exports.rejectRequest = async(receiverId, senderId) => {
 exports.unfollow = async(clientId, userId) => {
     return await prisma.follow.delete({
         where: {
-            followerId_followingId: {clientId, userId}
+            followerId_followingId: {
+                followerId: clientId,
+                followingId: userId
+            }
         }
     })
 }
@@ -281,7 +291,10 @@ exports.unfollow = async(clientId, userId) => {
 exports.removeFollower = async(clientId, userId) => {
     return await prisma.follow.delete({
         where: {
-            followerId_followingId: {userId, clientId}
+            followerId_followingId: {
+                followerId: userId,
+                followingId: clientId
+            }
         }
     })
 }

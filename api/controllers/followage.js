@@ -3,9 +3,8 @@ const db = require('../db/queries');
 
 exports.sendRequest = async(req, res) => {
     const senderId = req.user.id;
-    const { receiverId } = req.body;
+    const  receiverId  = +req.params.receiverId;
     const {request, notification} = await db.sendRequest(senderId, +receiverId)
-    console.log(request);
     const io = req.app.get('io');
     io.to(`user${receiverId}`).emit('new request', request);
     io.to(`user${receiverId}`).emit('notitication', notification);
@@ -14,29 +13,36 @@ exports.sendRequest = async(req, res) => {
 
 exports.acceptRequest = async(req, res) => {
     const receiverId = req.user.id;
-    const { senderId } = req.body;
-    const {request, notification} = await db.acceptRequest(receiverId, +senderId)
-    console.log(request)
+    const senderId  = +req.params.senderId;
+    const {request, notification} = await db.acceptRequest(receiverId, senderId)
     const io = req.app.get('io');
-    io.to(`user${senderId}`).emit('new following', {following: request[0]});
+    io.to(`user${senderId}`).emit('new following', {following: request[0].following});
     io.to(`user${senderId}`).emit('notitication', notification);
-    res.json({follower: request[1]})
+    res.json({follower: request[0].follower})
 }
 
 exports.rejectRequest = async(req, res) => {
     const receiverId = req.user.id;
-    const { senderId } = req.body;
-    const request = await db.rejectRequest(receiverId, +senderId)
-    console.log(request);
+    const senderId = +req.params.senderId;
+    const request = await db.rejectRequest(receiverId, senderId)
     const io = req.app.get('io');
-    io.to(`user${senderId}`).emit('reject request', request[2]);
-    res.json({request: request[2]})
+    io.to(`user${senderId}`).emit('reject request', request);
+    res.json({request})
+}
+
+exports.cancelRequest = async(req, res) => {
+    const senderId = req.user.id;
+    const receiverId  = +req.params.receiverId;
+    const request = await db.rejectRequest(receiverId, senderId)
+    const io = req.app.get('io');
+    io.to(`user${receiverId}`).emit('reject request', request);
+    res.json({request})
 }
 
 exports.unfollow = async(req, res) => {
     const clientId = req.user.id;
-    const { userId } = req.body;
-    const user = await db.unfollow(clientId, +userId)
+    const userId  = +req.params.userId;
+    const user = await db.unfollow(clientId, userId)
     console.log(user);
     res.json({done: true})
 }

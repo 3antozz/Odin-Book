@@ -29,8 +29,7 @@ const FullscreenPost = memo(function FullscreenPost () {
             } catch(err) {
                 console.log(err)
             }
-        }
-        if (e.currentTarget.dataset.func === 'unlike') {
+        } else if (e.currentTarget.dataset.func === 'unlike') {
             const postId = +e.currentTarget.id;
             try {
                 socket.current.emit('post unlike', postId, (status) => {
@@ -48,8 +47,7 @@ const FullscreenPost = memo(function FullscreenPost () {
             } catch(err) {
                 console.log(err)
             }
-        }
-        if (e.currentTarget.dataset.func === 'delete') {
+        } else if (e.currentTarget.dataset.func === 'delete') {
             const confirm = window.confirm('Are you sure you want to delete this post?')
             if(!confirm) {
                 return;
@@ -138,8 +136,7 @@ const FullscreenPost = memo(function FullscreenPost () {
             } catch(err) {
                 console.log(err)
             }
-        }
-        if (e.currentTarget.dataset.func === 'unlike') {
+        } else if (e.currentTarget.dataset.func === 'unlike') {
             const commentId = +e.currentTarget.id;
             const postId = +e.currentTarget.dataset.postid;
             const commentOn = +e.currentTarget.dataset.commenton;
@@ -192,8 +189,7 @@ const FullscreenPost = memo(function FullscreenPost () {
             } catch(err) {
                 console.log(err)
             }
-        }
-        if (e.currentTarget.dataset.func === 'delete') {
+        } else if (e.currentTarget.dataset.func === 'delete') {
             const confirm = window.confirm('Are you sure you want to delete this comment?')
             if(!confirm) {
                 return;

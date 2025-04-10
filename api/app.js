@@ -124,6 +124,7 @@ io.on('connection', (socket) => {
         socket.emit('error', { message: "An error has occured" });
     }
   });
+  socket.on('disconnect', () => console.log('user disconnected'))
 });
 
 

@@ -37,8 +37,7 @@ export default function Post ({post, setPosts, setProfile = false}) {
             } catch(err) {
                 console.log(err)
             }
-        }
-        if (e.currentTarget.dataset.func === 'unlike') {
+        } else if (e.currentTarget.dataset.func === 'unlike') {
             const postId = +e.currentTarget.id;
             const profileId = +e.currentTarget.dataset.author;
             try {
@@ -64,13 +63,10 @@ export default function Post ({post, setPosts, setProfile = false}) {
             } catch(err) {
                 console.log(err)
             }
-        }
-        if (e.currentTarget.dataset.func === 'comment') {
+        } else if (e.currentTarget.dataset.func === 'comment') {
             const postId = e.currentTarget.id;
             navigate(`/post/${postId}`)
-        }
-
-        if (e.currentTarget.dataset.func === 'delete') {
+        } else if (e.currentTarget.dataset.func === 'delete') {
             const profileId = +e.currentTarget.dataset.author;
             const confirm = window.confirm('Are you sure you want to delete this post?')
             if(!confirm) {
@@ -109,6 +105,9 @@ export default function Post ({post, setPosts, setProfile = false}) {
                 setLoading(false)
             }
         }
+    }
+    if(!user) {
+        return;
     }
     return (
         <article className={styles.post} role="button" onClick={handlePostClick} tabIndex={0} data-func='comment' id={post.id}>

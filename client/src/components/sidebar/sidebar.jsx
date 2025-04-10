@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { AuthContext } from "../../contexts"
 import { House, Bell, LogIn, User, LogOut, PencilLine } from 'lucide-react';
 export default function Sidebar () {
-    const { user } = useContext(AuthContext);
+    const { user, logout } = useContext(AuthContext);
     return (
         <aside className={styles.sidebar}>
             <h2>OdinBook</h2>
@@ -29,7 +29,7 @@ export default function Sidebar () {
                 </button>}
             </nav>
             {user ? 
-            <button className={styles.logout}>
+            <button className={styles.logout} onClick={logout}>
                 <LogOut size={30} />
                 <p>Logout</p>
             </button> :

@@ -20,6 +20,23 @@ function App() {
   const socket = useRef(null)
   const [socketOn, setSocket] = useState(false)
 
+  const logout = async() => {
+    try {
+      const request = await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      })
+      if(!request.ok) {
+        const error = new Error('An error has occured, please try again later')
+        throw error;
+      }
+      window.location.href = '/login';
+    } catch(err) {
+      console.log(err)
+      setFetched(false)
+    }
+  }
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -44,6 +61,10 @@ function App() {
       if(!user) {
         fetchUser();
       }
+    } else if(!isFetched && isAuthenticated) {
+      if(!user) {
+        fetchUser();
+      }
     }
   }, [isFetched, user, isAuthenticated])
 
@@ -59,7 +80,7 @@ function App() {
   }, [isAuthenticated, socketOn, user])
 
   return (
-    <AuthContext.Provider value={{user, setUser, setAuthentication, socketOn, socket}}>
+    <AuthContext.Provider value={{user, setUser, setAuthentication, socketOn, socket, logout}}>
         <Routes>
             <Route path="/" element={< Main />}>
               <Route index element={<Index />} />
