@@ -1,9 +1,9 @@
 import styles from './sidebar.module.css'
 import { NavLink } from 'react-router'
-import { useContext } from 'react';
+import { useContext, memo } from 'react';
 import { AuthContext } from "../../contexts"
 import { House, Bell, LogIn, User, LogOut, PencilLine } from 'lucide-react';
-export default function Sidebar () {
+const Sidebar = memo(function Sidebar () {
     const { user, logout } = useContext(AuthContext);
     return (
         <aside className={styles.sidebar}>
@@ -39,4 +39,6 @@ export default function Sidebar () {
             </NavLink>}
         </aside>
     )
-}
+})
+
+export default Sidebar;

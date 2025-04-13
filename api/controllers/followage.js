@@ -36,7 +36,7 @@ exports.cancelRequest = async(req, res) => {
     const request = await db.rejectRequest(receiverId, senderId)
     const io = req.app.get('io');
     io.to(`user${receiverId}`).emit('reject request', request);
-    res.json({request})
+    res.json({done: true})
 }
 
 exports.unfollow = async(req, res) => {
@@ -49,8 +49,8 @@ exports.unfollow = async(req, res) => {
 
 exports.removeFollower = async(req, res) => {
     const clientId = req.user.id;
-    const { userId } = req.body;
-    const user = await db.unfollow(clientId, +userId)
+    const userId  = +req.params.userId;
+    const user = await db.removeFollower(clientId, userId)
     console.log(user);
     const io = req.app.get('io');
     io.to(`user${userId}`).emit('removed following', +clientId);

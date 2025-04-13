@@ -20,7 +20,7 @@
     transform: scale(1.5);
 }
 
-h2 {
+.main h2 {
     padding-bottom: 0.5rem;
     text-align: center;
     margin: 0 5rem;
@@ -70,17 +70,21 @@ em {
     font-size: 1.1rem;
 }
 
-.followage a, .followage > p {
+.followage button, .followage > p {
     text-decoration: none;
     color: rgb(149, 149, 149);
+    cursor: pointer;
+    background: none;
+    border: none;
 }
 
-.followage a:hover {
+.followage button:hover {
     text-decoration: underline;
     color: red;
 }
 
 .name {
+    flex: 1;
     font-weight: bold;
     font-size: 1.4rem;
 }
@@ -89,7 +93,7 @@ em {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 3rem;
+    margin: auto;
     margin-bottom: 0.8rem;
 }
 
@@ -106,7 +110,7 @@ em {
 
 .top > button:hover, .request button:hover {
     transform: scale(1.05);
-    filter: brightness(0.8);
+    filter: brightness(1.2);
 }
 
 .joinDate {

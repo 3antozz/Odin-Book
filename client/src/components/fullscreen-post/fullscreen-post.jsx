@@ -1,14 +1,14 @@
 import styles from './fullscreen-post.module.css'
-import { memo, useState, useEffect, useContext, useMemo } from 'react'
+import {  useState, useEffect, useContext, useMemo } from 'react'
 import { useParams, Link, useOutletContext, useNavigate } from 'react-router';
 import { AuthContext } from '../../contexts'
 import PropTypes from 'prop-types';
 import { ArrowLeft, Heart, MessageCircle, Trash } from 'lucide-react';
 import Comment from '../comment/comment';
 
-const FullscreenPost = memo(function FullscreenPost () {
+export default function FullscreenPost () {
     const { user, socket } = useContext(AuthContext);
-    const { setPosts, fullPosts, setFullPosts } = useOutletContext();
+    const { setPosts, fullPosts, setFullPosts, setProfiles } = useOutletContext();
     const { postId }  = useParams()
     const [loading, setLoading] = useState(false)
     const [loadingError, setLoadingError] = useState(false)
@@ -25,6 +25,20 @@ const FullscreenPost = memo(function FullscreenPost () {
             try {
                 socket.current.emit('post like', postId, (like) => {
                     setFullPosts(prev => ({...prev, [postId]: {...prev[postId], likes: [like, ...prev[postId].likes], isLiked: true}}))
+                    setPosts(prev => {
+                        if(!prev[postId]) {
+                            return prev;
+                        }
+                        return {...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, likes: prev[postId]._count.likes + 1}, isLiked: true}
+                    }})
+                    setProfiles(prev => {
+                        const profile = prev[post.authorId];
+                        if(!profile) return prev
+                        const posts = profile.posts.slice();
+                        const index = posts.findIndex(post => post.id === postId);
+                        posts[index] = {...posts[index], isLiked: true, _count: {...posts[index]._count, likes: posts[index]._count.likes + 1}}
+                        return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
+                    })
                 })
             } catch(err) {
                 console.log(err)
@@ -41,6 +55,20 @@ const FullscreenPost = memo(function FullscreenPost () {
                                 return {...prev, [postId]: {...prev[postId], likes, isLiked: false}};
                             }
                             return prev
+                        })
+                        setPosts(prev => {
+                            if(!prev[postId]) {
+                                return prev;
+                            }
+                            return {...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, likes: prev[postId]._count.likes - 1} , isLiked: false}
+                        }})
+                        setProfiles(prev => {
+                            const profile = prev[post.authorId];
+                            if(!profile) return prev;
+                            const posts = profile.posts.slice();
+                            const index = posts.findIndex(post => post.id === postId);
+                            posts[index] = {...posts[index], isLiked: false, _count: {...posts[index]._count, likes: posts[index]._count.likes - 1}}
+                            return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
                         })
                     }
                 })
@@ -72,6 +100,19 @@ const FullscreenPost = memo(function FullscreenPost () {
                     const fullPosts = {...prev};
                     delete fullPosts[post.id]
                     return fullPosts
+                })
+                setPosts(prev => {
+                    const posts = {...prev};
+                    delete posts[post.id]
+                    return posts
+                })
+                setProfiles(prev => {
+                    const profile = prev[post.authorId];
+                    if(!profile) return prev;
+                    const posts = profile.posts.slice();
+                    const index = posts.findIndex(post2 => post2.id === post.id);
+                    posts.splice(index, 1)
+                    return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
                 })
                 setPostDeleted(true)
                 setLoadingError(false)
@@ -243,6 +284,14 @@ const FullscreenPost = memo(function FullscreenPost () {
                 })
                 }
                 setPosts(prev => ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments - 1} , isLiked: true}}))
+                setProfiles(prev => {
+                    const profile = prev[post.authorId];
+                    if(!profile) return prev
+                    const posts = profile.posts.slice();
+                    const index = posts.findIndex(post => post.id === +postId);
+                    posts[index] = {...posts[index], isLiked: true, _count: {...posts[index]._count, comments: posts[index]._count.comments - 1}}
+                    return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
+                })
                 setLoadingError(false)
             } catch(err) {
                 console.log(err)
@@ -317,7 +366,7 @@ const FullscreenPost = memo(function FullscreenPost () {
                         </div>
                     </div>
                 </section>
-                <AddComment postId={postId} post={post} setFullPosts={setFullPosts} setPosts={setPosts} />
+                <AddComment postId={postId} post={post} setFullPosts={setFullPosts} setPosts={setPosts} setProfiles={setProfiles} />
                 <section className={styles.commentsContainer}>
                     {post.comments.map((comment, index) => {
                         let isLast = false;
@@ -331,9 +380,9 @@ const FullscreenPost = memo(function FullscreenPost () {
         </main>
         </>
     )
-})
+}
 
-function AddComment ({post, postId, setPosts, setFullPosts}) {
+function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
     const [commentTxt, setCommentTxt] = useState('')
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false)
@@ -363,6 +412,14 @@ function AddComment ({post, postId, setPosts, setFullPosts}) {
             console.log(response);
             setFullPosts(prev => ({...prev, [postId]: {...prev[postId], comments: [response.comment, ...prev[postId].comments]}}))
             setPosts(prev => ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments + 1} , isLiked: true}}))
+            setProfiles(prev => {
+                const profile = prev[post.authorId];
+                if(!profile) return prev
+                const posts = profile.posts.slice();
+                const index = posts.findIndex(post => post.id === +postId);
+                posts[index] = {...posts[index], isLiked: true, _count: {...posts[index]._count, comments: posts[index]._count.comments + 1}}
+                return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
+            })
             setError(false)
             setCommentTxt('')
         } catch(err) {
@@ -388,11 +445,8 @@ AddComment.propTypes = {
     post: PropTypes.object.isRequired,
     setPosts: PropTypes.func.isRequired,
     setFullPosts: PropTypes.func.isRequired,
+    setProfiles: PropTypes.func.isRequired,
 }
-
-
-
-export default FullscreenPost;
 
 
 

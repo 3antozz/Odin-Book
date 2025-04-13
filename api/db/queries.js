@@ -59,7 +59,7 @@ exports.getProfile = async(userId, clientId = 0) => {
                     },
                     likes: {
                         where: {
-                            userId
+                            userId: clientId
                         }
                     },
                 },
@@ -151,6 +151,54 @@ exports.getUserNoPw = async(username) => {
                 }
             },
             sent_requests: true
+        }
+    })
+}
+
+exports.getUserFollowage = async(userId, clientId = 0, type, type2) => {
+    return await prisma.user.findUnique({
+        where: {
+            id: userId
+        },
+        omit: {
+            username: true,
+            password: true,
+            bio: true,
+            pw_set: true,
+            join_date:true
+        },
+        include: {
+            [type]: {
+                include: {
+                    [type2]: {
+                        omit: {
+                            username: true,
+                            password: true,
+                            bio: true,
+                            pw_set: true,
+                            join_date:true
+                        },
+                        include: {
+                            followers: {
+                                where: {
+                                    followerId: clientId
+                                },
+                                select: {
+                                    id: true
+                                }
+                            },
+                            received_requests: {
+                                where: {
+                                    senderId: clientId
+                                },
+                                select: {
+                                    status: true
+                                }
+                            }
+                        }
+                    },
+                }
+            },
         }
     })
 }
@@ -588,141 +636,6 @@ exports.getFollowingPosts = async(userId) => {
     })
 }
 
-// exports.getFollowingPosts = async(userId) => {
-//     return await prisma.post.findMany({
-//         where: {
-//             OR: [
-//                 {
-//                     author: {
-//                         followers: {
-//                             some: {
-//                                 followerId: userId
-//                             }
-//                         }
-//                     }
-//                 },
-//                 {
-//                     authorId: userId
-//                 }
-//             ]
-//         },
-//         include: {
-//             author: {
-//                 omit: {
-//                     password: true,
-//                     bio: true,
-//                     pw_set: true,
-//                     username: true
-//                 }
-//             },
-//             likes: {
-//                 include: {
-//                     user: {
-//                         omit: {
-//                             password: true,
-//                             bio: true,
-//                             pw_set: true,
-//                             username: true
-//                         } 
-//                     }
-//                 },
-//                 orderBy: [
-//                     {
-//                         user: {
-//                             first_name: 'asc'
-//                         }
-//                     },
-//                     {
-//                         user: {
-//                             last_name: 'asc'
-//                         },
-//                     }
-//                 ]
-//             },
-//             comments: {
-//                 include: {
-//                     author: {
-//                         omit: {
-//                             password: true,
-//                             bio: true,
-//                             pw_set: true,
-//                             username: true
-//                         }
-//                     },
-//                     likes: {
-//                         include: {
-//                             user: {
-//                                 omit: {
-//                                     password: true,
-//                                     bio: true,
-//                                     pw_set: true,
-//                                     username: true
-//                                 } 
-//                             }
-//                         },
-//                         orderBy: [
-//                             {
-//                                 user: {
-//                                     first_name: 'asc'
-//                                 }
-//                             },
-//                             {
-//                                 user: {
-//                                     last_name: 'asc'
-//                                 },
-//                             }
-//                         ]
-//                     },
-//                     comments: {
-//                         include: {
-//                             author: {
-//                                 omit: {
-//                                     password: true,
-//                                     bio: true,
-//                                     pw_set: true,
-//                                     username: true
-//                                 }
-//                             },
-//                             likes: {
-//                                 include: {
-//                                     user: {
-//                                         omit: {
-//                                             password: true,
-//                                             bio: true,
-//                                             pw_set: true,
-//                                             username: true
-//                                         } 
-//                                     }
-//                                 },
-//                                 orderBy: [
-//                                     {
-//                                         user: {
-//                                             first_name: 'asc'
-//                                         }
-//                                     },
-//                                     {
-//                                         user: {
-//                                             last_name: 'asc'
-//                                         },
-//                                     }
-//                                 ]
-//                             },
-//                         },
-//                         orderBy: {
-//                             createdAt: 'desc'
-//                         }
-//                     }
-//                 },
-//                 orderBy: {
-//                     createdAt: 'desc'
-//                 }
-//             }
-//         },
-//         orderBy: {
-//             createdAt: 'desc'
-//         }
-//     })
-// }
 
 exports.getPost = async(id) => {
     return await prisma.post.findUnique({

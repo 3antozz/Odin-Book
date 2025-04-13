@@ -1,10 +1,10 @@
 import styles from './comment.module.css'
 import { Link } from 'react-router'
 import PropTypes from 'prop-types'
-import { useContext, useState } from 'react'
+import { useContext, useState, memo } from 'react'
 import { AuthContext } from '../../contexts'
 import { Heart, MessageCircle, Trash } from 'lucide-react';
-export default function Comment ({comment, handleClick, isSub, isLast, setPosts, setCachedPosts}) {
+const Comment = memo(function Comment ({comment, handleClick, isSub, isLast, setPosts, setCachedPosts}) {
     const { user, socket } = useContext(AuthContext);
     const [commentsOpen, setCommentsOpen] = useState(false);
     const commentsNumber = comment.comments.length;
@@ -44,7 +44,7 @@ export default function Comment ({comment, handleClick, isSub, isLast, setPosts,
             {(commentsOpen && !isSub && comment.comments.length > 0) && comment.comments.map(comment2 => <Comment key={comment2.id} comment={comment2} handleClick={handleClick} isSub={true} />)}
         </section>
     )
-}
+})
 
 function AddSubComment ({comment, setPosts, setCachedPosts}) {
     const [commentTxt, setCommentTxt] = useState('')
@@ -126,3 +126,5 @@ AddSubComment.propTypes = {
     setPosts: PropTypes.func.isRequired,
     setCachedPosts: PropTypes.func.isRequired,
 }
+
+export default Comment;

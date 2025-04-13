@@ -6,12 +6,12 @@ import PropTypes from 'prop-types'
 import { AuthContext } from '../../contexts'
 export default function Index () {
     const { user, socket, socketOn } = useContext(AuthContext);
-    const { posts, setPosts, profiles, setProfiles } = useOutletContext();
+    const { posts, setPosts, profiles, setProfiles, setFullPosts } = useOutletContext();
     const postsArray = useMemo(() => Object.values(posts).reverse(), [posts])
     return (
         <main className={styles.main}>
-            <AddPost setPosts={setPosts} profiles={profiles} setProfiles={setProfiles} />
-            {postsArray.map(post => <Post key={post.id} post={post} setPosts={setPosts} />)}
+            <AddPost setPosts={setPosts} profiles={profiles} setProfiles={setProfiles} setFullPosts={setFullPosts} />
+            {postsArray.map(post => <Post key={post.id} post={post} setPosts={setPosts} setProfiles={setProfiles} setFullPosts={setFullPosts} />)}
         </main>
     )
 }
@@ -43,6 +43,7 @@ function AddPost ({setPosts, profiles, setProfiles}) {
                 const error = new Error('An error has occured, please try again later')
                 throw error;
             }
+            console.log(response)
             setPosts(prev => ({[response.post.id]: response.post, ...prev}))
             if(profiles[response.post.authorId]) {
                 setProfiles(prev => {

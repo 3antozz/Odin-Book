@@ -8,6 +8,7 @@ export default function Main () {
     const [posts, setPosts] = useState({})
     const [fullPosts, setFullPosts] = useState({})
     const [profiles, setProfiles] = useState({})
+    const [followage, setFollowage] = useState({})
     const [isFetched, setFetched] = useState(false)
     const [postsLoading, setPostsLoading] = useState(false)
     const [error, setError] = useState(false)
@@ -43,7 +44,7 @@ export default function Main () {
     return (
         <div className={styles.main}>
             <Sidebar />
-            <Outlet context={{posts, setPosts, postsLoading, error, fullPosts, setFullPosts, profiles, setProfiles}} />
+            <Outlet context={{posts, setPosts, postsLoading, error, fullPosts, setFullPosts, profiles, setProfiles, followage, setFollowage}} />
         </div>
     )
 }

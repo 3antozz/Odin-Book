@@ -11,6 +11,10 @@ router.get('/me', fns.checkAuth, asyncHandler(controller.getClient))
 
 router.get('/all', fns.checkAuth, asyncHandler(controller.getAllUsers))
 
+router.get('/:userId/following', fns.checkAuth, asyncHandler(controller.getFollowing))
+
+router.get('/:userId/followers', fns.checkAuth, asyncHandler(controller.getFollowers))
+
 router.get('/:userId', fns.checkAuth, asyncHandler(controller.getProfile))
 
 
