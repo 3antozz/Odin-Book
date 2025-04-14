@@ -6,7 +6,7 @@ import Popup from "../popup/popup"
 import { AuthContext } from '../../contexts'
 import { X, UserPlus, LoaderCircle, Search } from 'lucide-react';
 
-export default function Users ({userId, type, setType, followage, setFollowage, handleFollowage, removeFollower}) {
+export default function Users ({userId = null, type = null, setType = () => {}, followage = {}, setFollowage = () => {}, handleFollowage = () => {}, removeFollower = () => {}, likes = null, setLikes = () => {}}) {
     const { user } = useContext(AuthContext)
     const [searchValue, setSearchValue] = useState('');
     const [loading, setLoading] = useState(false)
@@ -14,12 +14,15 @@ export default function Users ({userId, type, setType, followage, setFollowage, 
     const [addingMember, setAddingMember] = useState(0);
     const [memberAdded, setMemberAdded] = useState(false);
     const [hoverId, setHoverId] = useState(null)
-    const users = followage[userId]?.[type];
+    const users = followage[userId]?.[type] || likes;
     const profile = followage[userId];
     let filteredUsers = users;
     if(searchValue && users) {
         filteredUsers = users.filter((user) => {
-            const profile = type === 'followers' ? user.follower : user.following;
+            let profile = user;
+            if(type) {
+                profile = type === 'followers' ? user.follower : user.following;
+            }
             return `${profile.first_name} ${profile.last_name}`.toLowerCase().includes(searchValue.toLowerCase()
         )});
     }
@@ -58,9 +61,14 @@ export default function Users ({userId, type, setType, followage, setFollowage, 
         return <></>
     }
     return (
-        <dialog open={type} className={styles.backdrop} id='backdrop' onClick={(e) => e.target.id === 'backdrop' && setType(null)}>
+        <dialog open={type || likes} className={styles.backdrop} id='backdrop' onClick={(e) => {
+            if(e.target.id === 'backdrop') {
+                setType(null)
+                setLikes(null)
+            }}}>
             <section className={styles.addUsers}>
-                <h2>{profile.first_name}&apos;s {type}</h2>
+                {type && <h2>{profile.first_name}&apos;s {type}</h2>}
+                {likes && <h2>Likes</h2>}
                 <>
                 <div className={styles.searchDiv}>
                     <label htmlFor="user" hidden>Search for a user</label>
@@ -69,7 +77,10 @@ export default function Users ({userId, type, setType, followage, setFollowage, 
                 </div>
                 <ul className={styles.members}>
                     {filteredUsers.map((follow) => {
-                        const member = type === 'followers' ? follow.follower : follow.following;
+                        let member = follow;
+                        if(type) {
+                            member = type === 'followers' ? follow.follower : follow.following
+                        }
                         return (
                             <li className={styles.member} key={member.id}>
                                 <div className={styles.memberButton}>
@@ -82,7 +93,9 @@ export default function Users ({userId, type, setType, followage, setFollowage, 
                         )
                     })}
                 </ul>
-                <button className={styles.close} onClick={() => setType(null)}><X size={38} color='white'/></button>
+                <button className={styles.close} onClick={() => {
+                    setType(null)
+                    setLikes(null)}}><X size={38} color='white'/></button>
                 </>
             </section>
         </dialog>
@@ -99,6 +112,8 @@ Users.propTypes = {
     followage: PropTypes.object.isRequired,
     setFollowage: PropTypes.func.isRequired,
     removeFollower: PropTypes.func.isRequired,
+    likes: PropTypes.array.isRequired,
+    setLikes: PropTypes.func.isRequired,
 }
 
 

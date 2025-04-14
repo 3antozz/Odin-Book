@@ -4,10 +4,15 @@ import PropTypes from 'prop-types'
 import { useContext, useState, memo } from 'react'
 import { AuthContext } from '../../contexts'
 import { Heart, MessageCircle, Trash } from 'lucide-react';
-const Comment = memo(function Comment ({comment, handleClick, isSub, isLast, setPosts, setCachedPosts}) {
+const Comment = memo(function Comment ({comment, handleClick, isSub, isLast, setPosts, setFullPosts, setLikes}) {
     const { user, socket } = useContext(AuthContext);
     const [commentsOpen, setCommentsOpen] = useState(false);
     const commentsNumber = comment.comments.length;
+    const showLikes = () => {
+        const users = [];
+        comment.likes.forEach(like => users.push(like.user))
+        setLikes(users);
+    }
     if(!user) {
         return;
     }
@@ -24,10 +29,10 @@ const Comment = memo(function Comment ({comment, handleClick, isSub, isLast, set
                         {comment.content}
                     </div>
                     <div className={styles.interactions}>
-                        <button className={styles.likes} onClick={handleClick} id={comment.id} data-func={comment.isLiked ? "unlike" : "like"} data-commenton={comment.commentOnId} data-postid={comment.postId}>
-                            <Heart size={35} fill={comment.isLiked ? "red" : null} color={comment.isLiked ? null : "white"} />
-                            <p style={{visibility: comment.likes.length > 0 ? 'visible' : 'hidden'}}>{comment.likes.length}</p>
-                        </button>
+                        <div className={styles.likes}>
+                            <button onClick={handleClick} id={comment.id} data-func={comment.isLiked ? "unlike" : "like"} data-commenton={comment.commentOnId} data-postid={comment.postId}><Heart size={35} fill={comment.isLiked ? "red" : null} color={comment.isLiked ? null : "white"} /></button>
+                            <button disabled={comment.likes.length === 0} onClick={(showLikes)}><p style={{visibility: comment.likes.length > 0 ? 'visible' : 'hidden'}}>{comment.likes.length}</p></button>
+                        </div>
                         {!isSub && <button className={styles.comments} onClick={() => setCommentsOpen(prev => !prev)} id={comment.id} data-func="comment" data-commenton={comment.commentOnId} data-postid={comment.postId}>
                             <MessageCircle size={35} color={commentsOpen ? 'red' : 'white'} />
                             <p style={{visibility: commentsNumber > 0 ? 'visible' : 'hidden'}}>{commentsNumber}</p>
@@ -38,15 +43,15 @@ const Comment = memo(function Comment ({comment, handleClick, isSub, isLast, set
                         </button>
                         }
                     </div>
-                    {commentsOpen && <AddSubComment comment={comment} setPosts={setPosts} setCachedPosts={setCachedPosts} />}
+                    {commentsOpen && <AddSubComment comment={comment} setPosts={setPosts} setFullPosts={setFullPosts} />}
                 </div>
             </section>
-            {(commentsOpen && !isSub && comment.comments.length > 0) && comment.comments.map(comment2 => <Comment key={comment2.id} comment={comment2} handleClick={handleClick} isSub={true} />)}
+            {(commentsOpen && !isSub && comment.comments.length > 0) && comment.comments.map(comment2 => <Comment key={comment2.id} comment={comment2} handleClick={handleClick} isSub={true} setLikes={setLikes}/>)}
         </section>
     )
 })
 
-function AddSubComment ({comment, setPosts, setCachedPosts}) {
+function AddSubComment ({comment, setPosts, setFullPosts}) {
     const [commentTxt, setCommentTxt] = useState('')
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false)
@@ -75,7 +80,7 @@ function AddSubComment ({comment, setPosts, setCachedPosts}) {
                 throw error;
             }
             console.log(response);
-            setCachedPosts(prev => {
+            setFullPosts(prev => {
                 const post = prev[postId];
                 const commentIndex = post.comments.findIndex(comment2 => comment2.id === comment.id)
                 const comments = post.comments.slice();
@@ -118,13 +123,14 @@ Comment.propTypes = {
     isSub: PropTypes.bool.isRequired,
     isLast: PropTypes.bool.isRequired,
     setPosts: PropTypes.func.isRequired,
-    setCachedPosts: PropTypes.func.isRequired,
+    setFullPosts: PropTypes.func.isRequired,
+    setLikes: PropTypes.func.isRequired,
 }
 
 AddSubComment.propTypes = {
     comment: PropTypes.object.isRequired,
     setPosts: PropTypes.func.isRequired,
-    setCachedPosts: PropTypes.func.isRequired,
+    setFullPosts: PropTypes.func.isRequired,
 }
 
 export default Comment;

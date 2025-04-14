@@ -50,10 +50,6 @@
     gap: 1rem;
 }
 
-.info > p:first-of-type {
-    font-weight: bold;
-}
-
 .info > p:last-of-type {
     color: rgb(149, 149, 149);
 }
@@ -71,27 +67,28 @@
 .interactions {
     display: flex;
     align-items: center;
+    gap: 1rem;
 }
 
-.interactions > button {
+.interactions button {
     background: none;
     border: none;
     cursor: pointer;
     color: inherit;
+    padding: 0;
     transition: transform 200ms ease;
-
 }
 
-.interactions > button svg {
+.interactions button svg {
     padding: 0.3rem;
 }
 
-.interactions > button:hover {
+.interactions button:hover {
     transform: scale(1.1);
     color: red;
 }
 
-.interactions > button:hover svg {
+.interactions button:hover svg {
     stroke: red;
     background-color: rgba(255, 0, 0, 0.25);
     border-radius: 50%;

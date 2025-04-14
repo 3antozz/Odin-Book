@@ -127,8 +127,7 @@ exports.likeComment = async(userId, commentId) => {
 }
 
 exports.removeCommentLike = async(userId, commentId) => {
-    await db.removeCommentLike(userId, commentId)
-    return true;
+    return await db.removeCommentLike(userId, commentId)
 }
 
 // exports.removeCommentLike = async(req, res) => {

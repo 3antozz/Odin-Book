@@ -859,6 +859,7 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
             userId: comment.authorId,
             type: 'Comment',
             actorId: userId,
+            postId,
             commentId,
         }
     ))
@@ -873,6 +874,7 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
             userId: comment.commentOn.authorId,
             type: 'Comment',
             actorId: userId,
+            postId,
             commentId,
         }
     })

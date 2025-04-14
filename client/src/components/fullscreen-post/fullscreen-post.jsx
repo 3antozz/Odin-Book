@@ -5,6 +5,7 @@ import { AuthContext } from '../../contexts'
 import PropTypes from 'prop-types';
 import { ArrowLeft, Heart, MessageCircle, Trash } from 'lucide-react';
 import Comment from '../comment/comment';
+import Users from '../users-list/users-list'
 
 export default function FullscreenPost () {
     const { user, socket } = useContext(AuthContext);
@@ -13,6 +14,7 @@ export default function FullscreenPost () {
     const [loading, setLoading] = useState(false)
     const [loadingError, setLoadingError] = useState(false)
     const [postDeleted, setPostDeleted] = useState(false)
+    const [likes, setLikes] = useState(null)
     const navigate = useNavigate()
     const post = useMemo(() => fullPosts[postId], [postId, fullPosts])
     const commentsNumber = useMemo(() => post && post.comments.reduce((total, current) => 
@@ -301,6 +303,11 @@ export default function FullscreenPost () {
             }
         }
     }
+    const showLikes = () => {
+        const users = [];
+        post.likes.forEach(like => users.push(like.user))
+        setLikes(users);
+    }
     useEffect(() => {
         const fetchPost = async() => {
             setLoading(true)
@@ -333,6 +340,7 @@ export default function FullscreenPost () {
     if(!post || !user) return;
     return (
         <>
+        <Users likes={likes} setLikes={setLikes} />
         <main className={styles.main}>
             <header>
                 <Link to={-1} className={styles.close}><ArrowLeft size={35} color='white'/></Link>
@@ -350,10 +358,10 @@ export default function FullscreenPost () {
                             {post.content}
                         </div>
                         <div className={styles.interactions}>
-                            <button className={styles.likes} onClick={handlePostClick} id={post.id} data-func={post.isLiked ? "unlike" : "like"}>
-                                <Heart size={35} fill={post.isLiked ? "red" : null} color={post.isLiked ? null : "white"} />
-                                <p style={{visibility: post.likes.length > 0 ? 'visible' : 'hidden'}}>{post.likes.length}</p>
-                            </button>
+                            <div className={styles.likes}>
+                                <button onClick={handlePostClick} id={post.id} data-func={post.isLiked ? "unlike" : "like"}><Heart size={35} fill={post.isLiked ? "red" : null} color={post.isLiked ? null : "white"} /></button>
+                                <button disabled={post.likes.length === 0} onClick={showLikes}><p style={{visibility: post.likes.length > 0 ? 'visible' : 'hidden'}}>{post.likes.length}</p></button>
+                            </div>
                             <button className={styles.comments} id={post.id} data-func="comment">
                                 <MessageCircle size={35} />
                                 <p style={{visibility: commentsNumber > 0 ? 'visible' : 'hidden'}}>{commentsNumber}</p>
@@ -373,7 +381,7 @@ export default function FullscreenPost () {
                         if(index === post.comments.length - 1) {
                             isLast = true;
                         }
-                        return <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setFullPosts={setFullPosts} setPosts={setPosts} isLast={isLast} />
+                        return <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setFullPosts={setFullPosts} setPosts={setPosts} isLast={isLast} setLikes={setLikes} />
                         })}
                 </section>
             </div>
