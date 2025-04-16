@@ -85,3 +85,12 @@ exports.getFollowing = async(req, res) => {
     }
     res.json({profile})
 }
+
+exports.setSeenNotifications = async(userId) => {
+    try {
+        await db.setSeenNotifications(userId);
+        return true;
+    } catch(err) {
+        console.log(err)
+    }
+}

@@ -3,7 +3,7 @@ const { cloudinary } = require('../routes/uploadConfig')
 const fns = require('../routes/fns');
 
 exports.getPost = async(req, res) => {
-    const userId = req.user.id
+    const userId = req.user?.id
     const postId = +req.params.postId;
     const post = await db.getFullPost(postId);
     if(!post) {
@@ -13,18 +13,6 @@ exports.getPost = async(req, res) => {
     }
     const date = fns.formatDate(post.createdAt)
     post.createdAt = date;
-    const formattedDates = post.comments.map(comment => {
-        const date = fns.formatDate(comment.createdAt)
-        comment.createdAt = date;
-        const formattedComments = comment.comments.map(comment => {
-            const date = fns.formatDate(comment.createdAt)
-            comment.createdAt = date;
-            return comment;
-        })
-        comment.comments = formattedComments;
-        return comment
-    })
-    post.comments = formattedDates;
     if(userId) {
         for(const like of post.likes) {
             if(like.userId === userId) {
@@ -33,6 +21,7 @@ exports.getPost = async(req, res) => {
             }
         }
         for(const comment1 of post.comments) {
+            comment1.createdAt = fns.formatDate(comment1.createdAt)
             for(const like of comment1.likes) {
                 if(like.userId === userId) {
                     comment1.isLiked = true;
@@ -40,6 +29,7 @@ exports.getPost = async(req, res) => {
                 }
             }
             for(const comment2 of comment1.comments) {
+                comment1.createdAt = fns.formatDate(comment2.createdAt)
                 for(const like of comment2.likes) {
                     if(like.userId === userId) {
                         comment2.isLiked = true;

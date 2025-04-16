@@ -15,6 +15,7 @@ const postsRouter = require('./routes/posts')
 const commentsRouter = require('./routes/comments')
 const postsController = require('./controllers/posts')
 const commentsController = require('./controllers/comments')
+const usersController = require('./controllers/users')
 
 const app = express();
 const server = createServer(app);
@@ -76,7 +77,6 @@ app.set('io', io)
 
 
 io.on('connection', (socket) => {
-  console.log(socket.handshake.query.userId)
   socket.on('join rooms', (followingIds) => {
     socket.join([`user${socket.handshake.query.userId}`, ...followingIds]);
   })
@@ -119,6 +119,16 @@ io.on('connection', (socket) => {
         const userId = +socket.handshake.query.userId;
         const like = await commentsController.removeCommentLike(userId, +commentId)
         callback(like.id)
+    } catch(err) {
+        console.log(err);
+        socket.emit('error', { message: "An error has occured" });
+    }
+  });
+  socket.on('notifications seen', async(callback) => {
+    try {
+        const userId = +socket.handshake.query.userId;
+        const status = await usersController.setSeenNotifications(userId)
+        callback(status)
     } catch(err) {
         console.log(err);
         socket.emit('error', { message: "An error has occured" });

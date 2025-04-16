@@ -120,7 +120,7 @@ exports.getAllUsers = async(userId) => {
 }
 
 exports.getUserNoPw = async(username) => {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
         where: {
             username
         },
@@ -130,15 +130,9 @@ exports.getUserNoPw = async(username) => {
         include: {
             received_requests: true,
             notifications_received: {
-                // where: {
-                //     user: {
-                //         username: {
-                //             not: {
-                //                 equals: username
-                //             }
-                //         }
-                //     }
-                // },
+                where: {
+                    seen: false
+                },
                 include: {
                     actor: {
                         select: {
@@ -150,9 +144,32 @@ exports.getUserNoPw = async(username) => {
                     }
                 }
             },
-            sent_requests: true
+            following: {
+                select: {
+                    followingId: true
+                }
+            }
         }
     })
+    const seenNotifications = await prisma.notification.findMany({
+        where: {
+            userId: user.id,
+            seen: true
+        },
+        include: {
+            actor: {
+                select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    picture_url: true
+                }
+            }
+        },
+        take: 10
+    })
+    user.notifications_received = [...user.notifications_received, ...seenNotifications]
+    return user;
 }
 
 exports.getUserFollowage = async(userId, clientId = 0, type, type2) => {
@@ -245,6 +262,23 @@ exports.getGithubUser = async(provider, subject) => {
     })
 }
 
+exports.setSeenNotifications = async(userId) => {
+    try {
+        await prisma.notification.updateMany({
+            where: {
+                userId,
+                seen: false
+            },
+            data: {
+                seen: true
+            }
+        })
+        return true;
+    } catch(err) {
+        console.log(err)
+    }
+}
+
 // Follow Requests ____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 // 
 
@@ -261,6 +295,16 @@ exports.sendRequest = async(senderId, receiverId) => {
             userId: receiverId,
             type: 'Request_received',
             actorId: senderId,
+        },
+        include: {
+            actor: {
+                select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    picture_url: true
+                }
+            }
         }
     })
     return {request, notification}
@@ -311,6 +355,16 @@ exports.acceptRequest = async(receiverId, senderId) => {
             userId: senderId,
             type: 'Request_accepted',
             actorId: receiverId,
+        },
+        include: {
+            actor: {
+                select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    picture_url: true
+                }
+            }
         }
     })
     return {request, notification}
@@ -734,6 +788,16 @@ exports.likePost = async(userId, postId) => {
             type: 'Like',
             actorId: userId,
             postId,
+        },
+        include: {
+            actor: {
+                select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    picture_url: true
+                }
+            }
         }
     })
     return {like, notification}
@@ -802,6 +866,16 @@ exports.createPostComment = async(userId, postId, content = null, picture_url = 
             type: 'Comment',
             actorId: userId,
             postId
+        },
+        include: {
+            actor: {
+                select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    picture_url: true
+                }
+            }
         }
     })
     return {comment, notification}
@@ -876,6 +950,16 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
             actorId: userId,
             postId,
             commentId,
+        },
+        include: {
+            actor: {
+                select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    picture_url: true
+                }
+            }
         }
     })
     return {comment, notification}
@@ -906,7 +990,8 @@ exports.likeComment = async(userId, commentId) => {
         include: {
             comment: {
                 select: {
-                    authorId: true
+                    authorId: true,
+                    postId: true
                 }
             },
             user: {
@@ -928,6 +1013,17 @@ exports.likeComment = async(userId, commentId) => {
             type: 'Like',
             actorId: userId,
             commentId,
+            postId: like.comment.postId
+        },
+        include: {
+            actor: {
+                select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    picture_url: true
+                }
+            }
         }
     })
     return {like, notification};

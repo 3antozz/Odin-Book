@@ -7,7 +7,7 @@ exports.sendRequest = async(req, res) => {
     const {request, notification} = await db.sendRequest(senderId, +receiverId)
     const io = req.app.get('io');
     io.to(`user${receiverId}`).emit('new request', request);
-    io.to(`user${receiverId}`).emit('notitication', notification);
+    io.to(`user${receiverId}`).emit('notification', notification);
     res.json({request})
 }
 
@@ -17,7 +17,7 @@ exports.acceptRequest = async(req, res) => {
     const {request, notification} = await db.acceptRequest(receiverId, senderId)
     const io = req.app.get('io');
     io.to(`user${senderId}`).emit('new following', {following: request[0].following});
-    io.to(`user${senderId}`).emit('notitication', notification);
+    io.to(`user${senderId}`).emit('notification', notification);
     res.json({follower: request[0].follower})
 }
 
@@ -42,16 +42,14 @@ exports.cancelRequest = async(req, res) => {
 exports.unfollow = async(req, res) => {
     const clientId = req.user.id;
     const userId  = +req.params.userId;
-    const user = await db.unfollow(clientId, userId)
-    console.log(user);
+    await db.unfollow(clientId, userId)
     res.json({done: true})
 }
 
 exports.removeFollower = async(req, res) => {
     const clientId = req.user.id;
     const userId  = +req.params.userId;
-    const user = await db.removeFollower(clientId, userId)
-    console.log(user);
+    await db.removeFollower(clientId, userId)
     const io = req.app.get('io');
     io.to(`user${userId}`).emit('removed following', +clientId);
     res.json({done: true})

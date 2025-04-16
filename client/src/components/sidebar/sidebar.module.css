@@ -3,6 +3,7 @@
     display: flex;
     top: 0;
     left: 0;
+    z-index: 9;
     justify-content: space-between;
     width: 100%;
     padding: 0.5rem 2vw;
@@ -44,6 +45,23 @@ nav > a, .logout, .login {
 
 nav > a:hover, .logout:hover, .login:hover {
     background-color: rgb(66, 65, 65);
+}
+
+.notifications > div {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.count {
+    position: absolute;
+    font-size: 1rem;
+    padding: 0 3px;
+    line-height: normal;
+    font-weight: bold;
+    background-color: #0019ff;
+    border-radius: 50%;
+    top: -8px;
+    right: -5px;
 }
 
 .post {

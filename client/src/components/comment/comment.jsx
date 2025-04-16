@@ -19,7 +19,7 @@ const Comment = memo(function Comment ({comment, handleClick, isSub, isLast, set
     return (
         <section className={styles.comment} style={{borderBottom: isSub ? null : isLast ? null : "2px solid grey"}}>
             <section className={isSub ? styles.subComment : styles.topComment}>
-            <Link to={`/profile/${comment.authorId}`}><img src={comment.author.picture_url || '/no-profile-pic.jpg'} alt={`${comment.author.first_name} ${comment.author.last_name} profile picture`} /></Link>
+            <Link to={`/profile/${comment.authorId}`}><img src={comment.author.picture_url || '/no-profile-pic.jpg'} alt={`${comment.author.first_name} ${comment.author.last_name} profile picture`} loading='lazy' /></Link>
                 <div className={styles.right}>
                     <div className={styles.info}>
                     <Link to={`/profile/${comment.authorId}`}><p>{comment.author.first_name} {comment.author.last_name}</p></Link>

@@ -77,6 +77,10 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
             }
         } else if (e.currentTarget.dataset.func === 'comment') {
             const postId = e.currentTarget.id;
+            const selection = window.getSelection();
+            if (selection && selection.toString().trim().length > 0) {
+              return;
+            }
             navigate(`/post/${postId}`)
         } else if (e.currentTarget.dataset.func === 'delete') {
             const profileId = +e.currentTarget.dataset.author;
@@ -130,7 +134,7 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
     return (
         <article className={styles.post} role="button" onClick={handlePostClick} tabIndex={0} data-func='comment' id={post.id}>
             <Link to={`/profile/${post.authorId}`}
-            onClick={(e) => e.stopPropagation()}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} /></Link>
+            onClick={(e) => e.stopPropagation()}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} loading='lazy' /></Link>
             <div className={styles.right}>
                 <div className={styles.info}>
                     <Link to={`/profile/${post.authorId}`} onClick={(e) => e.stopPropagation()

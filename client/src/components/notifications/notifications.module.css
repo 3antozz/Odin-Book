@@ -1,0 +1,59 @@
+.main {
+    max-width: 50rem;
+    margin: 0 auto;
+}
+
+.notifications {
+    padding: 0;
+    border: 2px solid grey;
+    border-radius: 10px;
+    padding: 1.5rem 0.5rem;
+}
+
+.notification {
+    display: flex;
+    padding: 0.2rem 0.5rem;
+    position: relative;
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
+    gap: 1rem;
+}
+
+.notification:hover {
+    background-color: rgb(54, 47, 44);
+}
+
+.main > ul > a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.left {
+    flex-shrink: 0;
+    align-self: flex-start;
+    position: relative;
+}
+.left img {
+    width: 3rem;
+    border-radius: 50%;
+    align-self: flex-start;
+}
+
+.left svg {
+    position: absolute;
+    border-radius: 50%;
+    padding: 4px;
+    bottom: -10px;
+    right: 0;
+}
+
+.date {
+    color: rgb(149, 149, 149);
+}
+
+.circle {
+    position: absolute;
+    right: 3%;
+    top: 50%;
+    transform: translateY(-50%);
+}

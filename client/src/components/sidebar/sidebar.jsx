@@ -1,9 +1,10 @@
 import styles from './sidebar.module.css'
 import { NavLink } from 'react-router'
 import { useContext, memo } from 'react';
+import PropTypes from 'prop-types'
 import { AuthContext } from "../../contexts"
 import { House, Bell, LogIn, User, LogOut, PencilLine } from 'lucide-react';
-const Sidebar = memo(function Sidebar () {
+const Sidebar = memo(function Sidebar ({notifsCount}) {
     const { user, logout } = useContext(AuthContext);
     return (
         <aside className={styles.sidebar}>
@@ -13,8 +14,14 @@ const Sidebar = memo(function Sidebar () {
                     <House size={30} />
                     <p>Home</p>
                 </NavLink>
-                {user &&<NavLink to='/notifications'>
-                    <Bell size={30} />
+                {user &&
+                <NavLink to='/notifications' className={styles.notifications}>
+                    <div>
+                        <Bell size={30} />
+                        {notifsCount > 0 && 
+                        <p className={styles.count}>{notifsCount}</p>
+                        }
+                    </div>
                     <p>Notifications</p>
                 </NavLink>}
                 {user && 
@@ -40,5 +47,9 @@ const Sidebar = memo(function Sidebar () {
         </aside>
     )
 })
+
+Sidebar.propTypes = {
+    notifsCount: PropTypes.number.isRequired,
+}
 
 export default Sidebar;
