@@ -27,7 +27,7 @@ export default function Main () {
             socket.current.emit('join rooms', followingIds)
             setConnectedToRooms(true)
         }
-        if(socketOn && user.following.length > 0 && !connectedToRooms) {
+        if(socketOn && !connectedToRooms) {
             connectToRooms();
         }
     }, [socket, socketOn, connectedToRooms, setConnectedToRooms, user])
@@ -39,20 +39,97 @@ export default function Main () {
         }
     }, [user, notifications])
     useEffect(() => {
+        if(!socketOn) return;
         const addNotification = (notification) => {
-            console.log(notification);
             setNotifications(prev => ({...prev, [notification.id]: notification}))
         }
-        if(socketOn){
-            socket.current.on('notification', addNotification)
+        const addRequest = (senderId) => {
+            setProfiles(prev => {
+                const isFetched = prev[senderId];
+                if(!isFetched) return prev;
+                return {...prev, [senderId]: {...prev[senderId], hasRequested: true}}})
         }
+        const removeReceivedRequest = (senderId) => {
+            setProfiles(prev => {
+                const isFetched = prev[senderId];
+                if(!isFetched) return prev;
+                return {...prev, [senderId]: {...prev[senderId], hasRequested: false}}})
+        }
+        const removeRequest = (senderId) => {
+            setProfiles(prev => {
+                const isFetched = prev[senderId];
+                if(!isFetched) return prev;
+                return {...prev, [senderId]: {...prev[senderId], isPending: false}}})
+        }
+        const addFollowing = (userId) => {
+            setProfiles(prev => {
+                const currentUser = prev[user.id]
+                const otherUser = prev[userId];
+                const copy = {...prev}
+                if(otherUser) {
+                    copy[userId] = {...prev[userId],_count: {...prev[userId]._count, followers: prev[userId]._count.followers + 1}, isPending: false, isFollowed: true}
+                }
+                if(currentUser) {
+                    copy[user.id] = {...prev[userId],_count: {...prev[userId]._count, following: prev[userId]._count.following + 1}}
+                }
+                return copy
+            })
+            setFollowage(prev => {
+                const copy = {...prev}
+                if(prev[userId]?.followers) {
+                    const {followers, ...rest} = copy[userId];
+                    copy[userId] = rest;
+                }
+                if(prev[user.id]?.following) {
+                    const {following, ...rest} = copy[user.id];
+                    copy[user.id] = rest;
+                }
+                return copy;
+            })
+        }
+        const removeFollower = (userId) => {
+            setProfiles(prev => {
+                const currentUser = prev[user.id]
+                const otherUser = prev[userId];
+                const copy = {...prev}
+                if(currentUser) {
+                    copy[user.id] = {...prev[user.id], _count: {...prev[user.id]._count, followers: prev[user.id]._count.followers - 1}}
+                }
+                if(otherUser) {
+                    copy[userId] =  {...prev[userId],_count: {...prev[userId]._count, following: prev[userId]._count.following - 1}}
+                }
+                return copy;
+            })
+            setFollowage(prev => {
+                const copy = {...prev}
+                if(prev[user.id]?.followers) {
+                    const {followers, ...rest} = copy[user.id];
+                    copy[user.id] =  rest;
+                }
+                if(prev[userId]?.following) {
+                    const {following, ...rest} = copy[userId];
+                    copy[userId] =  rest;
+                }
+                return copy;
+            })
+        }
+        socket.current.on('notification', addNotification)
+        socket.current.on('new request', addRequest)
+        socket.current.on('new following', addFollowing)
+        socket.current.on('unfollowed', removeFollower)
+        socket.current.on('received request canceled', removeReceivedRequest)
+        socket.current.on('request rejected', removeRequest)
+
         const listener = socket.current;
         return () => {
             if(listener) {
                 listener.off('notification');
+                listener.off('new request');
+                listener.off('new following');
+                listener.off('unfollowed');
             }
         };
-    }, [setNotifications, socket, socketOn])
+    }, [socket, socketOn, user])
     useEffect(() => {
         const fetchPosts = async() => {
             setPostsLoading(true)

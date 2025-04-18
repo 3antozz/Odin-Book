@@ -419,14 +419,18 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
             }
             console.log(response);
             setFullPosts(prev => ({...prev, [postId]: {...prev[postId], comments: [response.comment, ...prev[postId].comments]}}))
-            setPosts(prev => ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments + 1} , isLiked: true}}))
+            setPosts(prev => {
+                const post = prev[postId];
+                if(!post) return prev;
+                return {...prev, [postId]: {...post, _count: {...post._count, comments: post._count.comments + 1} , isLiked: true}}
+            })
             setProfiles(prev => {
                 const profile = prev[post.authorId];
                 if(!profile) return prev
                 const posts = profile.posts.slice();
                 const index = posts.findIndex(post => post.id === +postId);
                 posts[index] = {...posts[index], isLiked: true, _count: {...posts[index]._count, comments: posts[index]._count.comments + 1}}
-                return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
+                return {...prev, [post.authorId]: {...profile, posts}}
             })
             setError(false)
             setCommentTxt('')
