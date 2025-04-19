@@ -48,8 +48,8 @@ export default function FullscreenPost () {
         } else if (e.currentTarget.dataset.func === 'unlike') {
             const postId = +e.currentTarget.id;
             try {
-                socket.current.emit('post unlike', postId, (status) => {
-                    if(status === true) {
+                socket.current.emit('post unlike', postId, (like) => {
+                    if(like) {
                         setFullPosts(prev => {
                             const index = prev[postId].likes.findIndex(like => like.userId === user.id)
                             if(index > -1) {
@@ -184,13 +184,13 @@ export default function FullscreenPost () {
             const postId = +e.currentTarget.dataset.postid;
             const commentOn = +e.currentTarget.dataset.commenton;
             try {
-                socket.current.emit('comment unlike', commentId, (likeId) => {
+                socket.current.emit('comment unlike', commentId, (like) => {
                     if(!commentOn) {
                         setFullPosts(prev => {
                             const post = prev[postId];
                             const commentIndex = post.comments.findIndex(comment => comment.id === commentId)
                             const comments = post.comments.slice();
-                            const likeIndex = comments[commentIndex].likes.findIndex(like => like.id === likeId)
+                            const likeIndex = comments[commentIndex].likes.findIndex(like2 => like2.id === like.id)
                             comments[commentIndex] = {
                                 ...comments[commentIndex],
                                 likes: comments[commentIndex].likes.toSpliced(likeIndex, 1),
@@ -210,7 +210,7 @@ export default function FullscreenPost () {
                             const comments = post.comments.slice();
                             const subComments = comments[commentIndex].comments.slice();
                             const subCommentIndex = subComments.findIndex(comment => comment.id === commentId)
-                            const likeIndex = subComments[subCommentIndex].likes.findIndex(like => like.id === likeId)
+                            const likeIndex = subComments[subCommentIndex].likes.findIndex(like2 => like2.id === like.id)
                             subComments[subCommentIndex] = {
                                 ...subComments[subCommentIndex],
                                 likes: subComments[subCommentIndex].likes.toSpliced(likeIndex, 1),

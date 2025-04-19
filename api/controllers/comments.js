@@ -5,13 +5,17 @@ const fns = require('../routes/fns');
 exports.createPostTextComment = async(req, res) => {
     const userId = req.user.id;
     const postId = +req.params.postId;
-    const { content, authorId } = req.body;
+    const { content, postAuthorId } = req.body;
     const { comment, notification } = await db.createPostComment(userId, postId, content);
     const date = fns.formatDate(comment.createdAt)
     comment.createdAt = date;
     const io = req.app.get('io');
-    io.to(`user${authorId}`).emit('new post comment', comment);
-    io.to(`user${authorId}`).emit('notification', notification);
+    if(comment.authorId !== postAuthorId) {
+        io.to(`user${postAuthorId}`).emit('new post comment', comment);
+    }
+    if(notification) {
+        io.to(`user${postAuthorId}`).emit('notification', notification);
+    }
     res.json({comment})
 }
 

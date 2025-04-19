@@ -134,8 +134,7 @@ exports.likePost = async(userId, postId) => {
 }
 
 exports.removePostLike = async(userId, postId) => {
-    await db.removePostLike(userId, postId)
-    return true;
+    return await db.removePostLike(userId, postId)
 }
 
 // exports.removePostLike = async(req, res) => {

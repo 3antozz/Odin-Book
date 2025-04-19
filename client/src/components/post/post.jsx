@@ -44,8 +44,8 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
             const postId = +e.currentTarget.id;
             const profileId = +e.currentTarget.dataset.author;
             try {
-                socket.current.emit('post unlike', postId, (status) => {
-                    if(status === true) {
+                socket.current.emit('post unlike', postId, (like) => {
+                    if(like) {
                         setPosts(prev => {
                             if(!prev[postId]) {
                                 return prev;

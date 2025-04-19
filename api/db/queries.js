@@ -807,6 +807,13 @@ exports.removePostLike = async(userId, postId) => {
     return await prisma.like.delete({
         where: {
             userId_postId: {userId, postId}
+        },
+        include: {
+            post: {
+                select: {
+                    authorId: true
+                }
+            },
         }
     })
 }
@@ -990,8 +997,10 @@ exports.likeComment = async(userId, commentId) => {
         include: {
             comment: {
                 select: {
+                    id: true,
                     authorId: true,
-                    postId: true
+                    postId: true,
+                    commentOnId: true,
                 }
             },
             user: {
@@ -1033,6 +1042,16 @@ exports.removeCommentLike = async(userId, commentId) => {
     return await prisma.like.delete({
         where: {
             userId_commentId: {userId, commentId}
+        },
+        include: {
+            comment: {
+                select: {
+                    id: true,
+                    authorId: true,
+                    postId: true,
+                    commentOnId: true,
+                }
+            },
         }
     })
 }

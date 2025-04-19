@@ -85,8 +85,12 @@ io.on('connection', (socket) => {
         const userId = +socket.handshake.query.userId;
         const {like, notification} = await postsController.likePost(userId, +postId)
         callback(like)
-        io.to(`user${like.post.authorId}`).emit('new like', like);
-        io.to(`user${like.post.authorId}`).emit('notification', notification);
+        if(userId !== like.post.authorId) {
+          io.to(`user${like.post.authorId}`).emit('post like', like);
+        }
+        if(notification) {
+          io.to(`user${like.post.authorId}`).emit('notification', notification);
+        }
     } catch(err) {
         console.log(err);
         socket.emit('error', { message: "An error has occured" });
@@ -95,8 +99,11 @@ io.on('connection', (socket) => {
   socket.on('post unlike', async(postId, callback) => {
     try {
         const userId = +socket.handshake.query.userId;
-        const response = await postsController.removePostLike(userId, +postId)
-        callback(response)
+        const like = await postsController.removePostLike(userId, +postId)
+        callback(like)
+        if(userId !== like.post.authorId) {
+          io.to(`user${like.post.authorId}`).emit('post unlike', like);
+        }
     } catch(err) {
         console.log(err);
         socket.emit('error', { message: "An error has occured" });
@@ -107,8 +114,12 @@ io.on('connection', (socket) => {
         const userId = +socket.handshake.query.userId;
         const {like, notification} = await commentsController.likeComment(userId, +commentId)
         callback(like)
-        io.to(`user${like.comment.authorId}`).emit('new like', like);
-        io.to(`user${like.comment.authorId}`).emit('notification', notification);
+        if(userId !== like.comment.authorId) {
+          io.to(`user${like.comment.authorId}`).emit('comment like', like);
+        }
+        if(notification) {
+          io.to(`user${like.comment.authorId}`).emit('notification', notification);
+        }
     } catch(err) {
         console.log(err);
         socket.emit('error', { message: "An error has occured" });
@@ -118,7 +129,10 @@ io.on('connection', (socket) => {
     try {
         const userId = +socket.handshake.query.userId;
         const like = await commentsController.removeCommentLike(userId, +commentId)
-        callback(like.id)
+        callback(like)
+        if(userId !== like.comment.authorId) {
+          io.to(`user${like.comment.authorId}`).emit('comment unlike', like);
+        }
     } catch(err) {
         console.log(err);
         socket.emit('error', { message: "An error has occured" });
