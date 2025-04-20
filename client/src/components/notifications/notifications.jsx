@@ -79,7 +79,11 @@ const Notification = ({notification}) => {
                 </p>}
                 {(notification.type === 'Comment' && notification.commentId) && 
                 <p>
-                    <em>{notification.actor.first_name} {notification.actor.last_name}</em> commented on a post you commented on.
+                    <em>{notification.actor.first_name} {notification.actor.last_name}</em> replied to a comment you commented on.
+                </p>}
+                {(notification.type === 'Comment_Reply') && 
+                <p>
+                    <em>{notification.actor.first_name} {notification.actor.last_name}</em> replied to your comment.
                 </p>}
                 <p className={styles.date}>{formatDate(notification.createdAt)}</p>
             </div>

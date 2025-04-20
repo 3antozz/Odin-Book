@@ -43,6 +43,7 @@
 
 .info {
     padding: 2rem;
+    padding-bottom: 1rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;

@@ -135,6 +135,7 @@ enum Type {
   Request_received
   Request_accepted
   Comment
+  Comment_Reply
 }
 
 enum Status {

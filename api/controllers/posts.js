@@ -29,7 +29,7 @@ exports.getPost = async(req, res) => {
                 }
             }
             for(const comment2 of comment1.comments) {
-                comment1.createdAt = fns.formatDate(comment2.createdAt)
+                comment2.createdAt = fns.formatDate(comment2.createdAt)
                 for(const like of comment2.likes) {
                     if(like.userId === userId) {
                         comment2.isLiked = true;
@@ -68,7 +68,7 @@ exports.createTextPost = async(req, res) => {
     const date = fns.formatDate(post.createdAt)
     post.createdAt = date;
     const io = req.app.get('io');
-    io.emit('new post', post);
+    io.to(`following${userId}`).emit('new post', post);
     res.json({post});
 }
 
@@ -87,6 +87,8 @@ exports.deletePost = async(req, res) => {
         throw error;
     }
     await db.removePost(post.id);
+    const io = req.app.get('io');
+    io.to(`following${userId}`).emit('remove post', post);
     res.json({done: true})
     if(post.public_id) {
         cloudinary.uploader.destroy(post.public_id, (result) => console.log(result))
@@ -113,8 +115,10 @@ exports.createImagePost = async(req, res) => {
         }).end(req.file.buffer);
     });
     const post = await db.createPost(userId, content, uploadResult.secure_url, uploadResult.public_id)
+    const date = fns.formatDate(post.createdAt)
+    post.createdAt = date;
     const io = req.app.get('io');
-    io.emit('new post', post);
+    io.to(`following${userId}`).emit('new post', post);
     res.json({post});
 }
 

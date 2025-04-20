@@ -37,7 +37,7 @@ const Comment = memo(function Comment ({comment, handleClick, isSub, isLast, set
                             <MessageCircle size={35} color={commentsOpen ? 'red' : 'white'} />
                             <p style={{visibility: commentsNumber > 0 ? 'visible' : 'hidden'}}>{commentsNumber}</p>
                         </button>}
-                        {comment.authorId === user.id &&
+                        {(comment.authorId === user.id || comment.post.authorId === user.id) &&
                         <button className={styles.delete} onClick={handleClick} id={comment.id} data-func="delete" data-commenton={comment.commentOnId} data-postid={comment.postId}>
                             <Trash size={35} />
                         </button>
@@ -95,7 +95,7 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
                       },
                 }
             })
-            setPosts(prev => ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments + 1} , isLiked: true}}))
+            setPosts(prev => prev[postId] ? ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments + 1}}}) : prev)
             setError(false)
             setCommentTxt('')
         } catch(err) {

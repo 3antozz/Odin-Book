@@ -93,11 +93,6 @@ export default function FullscreenPost () {
                 }
                 const response = await request.json();
                 console.log(response)
-                setPosts(prev => {
-                    const fullPosts = {...prev};
-                    delete fullPosts[post.id]
-                    return fullPosts
-                })
                 setFullPosts(prev => {
                     const fullPosts = {...prev};
                     delete fullPosts[post.id]
@@ -285,13 +280,13 @@ export default function FullscreenPost () {
                         }
                 })
                 }
-                setPosts(prev => ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments - 1} , isLiked: true}}))
+                setPosts(prev => prev[postId] ? ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments - 1}}}) : null)
                 setProfiles(prev => {
                     const profile = prev[post.authorId];
                     if(!profile) return prev
                     const posts = profile.posts.slice();
                     const index = posts.findIndex(post => post.id === +postId);
-                    posts[index] = {...posts[index], isLiked: true, _count: {...posts[index]._count, comments: posts[index]._count.comments - 1}}
+                    posts[index] = {...posts[index], _count: {...posts[index]._count, comments: posts[index]._count.comments - 1}}
                     return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
                 })
                 setLoadingError(false)
@@ -422,14 +417,14 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
             setPosts(prev => {
                 const post = prev[postId];
                 if(!post) return prev;
-                return {...prev, [postId]: {...post, _count: {...post._count, comments: post._count.comments + 1} , isLiked: true}}
+                return {...prev, [postId]: {...post, _count: {...post._count, comments: post._count.comments + 1}}}
             })
             setProfiles(prev => {
                 const profile = prev[post.authorId];
                 if(!profile) return prev
                 const posts = profile.posts.slice();
                 const index = posts.findIndex(post => post.id === +postId);
-                posts[index] = {...posts[index], isLiked: true, _count: {...posts[index]._count, comments: posts[index]._count.comments + 1}}
+                posts[index] = {...posts[index], _count: {...posts[index]._count, comments: posts[index]._count.comments + 1}}
                 return {...prev, [post.authorId]: {...profile, posts}}
             })
             setError(false)

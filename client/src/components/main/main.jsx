@@ -87,6 +87,39 @@ export default function Main () {
                 }
                 return copy;
             })
+            setFetched(false);
+            setConnectedToRooms(false)
+        }
+        const removeFollowing = (userId) => {
+            setProfiles(prev => {
+                const currentUser = prev[user.id]
+                const otherUser = prev[userId];
+                const copy = {...prev}
+                if(otherUser) {
+                    copy[userId] = {...prev[userId],_count: {...prev[userId]._count, followers: prev[userId]._count.followers - 1}, isPending: false, isFollowed: false}
+                }
+                if(currentUser) {
+                    copy[user.id] = {...prev[userId],_count: {...prev[userId]._count, following: prev[userId]._count.following - 1}}
+                }
+                return copy
+            })
+            setFollowage(prev => {
+                const copy = {...prev}
+                if(prev[userId]?.followers) {
+                    const {followers, ...rest} = copy[userId];
+                    copy[userId] = rest;
+                }
+                if(prev[user.id]?.following) {
+                    const {following, ...rest} = copy[user.id];
+                    copy[user.id] = rest;
+                }
+                return copy;
+            })
+            setPosts(prev => {
+                return Object.fromEntries(
+                    Object.entries(prev).filter(([id, post]) => post.authorId !== userId)
+                )
+            })
         }
         const removeFollower = (userId) => {
             setProfiles(prev => {
@@ -134,6 +167,36 @@ export default function Main () {
                 const index = posts.findIndex(post => post.id === like.postId);
                 posts[index] = {...posts[index], _count: {...posts[index]._count, likes: posts[index]._count.likes + 1}}
                 return {...prev, [like.post.authorId]: {...prev[like.post.authorId], posts}}
+            })
+        }
+        const addNewPost = (post) => {
+            setPosts(prev => ({...prev, [post.id]: post}))
+            setProfiles(prev => {
+                const profile = prev[post.authorId];
+                if(!profile) return prev;
+                return {...prev, [post.authorId]: {...profile, posts: [post, ...profile.posts]}}
+            })
+        }
+        const removePost = (post) => {
+            setFullPosts(prev => {
+                if(!prev[post.id]) return prev;
+                const fullPosts = {...prev};
+                delete fullPosts[post.id]
+                return fullPosts
+            })
+            setPosts(prev => {
+                if(!prev[post.id]) return prev;
+                const posts = {...prev};
+                delete posts[post.id]
+                return posts
+            })
+            setProfiles(prev => {
+                const profile = prev[post.authorId];
+                if(!profile) return prev;
+                const posts = profile.posts.slice();
+                const index = posts.findIndex(post2 => post2.id === post.id);
+                posts.splice(index, 1)
+                return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
             })
         }
         const removePostLike = (like) => {
@@ -252,26 +315,111 @@ export default function Main () {
                 })
             }
         }
+        const addComment = (comment) => {
+            const postId = comment.postId;
+            if(!comment.commentOnId) {
+                setFullPosts(prev => {
+                    const post  = prev[postId]
+                    if(!post) return prev;
+                    return {...prev, [postId]: {...prev[postId], comments: [comment, ...prev[postId].comments]}}
+                })
+            } else {
+                setFullPosts(prev => {
+                    const post = prev[postId];
+                    if(!post) return prev;
+                    const commentIndex = post.comments.findIndex(comment2 => comment2.id === comment.commentOnId)
+                    const comments = post.comments.slice();
+                    comments[commentIndex] = {
+                        ...comments[commentIndex],
+                        comments: [comment, ...comments[commentIndex].comments],
+                    };
+                    return {...prev,
+                        [postId]: {
+                            ...post,
+                            comments,
+                          },
+                    }
+                })
+            }
+            setPosts(prev => {
+                const post = prev[postId];
+                if(!post) return prev;
+                return {...prev, [postId]: {...post, _count: {...post._count, comments: post._count.comments + 1}}}
+            })
+            setProfiles(prev => {
+                const profile = prev[comment.post.authorId];
+                if(!profile) return prev
+                const posts = profile.posts.slice();
+                const index = posts.findIndex(post => post.id === +postId);
+                posts[index] = {...posts[index], _count: {...posts[index]._count, comments: posts[index]._count.comments + 1}}
+                return {...prev, [comment.post.authorId]: {...profile, posts}}
+            })
+        }
+        const deleteComment = (comment) => {
+            if(!comment.commentOnId) {
+                setFullPosts(prev => {
+                    const post = prev[comment.postId];
+                    if(!post) return prev;
+                    const commentIndex = post.comments.findIndex(comment2 => comment2.id === comment.id)
+                    const comments = post.comments.slice();
+                    comments.splice(commentIndex, 1)
+                    return {...prev,
+                        [comment.postId]: {
+                            ...post,
+                            comments,
+                          },
+                    }
+                })
+            } else {
+                setFullPosts(prev => {
+                    const post = prev[comment.postId];
+                    if(!post) return prev;
+                    const commentIndex = post.comments.findIndex(comment2 => comment2.id === comment.commentOnId)
+                    const comments = post.comments.slice();
+                    const subComments = comments[commentIndex].comments.slice();
+                    const subCommentIndex = subComments.findIndex(comment2 => comment2.id === comment.id)
+                    subComments.splice(subCommentIndex, 1)
+                    comments[commentIndex] = {
+                        ...comments[commentIndex],
+                        comments: subComments,
+                    };
+                    return {...prev,
+                        [comment.postId]: {
+                            ...post,
+                            comments,
+                        },
+                    }
+            })
+            }
+            setPosts(prev => prev[comment.postId] ? ({...prev, [comment.postId]: {...prev[comment.postId], _count: {...prev[comment.postId]._count, comments: prev[comment.postId]._count.comments - 1}}}) : prev)
+            setProfiles(prev => {
+                const profile = prev[comment.post.authorId];
+                if(!profile) return prev
+                const posts = profile.posts.slice();
+                const index = posts.findIndex(post => post.id === comment.postId);
+                posts[index] = {...posts[index], _count: {...posts[index]._count, comments: posts[index]._count.comments - 1}}
+                return {...prev, [comment.post.authorId]: {...prev[comment.post.authorId], posts}}
+            })
+        }
         listener.on('notification', addNotification);
         listener.on('new request', addRequest);
         listener.on('new following', addFollowing);
+        listener.on('removed following', removeFollowing);
         listener.on('unfollowed', removeFollower);
         listener.on('received request canceled', removeReceivedRequest);
         listener.on('request rejected', removeRequest);
+        listener.on('new post', addNewPost);
+        listener.on('remove post', removePost);
         listener.on('post like', addPostLike);
         listener.on('post unlike', removePostLike);
         listener.on('comment like', addCommentLike);
         listener.on('comment unlike', removeCommentLike);
+        listener.on('new comment', addComment);
+        listener.on('delete comment', deleteComment);
 
         return () => {
             if(listener) {
                 listener.off();
-                // listener.off('notification');
-                // listener.off('new request');
-                // listener.off('new following');
-                // listener.off('unfollowed');
-                // listener.off('received request canceled');
-                // listener.off('request rejected');
             }
         };
     }, [socket, socketOn, user])

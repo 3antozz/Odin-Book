@@ -16,7 +16,6 @@ exports.acceptRequest = async(req, res) => {
     const senderId  = +req.params.senderId;
     const {request, notification} = await db.acceptRequest(receiverId, senderId)
     const io = req.app.get('io');
-    console.log(request);
     io.to(`user${senderId}`).emit('new following', receiverId);
     io.to(`user${senderId}`).emit('notification', notification);
     res.json({follower: request[0].follower})
@@ -28,7 +27,6 @@ exports.rejectRequest = async(req, res) => {
     await db.rejectRequest(receiverId, senderId)
     const io = req.app.get('io');
     io.to(`user${senderId}`).emit('request rejected', receiverId);
-    console.log(`event sent to user${senderId}`)
     res.json({done: true})
 }
 

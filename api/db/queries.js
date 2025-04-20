@@ -166,6 +166,9 @@ exports.getUserNoPw = async(username) => {
                 }
             }
         },
+        orderBy: {
+            createdAt: 'desc'
+        },
         take: 10
     })
     user.notifications_received = [...user.notifications_received, ...seenNotifications]
@@ -455,6 +458,11 @@ exports.getFullPost = async(id) => {
                             username: true
                         }
                     },
+                    post: {
+                        select: {
+                            authorId: true
+                        }
+                    },
                     likes: {
                         include: {
                             user: {
@@ -487,6 +495,11 @@ exports.getFullPost = async(id) => {
                                     bio: true,
                                     pw_set: true,
                                     username: true
+                                }
+                            },
+                            post: {
+                                select: {
+                                    authorId: true
                                 }
                             },
                             likes: {
@@ -826,6 +839,23 @@ exports.getComment = async(id) => {
         where: {
             id
         },
+        include: {
+            post: {
+                select: {
+                    authorId: true
+                }
+            },
+            commentOn: {
+                select: {
+                    authorId: true,
+                    comments: {
+                        select: {
+                            authorId: true
+                        }
+                    }
+                }
+            }
+        }
     })
 }
 
@@ -929,31 +959,62 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
                     }
                 }
             },
+            post: {
+                select: {
+                    authorId: true
+                }
+            },
             comments: true,
             likes: true
         }
     })
+    const createdUserNotifications = {[userId]: true, [comment.post.authorId]: true};
     const notificationsData = comment.commentOn.comments
-    .filter(comment => comment.authorId !== userId)
-    .map((comment) => (
+    .filter(comment2 => {
+        if(!createdUserNotifications[comment2.authorId]) {
+            createdUserNotifications[comment2.authorId] = true;
+            return true;
+        }
+        return false;
+    })
+    .map((comment2) => (
         {
-            userId: comment.authorId,
+            userId: comment2.authorId,
             type: 'Comment',
             actorId: userId,
             postId,
             commentId,
         }
     ))
-    const notifications =  await prisma.notification.createMany({
-        data: notificationsData
+    if(comment.authorId !== comment.post.authorId) {
+        notificationsData.push({
+            userId: comment.post.authorId,
+            type: 'Comment',
+            actorId: userId,
+            postId,
+            commentId,
+        })
+    }
+    const notifications =  await prisma.notification.createManyAndReturn({
+        data: notificationsData,
+        include: {
+            actor: {
+                select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    picture_url: true
+                }
+            }
+        }
     })
     if(comment.commentOn.authorId === userId) {
-        return {comment, notification: notifications[0]}
+        return {comment, notification: notifications[0], notifications}
     }
     const notification = await prisma.notification.create({
         data: {
             userId: comment.commentOn.authorId,
-            type: 'Comment',
+            type: 'Comment_Reply',
             actorId: userId,
             postId,
             commentId,
@@ -969,7 +1030,7 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
             }
         }
     })
-    return {comment, notification}
+    return {comment, notification, notifications}
 }
 
 exports.deleteComment = async(id) => {

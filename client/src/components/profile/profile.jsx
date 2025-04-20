@@ -23,7 +23,7 @@ export default function Profile () {
                 return;
             }
             try {
-                const userId = e.target.id
+                const userId = +e.target.id
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/followage/unfollow/${userId}`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -35,6 +35,11 @@ export default function Profile () {
                 const response = await request.json();
                 console.log(response)
                 setProfiles(prev => ({...prev, [profile.id]: {...prev[profile.id], isFollowed: false, _count: {...prev[profile.id]._count, followers: prev[profile.id]._count.followers - 1}}}))
+                setPosts(prev => {
+                    return Object.fromEntries(
+                        Object.entries(prev).filter(([id, post]) => post.authorId !== userId)
+                    )
+                })
                 const isFetched = followage[profile.id]?.[type];
                 if(isFetched) {
                     setFollowage(prev => {
