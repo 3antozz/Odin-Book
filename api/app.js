@@ -178,9 +178,9 @@ app.use((error, req, res, next) => {
         });
     }
     if (error.code === 'P2025') {
-        return res.status(400).json({
+        return res.status(404).json({
             message: "Resource Not Found",
-            code: 400
+            code: 404
         });
     }
     if (error.code === 'P2002') {

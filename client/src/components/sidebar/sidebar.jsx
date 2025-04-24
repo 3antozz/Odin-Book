@@ -4,7 +4,7 @@ import { useContext, memo } from 'react';
 import PropTypes from 'prop-types'
 import { AuthContext } from "../../contexts"
 import { House, Bell, LogIn, User, LogOut, PencilLine } from 'lucide-react';
-const Sidebar = memo(function Sidebar ({notifsCount}) {
+const Sidebar = memo(function Sidebar ({notifsCount, setCreatingPost}) {
     const { user, logout } = useContext(AuthContext);
     return (
         <aside className={styles.sidebar}>
@@ -30,7 +30,7 @@ const Sidebar = memo(function Sidebar ({notifsCount}) {
                     <p>Profile</p>
                 </NavLink>}
                 {user && 
-                <button className={styles.post}>
+                <button className={styles.post} onClick={() => setCreatingPost(true)}>
                     <PencilLine size={30} />
                     <p>Post</p>
                 </button>}
@@ -50,6 +50,7 @@ const Sidebar = memo(function Sidebar ({notifsCount}) {
 
 Sidebar.propTypes = {
     notifsCount: PropTypes.number.isRequired,
+    setCreatingPost: PropTypes.func.isRequired,
 }
 
 export default Sidebar;

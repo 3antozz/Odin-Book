@@ -1,35 +1,41 @@
 .sidebar {
-    position: fixed;
+    position: sticky;
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     top: 0;
     left: 0;
+    height: 100dvh;
+    width: 250px;
     z-index: 9;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.5rem 2vw;
+    padding: 2rem 0;
+    padding-bottom: 0.5rem;
     background-color: #181818;
-    align-items: center;
 }
 
 nav {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+    width: 100%;
 }
 
 .sidebar h2 {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     padding: 0.5rem 0.7rem;
+    margin-bottom: 1rem;
 }
 nav > a, .logout, .login {
     text-decoration: none;
-    font-size: 1.2rem;
-    border-radius: 10px;
+    font-size: 1.35rem;
+    border-radius: 15px;
     color: white;
     display: flex;
     align-items: center;
     gap: 0.8rem;
     padding: 0.5rem 1rem;
+    padding-right: 1.8rem;
     background: none;
     border: none;
     cursor: pointer;
@@ -65,15 +71,17 @@ nav > a:hover, .logout:hover, .login:hover {
 }
 
 .post {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
     padding: 0.5rem 1rem;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
-    border-radius: 15px;
+    border-radius: 25px;
+    width: 90%;
     cursor: pointer;
     transition: transform 200ms ease;
+}
+
+.logout {
+    margin-top: auto;
 }
 
 .post:hover {

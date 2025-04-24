@@ -118,16 +118,17 @@ model FederatedCredential {
 }
 
 model Notification {
-  id            Int           @id @default(autoincrement())
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId        Int 
-  type          Type
-  createdAt     DateTime      @default(now())
-  postId        Int?
-  commentId     Int?
-  actor         User          @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  actorId       Int
-  seen          Boolean       @default(false)
+  id              Int           @id @default(autoincrement())
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId          Int 
+  type            Type
+  createdAt       DateTime      @default(now())
+  postId          Int?
+  postAuthorId    Int?
+  commentId       Int?
+  actor           User          @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  actorId         Int
+  seen            Boolean       @default(false)
 }
 
 enum Type {

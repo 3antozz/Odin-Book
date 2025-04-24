@@ -8,8 +8,8 @@ const Image = memo(function Image ({imageURL, setImageURL}) {
         <dialog open={imageURL} className={styles.backdrop} id='backdrop' onClick={(e) => e.target.id === 'backdrop' && setImageURL(null)}>
             <section className={styles.image}>
                 <img src={imageURL} />
-                <button className={styles.close} onClick={() => setImageURL(null)}><X size={50} color='white'/></button>
             </section>
+            <button className={styles.close} onClick={() => setImageURL(null)}><X size={35} color='white'/></button>
         </dialog>
     )
 })

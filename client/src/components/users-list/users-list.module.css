@@ -1,7 +1,7 @@
 .backdrop {
     position: fixed;
     height: 100vh;
-    width: 100vw;
+    width: 100%;
     background-color: rgba(0, 0, 0, 0.464);
     z-index: 9999999;
     align-content: center;

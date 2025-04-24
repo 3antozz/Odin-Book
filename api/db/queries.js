@@ -169,7 +169,7 @@ exports.getUserNoPw = async(username) => {
         orderBy: {
             createdAt: 'desc'
         },
-        take: 10
+        take: 20
     })
     user.notifications_received = [...user.notifications_received, ...seenNotifications]
     return user;
@@ -918,7 +918,7 @@ exports.createPostComment = async(userId, postId, content = null, picture_url = 
     return {comment, notification}
 }
 
-exports.createCommentOnComment = async(userId, postId, commentId, content = null, picture_url = null, public_id = null) => {
+exports.createCommentOnComment = async(userId, postId, postAuthorId, commentId, content = null, picture_url = null, public_id = null) => {
     const comment =  await prisma.comment.create({
         data: {
             author: {
@@ -983,6 +983,7 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
             type: 'Comment',
             actorId: userId,
             postId,
+            postAuthorId,
             commentId,
         }
     ))
@@ -992,6 +993,7 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
             type: 'Comment',
             actorId: userId,
             postId,
+            postAuthorId,
             commentId,
         })
     }
@@ -1017,6 +1019,7 @@ exports.createCommentOnComment = async(userId, postId, commentId, content = null
             type: 'Comment_Reply',
             actorId: userId,
             postId,
+            postAuthorId,
             commentId,
         },
         include: {

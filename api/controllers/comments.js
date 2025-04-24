@@ -10,7 +10,7 @@ exports.createPostTextComment = async(req, res) => {
     const date = fns.formatDate(comment.createdAt)
     comment.createdAt = date;
     const io = req.app.get('io');
-    if(comment.authorId !== postAuthorId) {
+    if(comment.authorId !== +postAuthorId) {
         io.to(`user${postAuthorId}`).emit('new comment', comment);
     }
     if(notification) {
@@ -43,7 +43,7 @@ exports.createPostImageComment = async(req, res) => {
     const date = fns.formatDate(comment.createdAt)
     comment.createdAt = date;
     const io = req.app.get('io');
-    if(comment.authorId !== postAuthorId) {
+    if(comment.authorId !== +postAuthorId) {
         io.to(`user${postAuthorId}`).emit('new comment', comment);
     }
     if(notification) {
@@ -61,9 +61,9 @@ exports.createCommentTextComment = async(req, res) => {
     let notification;
     let notifications;
     if(!existingComment.commentOnId) {
-        ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.id, content))
+        ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.post.authorId, existingComment.id, content))
     } else {
-        ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.commentOnId, content))
+        ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.post.authorId, existingComment.commentOnId, content))
     }
     comment.createdAt = fns.formatDate(comment.createdAt)
     const io = req.app.get('io');
@@ -99,9 +99,9 @@ exports.createCommentImageComment = async(req, res) => {
         }).end(req.file.buffer);
     });
     if(!existingComment.commentOnId) {
-        ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.postId, content, uploadResult.secure_url, uploadResult.public_id))
+        ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.post.authorId, existingComment.id, content, uploadResult.secure_url, uploadResult.public_id))
     } else {
-        ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.commentOnId, content, uploadResult.secure_url, uploadResult.public_i))
+        ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.post.authorId, existingComment.commentOnId, content, uploadResult.secure_url, uploadResult.public_id))
     }
     comment.createdAt = fns.formatDate(comment.createdAt)
     const io = req.app.get('io');
@@ -118,7 +118,7 @@ exports.deleteComment = async(req, res) => {
     const comment = await db.getComment(commentId);
     if(comment.authorId !== userId && comment.post.authorId !== userId) {
         const error = new Error('Unauthorized')
-        error.code = 401;
+        error.code = 403;
         throw error;
     }
     await db.deleteComment(comment.id);
@@ -130,7 +130,7 @@ exports.deleteComment = async(req, res) => {
     }
     res.json({done: true})
     if(comment.public_id) {
-        cloudinary.uploader.destroy(comment.public_id, (result) => console.log(result))
+        cloudinary.uploader.destroy(comment.public_id)
     }
 }
 

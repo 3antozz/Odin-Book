@@ -130,7 +130,7 @@ router.post('/set-password', fns.checkAuth, validatePassword, asyncHandler(async
     const { userId, first_name, last_name, password } = req.body;
     if(req.user.id !== +userId) {
         const error = new Error('Unauthorized')
-        error.code = 401;
+        error.code = 403;
         throw error;
     }
     const result = validationResult(req);

@@ -3,6 +3,7 @@ import Sidebar from '../sidebar/sidebar'
 import { Outlet } from 'react-router'
 import { useState, useEffect, useContext, useMemo, useRef } from 'react'
 import { AuthContext } from '../../contexts'
+import CreatePost from '../create-post/create-post'
 export default function Main () {
     const { user, socket, socketOn } = useContext(AuthContext);
     const [posts, setPosts] = useState({})
@@ -11,6 +12,7 @@ export default function Main () {
     const [followage, setFollowage] = useState({})
     const [notifications, setNotifications] = useState({})
     const [isFetched, setFetched] = useState(false)
+    const [creatingPost, setCreatingPost] = useState(false)
     const [postsLoading, setPostsLoading] = useState(false)
     const [connectedToRooms, setConnectedToRooms] = useState(false)
     const [error, setError] = useState(false)
@@ -454,8 +456,9 @@ export default function Main () {
     }, [isFetched, user])
     return (
         <div className={styles.main}>
-            <Sidebar notifsCount={unseenNotificationsCount} />
-            <Outlet context={{posts, setPosts, postsLoading, error, fullPosts, setFullPosts, profiles, setProfiles, followage, setFollowage, notifications, notificationsArray, setNotifications, notifsCount}} />
+            <Sidebar notifsCount={unseenNotificationsCount} setCreatingPost={setCreatingPost} />
+            {creatingPost && <CreatePost creatingPost={creatingPost} setCreatingPost={setCreatingPost} setProfiles={setProfiles} setPosts={setPosts}  />}
+            <Outlet context={{posts, setPosts, postsLoading, error, fullPosts, setFullPosts, profiles, setProfiles, followage, setFollowage, notifications, notificationsArray, setNotifications, notifsCount, setCreatingPost}} />
         </div>
     )
 }

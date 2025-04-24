@@ -8,7 +8,7 @@ exports.getPost = async(req, res) => {
     const post = await db.getFullPost(postId);
     if(!post) {
         const error = new Error('Data not found')
-        error.code = 400;
+        error.code = 404;
         throw error;
     }
     const date = fns.formatDate(post.createdAt)
@@ -64,6 +64,11 @@ exports.getFollowingPosts = async(req, res) => {
 exports.createTextPost = async(req, res) => {
     const userId = req.user.id;
     const { content } = req.body;
+    if(!content) {
+        const error = new Error('Post cannot be empty')
+        error.code = 400;
+        throw error;
+    }
     const post = await db.createPost(userId, content)
     const date = fns.formatDate(post.createdAt)
     post.createdAt = date;
@@ -78,12 +83,12 @@ exports.deletePost = async(req, res) => {
     const post = await db.getPost(postId);
     if(!post) {
         const error = new Error('Data not found')
-        error.code = 400;
+        error.code = 404;
         throw error;
     }
     if(post.authorId !== userId) {
         const error = new Error('Unauthorized')
-        error.code = 401;
+        error.code = 403;
         throw error;
     }
     await db.removePost(post.id);
@@ -91,7 +96,7 @@ exports.deletePost = async(req, res) => {
     io.to(`following${userId}`).emit('remove post', post);
     res.json({done: true})
     if(post.public_id) {
-        cloudinary.uploader.destroy(post.public_id, (result) => console.log(result))
+        cloudinary.uploader.destroy(post.public_id)
     }
 }
 

@@ -6,7 +6,7 @@ import { AuthContext } from '../../contexts'
 import Post from '../post/post'
 import Users from '../users-list/users-list'
 export default function Profile () {
-    const { user, socket } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
     const { userId }  = useParams();
     const { setPosts, profiles, setProfiles, followage, setFollowage, setFullPosts } = useOutletContext();
     const [loading, setLoading] = useState(false)
@@ -294,7 +294,7 @@ export default function Profile () {
         <main className={styles.main}>
             <header>
                 <Link to={-1} className={styles.close}><ArrowLeft size={35} color='white'/></Link>
-                <h1>{profile.first_name}&apos;s Profile</h1>
+                <h1>{profile.id === user.id ? 'My' : `${profile.first_name}'s`} Profile</h1>
             </header>
             <div className={styles.container}>
                     <section className={styles.info}>

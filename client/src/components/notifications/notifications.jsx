@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { useOutletContext, Link } from 'react-router'
 import { AuthContext } from '../../contexts'
 import { formatDate } from '../../date-format'
-import { Heart, MessageSquareMore, User, Circle } from 'lucide-react';
+import { ArrowLeft, Heart, MessageSquareMore, User, Circle } from 'lucide-react';
 export default function Notifications () {
     const { user, socket } = useContext(AuthContext);
     const { notificationsArray, setNotifications, notifsCount } = useOutletContext();
@@ -36,19 +36,22 @@ export default function Notifications () {
     }
     return (
         <main className={styles.main}>
-            <h1>Notifications</h1>
+            <header>
+                <Link to={-1} className={styles.close}><ArrowLeft size={35} color='white'/></Link>
+                <h1>Notifications</h1>
+            </header>
             <ul className={styles.notifications}>
-                {notificationsArray.map(notification => <Notification key={notification.id} notification={notification}/>)}
+                {notificationsArray.map(notification => <Notification key={notification.id} userId={user.id} notification={notification}/>)}
             </ul>
         </main>
     )
 }
 
 
-const Notification = ({notification}) => {
-    const type = (notification.type === 'Request_received' || notification.type === 'Request_accepted') ? 'request' : 'post'
+const Notification = ({notification, userId}) => {
+    const type = (notification.type === 'Request_received' || notification.type === 'Request_accepted') ? 'request' : ((notification.type === 'Like' || notification.type === 'Comment' || notification.type === 'Comment_Reply') && notification.commentId) ? 'comment' : 'post';
     return (
-        <Link className={styles.notification} style={{backgroundColor: !notification.seen ? '#2a2a2b' : null}} to={type === 'request' ? `/profile/${notification.actor.id}` : `/post/${notification.postId}`}>
+        <Link className={styles.notification} style={{backgroundColor: !notification.seen ? '#2a2a2b' : null}} to={type === 'request' ? `/profile/${notification.actor.id}` : type === 'comment' ? `/post/${notification.postId}?comment=${notification.commentId}` : `/post/${notification.postId}`}>
             <div className={styles.left}>
                 <img src={notification.actor.picture_url || '/no-profile-pic.jpg'} alt={`${notification.actor.first_name} ${notification.actor.last_name} profile picture`} loading='lazy' />
                 {(notification.type === 'Request_received' || notification.type === 'Request_accepted') ? 
@@ -77,7 +80,11 @@ const Notification = ({notification}) => {
                 <p>
                     <em>{notification.actor.first_name} {notification.actor.last_name}</em> commented on your post.
                 </p>}
-                {(notification.type === 'Comment' && notification.commentId) && 
+                {(notification.type === 'Comment' && notification.commentId && notification.postAuthorId === userId) && 
+                <p>
+                    <em>{notification.actor.first_name} {notification.actor.last_name}</em> replied to a comment on your post
+                </p>}
+                {(notification.type === 'Comment' && notification.commentId && notification.postAuthorId !== userId) && 
                 <p>
                     <em>{notification.actor.first_name} {notification.actor.last_name}</em> replied to a comment you commented on.
                 </p>}
@@ -94,4 +101,5 @@ const Notification = ({notification}) => {
 
 Notification.propTypes = {
     notification: PropTypes.object.isRequired,
+    userId: PropTypes.number.isRequired,
 }

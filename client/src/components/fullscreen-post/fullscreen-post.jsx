@@ -1,19 +1,23 @@
 import styles from './fullscreen-post.module.css'
-import {  useState, useEffect, useContext, useMemo } from 'react'
-import { useParams, Link, useOutletContext, useNavigate } from 'react-router';
+import {  useState, useEffect, useContext, useMemo, useRef } from 'react'
+import { useParams, Link, useOutletContext, useNavigate, useLocation } from 'react-router';
 import { AuthContext } from '../../contexts'
 import PropTypes from 'prop-types';
-import { ArrowLeft, Heart, MessageCircle, Trash } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Trash, LoaderCircle, Image as ImageIcon } from 'lucide-react';
 import Comment from '../comment/comment';
 import Users from '../users-list/users-list'
+import Image from '../full-image/image';
 
 export default function FullscreenPost () {
     const { user, socket } = useContext(AuthContext);
     const { setPosts, fullPosts, setFullPosts, setProfiles } = useOutletContext();
     const { postId }  = useParams()
+    const location = useLocation();
+    const commentLocation = new URLSearchParams(location.search).get('comment');
     const [loading, setLoading] = useState(false)
     const [loadingError, setLoadingError] = useState(false)
     const [postDeleted, setPostDeleted] = useState(false)
+    const [imageURL, setImageURL] = useState(null)
     const [likes, setLikes] = useState(null)
     const navigate = useNavigate()
     const post = useMemo(() => fullPosts[postId], [postId, fullPosts])
@@ -332,9 +336,15 @@ export default function FullscreenPost () {
             }
         }
     }, [postId, fullPosts, postDeleted, setFullPosts])
+    useEffect(() => {
+        setTimeout(() => {
+            commentLocation && document.querySelector(`#comment-${commentLocation}`) && document.querySelector(`#comment-${commentLocation}`).scrollIntoView({behavior: 'smooth', block: 'center'})
+        }, 500)
+    }, [commentLocation])
     if(!post || !user) return;
     return (
         <>
+        <Image imageURL={imageURL} setImageURL={setImageURL}/>
         <Users likes={likes} setLikes={setLikes} />
         <main className={styles.main}>
             <header>
@@ -350,16 +360,18 @@ export default function FullscreenPost () {
                             <p>• {post.createdAt}</p>
                         </div>
                         <div className={styles.content}>
-                            {post.content}
+                            <p>{post.content}</p>
+                            {post.picture_url && 
+                            <img src={post.picture_url} alt={post.content} loading='lazy' onClick={() => setImageURL(post.picture_url)} role='button' tabIndex={0} />}
                         </div>
                         <div className={styles.interactions}>
                             <div className={styles.likes}>
                                 <button onClick={handlePostClick} id={post.id} data-func={post.isLiked ? "unlike" : "like"}><Heart size={35} fill={post.isLiked ? "red" : null} color={post.isLiked ? null : "white"} /></button>
-                                <button disabled={post.likes.length === 0} onClick={showLikes}><p style={{visibility: post.likes.length > 0 ? 'visible' : 'hidden'}}>{post.likes.length}</p></button>
+                                <button disabled={post.likes.length === 0} onClick={showLikes}><p style={{display: post.likes.length > 0 ? 'block' : 'none'}}>{post.likes.length}</p></button>
                             </div>
                             <button className={styles.comments} id={post.id} data-func="comment">
                                 <MessageCircle size={35} />
-                                <p style={{visibility: commentsNumber > 0 ? 'visible' : 'hidden'}}>{commentsNumber}</p>
+                                <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{commentsNumber}</p>
                             </button>
                             {post.authorId === user.id &&
                             <button className={styles.delete} onClick={handlePostClick} id={post.id} data-func="delete" data-author={post.authorId}>
@@ -376,7 +388,7 @@ export default function FullscreenPost () {
                         if(index === post.comments.length - 1) {
                             isLast = true;
                         }
-                        return <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setFullPosts={setFullPosts} setPosts={setPosts} isLast={isLast} setLikes={setLikes} />
+                        return <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setFullPosts={setFullPosts} setPosts={setPosts} isLast={isLast} setLikes={setLikes} highlightedComment={commentLocation} setImageURL={setImageURL} />
                         })}
                 </section>
             </div>
@@ -386,27 +398,76 @@ export default function FullscreenPost () {
 }
 
 function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
+    const { user } = useContext(AuthContext);
     const [commentTxt, setCommentTxt] = useState('')
+    const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false)
+    const [uploadError, setUploadError] = useState(false)
+    const [isUploading, setUploading] = useState(false)
+    const [isOpen, setOpen] = useState(false)
+    const fileDivRef = useRef(null);
+    const requirement = useRef(document.querySelector('#max-size'))
+    const handleFileClick = (e) => {
+        const file = e.target.files[0];
+        if(file) {
+            setImage(e.target.files[0])
+            if(fileDivRef.current) {
+                fileDivRef.current.style.display = 'flex'
+                requirement.current.style.display = 'block'
+            }
+        } else {
+            setImage(null)
+            setUploadError(false)
+            if(fileDivRef.current) {
+                fileDivRef.current.style.display = 'none'
+                requirement.current.style.display = 'none'
+            }
+        }
+    }
+    const cancelFile = () => {
+        setImage(null);
+        setUploadError(false);
+        if(fileDivRef.current) {
+            fileDivRef.current.style.display = 'none'
+            requirement.current.style.display = 'none'
+        }
+        const input = document.querySelector('#image')
+        input.value = '';
+    }
     const createComment = async(e) => {
         e.preventDefault();
-        if(!commentTxt) {
+        if(!commentTxt && !image) {
             return;
         }
         setLoading(true)
         try {
-            const request = await fetch(`${import.meta.env.VITE_API_URL}/comments/post/${postId}/text`, {
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                method: 'POST',
-                credentials: 'include',
-                body: JSON.stringify({
-                    content: commentTxt,
-                    postAuthorId: post.authorId
+            const form = new FormData();
+            let request;
+            form.append('postAuthorId', post.authorId)
+            if(commentTxt) {
+                form.append('content', commentTxt)
+            }
+            if(image) {
+                form.append('image', image)
+                request = await fetch(`${import.meta.env.VITE_API_URL}/comments/post/${postId}/image`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: form
                 })
-            })
+            } else if(commentTxt && !image) {
+                request = await fetch(`${import.meta.env.VITE_API_URL}/comments/post/${postId}/text`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        content: commentTxt,
+                        postAuthorId: post.authorId
+                    })
+                })
+            }
             const response = await request.json();
             if(!request.ok) {
                 const error = new Error('An error has occured, please try again later')
@@ -429,6 +490,8 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
             })
             setError(false)
             setCommentTxt('')
+            setOpen(false)
+            cancelFile()
         } catch(err) {
             console.log(err)
             setError(true)
@@ -436,12 +499,27 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
             setLoading(false)
         }
     }
+    useEffect(() => setOpen(false), [])
     return (
         <section className={styles.happening}>
             <form onSubmit={createComment}>
-                <label htmlFor="post"></label>
-                <textarea placeholder="Post your reply" value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post"></textarea>
-                <button>Reply</button>
+                <div className={styles.text}>
+                    <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture`} />
+                    <label htmlFor="post"></label>
+                    <textarea placeholder="Comment on the post" value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post" onClick={() => setOpen(true)} style={{height: isOpen ? '5rem' : null}}></textarea>
+                    {!isOpen && <button type='button'>Reply</button>}
+                </div>
+                <div className={styles.fileDiv}>
+                   {isOpen && (<label htmlFor="image" disabled={isUploading} className={styles.label}>{!isUploading ? <ImageIcon color='white' size={29} /> : <LoaderCircle  size={40} color='white' className={styles.loading}/>}</label>)}
+                    <div className={styles.file} ref={fileDivRef}>
+                        <div>
+                            <input type="file" id="image" accept='image/*' onChange={handleFileClick} />
+                            <button onClick={cancelFile}><Trash color='white' size={24} /></button>
+                        </div>
+                    </div>
+                    {isOpen && <button type='submit'>Reply</button>}
+                </div>
+                {uploadError ? <p className={styles.fileError}>{uploadError}</p> : <p className={styles.requirement} id='max-size' ref={requirement}>* Max size: 5 MB</p>}
             </form>
         </section>
     )

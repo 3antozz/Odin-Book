@@ -1,80 +1,34 @@
 import styles from './index.module.css'
-import { useState, useContext, useMemo } from 'react'
+import { useContext, useMemo } from 'react'
 import { useOutletContext } from 'react-router'
 import Post from '../post/post'
 import PropTypes from 'prop-types'
 import { AuthContext } from '../../contexts'
+import { Image } from 'lucide-react';
 export default function Index () {
-    const { user, socket, socketOn } = useContext(AuthContext);
-    const { posts, setPosts, profiles, setProfiles, setFullPosts } = useOutletContext();
+    const { posts, setPosts, setProfiles, setFullPosts, setCreatingPost } = useOutletContext();
     const postsArray = useMemo(() => Object.values(posts).reverse(), [posts])
     return (
         <main className={styles.main}>
-            <AddPost setPosts={setPosts} profiles={profiles} setProfiles={setProfiles} setFullPosts={setFullPosts} />
+            <AddPost setPosts={setPosts} setProfiles={setProfiles} setCreatingPost={setCreatingPost} />
             {postsArray.map(post => <Post key={post.id} post={post} setPosts={setPosts} setProfiles={setProfiles} setFullPosts={setFullPosts} />)}
         </main>
     )
 }
 
 
-function AddPost ({setPosts, profiles, setProfiles}) {
-    const [postTxt, setPostTxt] = useState('')
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false)
-    const createPost = async(e) => {
-        e.preventDefault();
-        if(!postTxt) {
-            return;
-        }
-        setLoading(true)
-        try {
-            const request = await fetch(`${import.meta.env.VITE_API_URL}/posts/text`, {
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                method: 'POST',
-                credentials: 'include',
-                body: JSON.stringify({
-                    content: postTxt
-                })
-            })
-            const response = await request.json();
-            if(!request.ok) {
-                const error = new Error('An error has occured, please try again later')
-                throw error;
-            }
-            console.log(response)
-            setPosts(prev => ({[response.post.id]: response.post, ...prev}))
-            if(profiles[response.post.authorId]) {
-                setProfiles(prev => {
-                    const profileId = response.post.authorId;
-                    const profile = prev[profileId];
-                    const posts = [response.post, ...profile.posts];
-                    return {...prev, [profileId]: {...prev[profileId], posts}}
-                })
-            }
-            setError(false)
-            setPostTxt('')
-        } catch(err) {
-            console.log(err)
-            setError(true)
-        } finally {
-            setLoading(false)
-        }
-    }
+function AddPost ({ setCreatingPost }) {
+    const { user } = useContext(AuthContext);
+    if(!user) return;
     return (
         <section className={styles.happening}>
-            <form onSubmit={createPost}>
-                <label htmlFor="post"></label>
-                <textarea placeholder="What's happening?" value={postTxt} onChange={(e) => setPostTxt(e.target.value)} id="post"></textarea>
-                <button>Post</button>
-            </form>
+            <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture`} />
+            <button className={styles.mind} onClick={() => setCreatingPost(true)}>What&apos;s on your mind, {user.first_name}?</button>
+            <button className={styles.image} onClick={() => setCreatingPost(true)}><Image color='white' size={30} /></button>
         </section>
     )
 }
 
 AddPost.propTypes = {
-    setPosts: PropTypes.func.isRequired,
-    setProfiles: PropTypes.func.isRequired,
-    profiles: PropTypes.object.isRequired,
+    setCreatingPost: PropTypes.func.isRequired,
 }

@@ -142,16 +142,18 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
                     <p>• {post.createdAt}</p>
                 </div>
                 <div className={styles.content}>
-                    {post.content}
+                    <p>{post.content}</p>
+                    {post.picture_url && 
+                    <img src={post.picture_url} alt={post.content} loading='lazy' />}
                 </div>
                 <div className={styles.interactions}>
                     <button className={styles.likes} onClick={handlePostClick} id={post.id} data-func={post.isLiked ? "unlike" : "like"} data-author={post.authorId}>
                         <Heart size={35} fill={post.isLiked ? "red" : null} color={post.isLiked ? null : "white"} />
-                        <p style={{visibility: post._count.likes > 0 ? 'visible' : 'hidden'}}>{post._count.likes}</p>
+                        <p style={{display: post._count.likes > 0 ? 'block' : 'none'}}>{post._count.likes}</p>
                     </button>
                     <button className={styles.comments} onClick={handlePostClick} id={post.id} data-func="comment">
                         <MessageCircle size={35} />
-                        <p style={{visibility: commentsNumber > 0 ? 'visible' : 'hidden'}}>{commentsNumber}</p>
+                        <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{commentsNumber}</p>
                     </button>
                     {post.authorId === user.id &&
                         <button className={styles.delete} onClick={handlePostClick} id={post.id} data-func="delete" data-author={post.authorId}>

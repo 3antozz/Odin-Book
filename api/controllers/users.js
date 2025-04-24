@@ -11,7 +11,7 @@ exports.getProfile = async(req, res) => {
     const profile = await db.getProfile(userId, req.user?.id)
     if(!profile) {
         const error = new Error('Data not found')
-        error.code = 400;
+        error.code = 404;
         throw error;
     }
     profile.join_date = fns.formatDateWithoutTimeAndDay(profile.join_date);

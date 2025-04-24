@@ -1,9 +1,7 @@
-main {
-    margin-top: 60px !important;
-}
-
 .main {
-    padding: 2vw;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: center;
 }
 
 
