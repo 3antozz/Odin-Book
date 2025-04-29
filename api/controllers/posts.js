@@ -127,15 +127,6 @@ exports.createImagePost = async(req, res) => {
     res.json({post});
 }
 
-// exports.likePost = async(req, res) => {
-//     const userId = req.user.id;
-//     const postId = +req.params.postId;
-//     const { like, notification } = await db.likePost(userId, postId)
-//     const io = req.app.get('io');
-//     io.to(`user${like.post.authorId}`).emit('new like', postId);
-//     io.to(`user${like.post.authorId}`).emit('notification', notification);
-//     res.json({done: true})
-// }
 
 exports.likePost = async(userId, postId) => {
     const { like, notification } = await db.likePost(userId, postId)
@@ -146,9 +137,8 @@ exports.removePostLike = async(userId, postId) => {
     return await db.removePostLike(userId, postId)
 }
 
-// exports.removePostLike = async(req, res) => {
-//     const userId = req.user.id;
-//     const postId = +req.params.postId;
-//     await db.removePostLike(userId, postId)
-//     res.json({done: true})
-// }
+exports.getPopularPosts = async(req, res) => {
+    const clientId = req.user?.id || 0;
+    const posts = await db.getPopularPosts(clientId);
+    res.json({posts})
+}

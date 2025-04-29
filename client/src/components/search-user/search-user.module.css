@@ -1,0 +1,82 @@
+.searchDiv input {
+    color: inherit;
+    background-color: #232323;
+    padding: 0.5rem;
+    width: 100%;
+    margin: 0 auto;
+    margin-top: 0.5rem;
+    padding-left: 2.2rem;
+    border-radius: 15px;
+    border: 1px solid rgba(128, 128, 128, 0.465);
+}
+
+.searchDiv input::placeholder {
+    color: rgb(150, 150, 150);
+}
+
+.searchDiv {
+    position: relative;
+    display: flex;
+    margin: 0 auto;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 8px;
+    top: 28px;
+    transform: translateY(-50%);
+}
+
+.searchContainer:focus-within .result {
+    display: block;
+}
+
+.result {
+    display: none;
+    position: absolute;
+    overflow-y: auto;
+    width: 90%;
+    z-index: 999;
+    height: 200px;
+    border-radius: 10px;
+    padding: 0.5rem 0;
+    border: 1px solid grey;
+    box-shadow: rgba(255, 255, 255, 0.2) 0px 0px 15px;
+    background-color: #101218;
+}
+
+.result li {
+    list-style: none;
+}
+
+.result > p {
+    color: grey;
+    text-align: center;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    padding: 0 0.6rem;
+}
+
+.result img {
+    width: 2.8rem;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    align-self: flex-start;
+    flex-shrink: 0;
+}
+
+.member a {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.3rem;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    font-weight: bold;
+}
+
+.member a:hover {
+    background-color: rgb(30, 35, 51);
+}

@@ -4,6 +4,18 @@
     justify-content: center;
 }
 
+.right {
+    position: sticky;
+    height: 100dvh;
+    top: 0;
+    padding: 0 1rem;
+    width: 350px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
 
+.right > * {
+    margin-bottom: 2rem;
+}
 @media (max-width: 800px) {
 }

@@ -4,6 +4,7 @@
     border: 1px solid rgba(128, 128, 128, 0.465);
     border-top: none;
     padding: 0.5rem 0;
+    z-index: 99;
 }
 
 .main header {

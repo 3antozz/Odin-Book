@@ -1,7 +1,7 @@
 import styles from './profile.module.css'
 import { useState, useContext, useEffect, useMemo, useRef } from 'react'
 import { useOutletContext, useParams, Link } from 'react-router'
-import { ArrowLeft, CalendarDays } from 'lucide-react'
+import { ArrowLeft, CalendarDays, LoaderCircle } from 'lucide-react'
 import { AuthContext } from '../../contexts'
 import Post from '../post/post'
 import Users from '../users-list/users-list'
@@ -13,8 +13,25 @@ export default function Profile () {
     const [error, setError] = useState(false)
     const [type, setType] = useState(null)
     const [isHovered, setHover] = useState(false)
+    const [edit, setEdit] = useState(false);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [bio, setBio] = useState('');
+    const [image, setImage] = useState(null);
+    const [editingProfile, setEditingProfile] = useState(false)
+    const [profileError, setProfileError] = useState(null);
+    const [profileSuccess, setProfileSuccess] = useState(false)
     const profile = useMemo(() => profiles[userId], [userId, profiles])
     const prevUserId = useRef(null);
+
+    const handleEditButton = () => {
+        setEdit(prev => {
+            setFirstName(profile?.first_name);
+            setLastName(profile?.last_name);
+            setBio(profile?.bio);
+            return !prev;
+        })
+    }
     const handleFollowage = async(e) => {
         if(e.currentTarget.dataset.func === 'unfollow') {
             const name = e.target.dataset.name;
@@ -250,6 +267,96 @@ export default function Profile () {
     }
     const handleMouseEnter = () => setHover(true)
     const handleMouseLeave = () => setHover(false)
+    const handleImageInput = (e) => {
+        const file = e.target.files[0];
+        if(file) {
+            setImage(e.target.files[0])
+        }
+    }
+    const cancelFile = () => {
+        setImage(null);
+        setProfileError(null);
+        const input = document.querySelector('#picture')
+        input.value = '';
+    }
+    const editProfile = async(e) => {
+        e.preventDefault();
+        if((!firstName || !lastName) && !image) {
+            return setProfileError(['First or Last name must not be empty']);
+        }
+        if(image) {
+            setEditingProfile(true)
+            try {
+                const form = new FormData();
+                form.append('image', image)
+                form.append('first_name', firstName)
+                form.append('last_name', lastName)
+                if(bio) {
+                    form.append('bio', bio)
+                }
+                const request = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}/upload`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    body: form
+                })
+                const response = await request.json();
+                if(!request.ok) {
+                    const error = new Error(response.message || 'Invalid Request')
+                    error.errors = response.errors;
+                    throw error
+                }
+                setProfileSuccess(true);
+                setTimeout(() => setProfileSuccess(false), 3500);
+                setEdit(false);
+                cancelFile();
+                setProfiles(prev => ({...prev, [profile.id]: {...prev[profile.id], first_name: response.user.first_name, last_name: response.user.last_name, bio: response.user.bio, picture_url: response.user.picture_url}}))
+            } catch (err) {
+                if(err.errors) {
+                    setProfileError(err.errors)
+                } else {
+                    setProfileError([err.message])
+                }
+            } finally {
+                setEditingProfile(false)
+            }
+        }
+        if((firstName && lastName) && !image) {
+            setEditingProfile(true)
+            try {
+                const request = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        first_name: firstName,
+                        last_name: lastName,
+                        bio: bio
+                    })
+                })
+                const response = await request.json();
+                if(!request.ok) {
+                    const error = new Error(response.message || 'Invalid Request')
+                    error.errors = response.errors;
+                    throw error
+                }
+                setProfileSuccess(true)
+                setTimeout(() => setProfileSuccess(false), 3500)
+                setEdit(false)
+                cancelFile()
+                setProfiles(prev => ({...prev, [profile.id]: {...prev[profile.id], first_name: response.user.first_name, last_name: response.user.last_name, bio: response.user.bio}}))
+            } catch (err) {
+                if(err.errors) {
+                    setProfileError(err.errors)
+                } else {
+                    setProfileError([err.message])
+                }
+            } finally {
+                setEditingProfile(false)
+            }
+        }
+    }
     useEffect(() => {
         const fetchProfile = async() => {
             setLoading(true)
@@ -311,12 +418,33 @@ export default function Profile () {
                         <img src={profile.picture_url || '/no-profile-pic.jpg'} alt={`${profile.first_name} ${profile.last_name} profile picture`} />
                     </div>
                     <div className={styles.right}>
+                        {!edit ?
                         <div className={styles.top}>
                             <p className={styles.name}>{profile.first_name} {profile.last_name}</p>
                             {profile.id !== user.id ? <button id={profile.id} data-name={profile.first_name} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} data-func={profile.isFollowed ? 'unfollow' : profile.isPending ? 'cancel' : 'follow'} onClick={handleFollowage} style={{backgroundColor: (profile.isFollowed && isHovered) || (profile.isPending && isHovered) ? 'red' : profile.isPending || (profile.isFollowed && !isHovered) ? '#181818' : null, color: profile.isFollowed || profile.isPending ? 'inherit' : 'black'}}>{profile.isFollowed && !isHovered ? 'Following' : profile.isFollowed && isHovered ? 'Unfollow' : profile.isPending && !isHovered ? 'Pending' : profile.isPending && isHovered ? 'Cancel' : 'Follow'}</button> :
-                            <button style={{color: 'black'}}>Edit</button>}
-                        </div>
-                        <p className={styles.bio}>{profile.bio}</p>
+                            <button style={{color: 'black'}} onClick={handleEditButton}>Edit</button>}
+                        </div> :
+                        <form onSubmit={editProfile} className={styles.profileForm}>
+                            {profileError && 
+                            <ul>
+                                {profileError.map((error, index) => <li key={index}><p>✘ {error}</p></li>)}
+                            </ul>
+                            }
+                            <label htmlFor="picture" hidden>Group picture</label>
+                            <input type="file" id='picture' accept='image/*' onChange={handleImageInput} />
+                            <label htmlFor="first_name" hidden></label>
+                            <input type="text" id='first_name' value={firstName} required minLength={2} maxLength={20} placeholder='First Name' onChange={(e) => setFirstName(e.target.value)} />
+                            <label htmlFor="last_name" hidden></label>
+                            <input type="text" id='last_name' value={lastName} required minLength={2} maxLength={20}  placeholder='Last Name' onChange={(e) => setLastName(e.target.value)} />
+                            <label htmlFor="bio" hidden></label>
+                            <textarea type="text" id='bio' value={bio || ''} maxLength={300} placeholder='Bio' onChange={(e) => setBio(e.target.value)}></textarea>
+                            <div className={styles.buttons}>
+                                <button className={styles.edit} disabled={editingProfile}>{editingProfile ? <LoaderCircle  size={28} color='white' className={styles.loading}/> : 'Submit'}</button>
+                                <button type='button' className={styles.cancel} disabled={editingProfile} onClick={() => setEdit(false)}>Cancel</button>
+                            </div>
+                        </form>
+                        }
+                        {!edit && <p className={styles.bio}>{profile.bio}</p>}
                         <div className={styles.followage}>
                             <button onClick={() => setType('following')}><em>{profile._count.following}</em> Following</button>
                             <button onClick={() => setType('followers')}><em>{profile._count.followers}</em> Followers</button>

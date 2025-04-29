@@ -95,6 +95,26 @@ exports.getProfile = async(userId, clientId = 0) => {
     })
 }
 
+exports.updateProfile = async(userId, first_name = null, last_name = null, bio = '', url = null) => {
+    const data = {
+        bio
+    };
+    if(first_name) data.first_name = first_name;
+    if(last_name) data.last_name = last_name;
+    if(url) data.picture_url = url
+    return prisma.user.update({
+        where: {
+            id: userId
+        },
+        data: data,
+        omit: {
+            username: true,
+            password: true,
+            pw_set: true,
+        }
+    })
+}
+
 exports.getAllUsers = async(userId) => {
     return await prisma.user.findMany({
         where: {
@@ -280,6 +300,80 @@ exports.setSeenNotifications = async(userId) => {
     } catch(err) {
         console.log(err)
     }
+}
+
+exports.searchUsers = async(value, clientId) => {
+    const q = value.trim();
+    if (q.length < 2) {
+      return [];
+    }
+    return await prisma.user.findMany({
+        where: {
+            id: {
+                not: clientId
+            },
+            OR: [
+                {
+                    first_name: {
+                        startsWith: q,
+                        mode: 'insensitive'
+                    },
+                },
+                {
+                    last_name: {
+                        startsWith: q,
+                        mode: 'insensitive'
+                    },
+                },
+                {
+                    AND: [
+                            { first_name: { startsWith: q.split(' ')[0], mode: 'insensitive' } },
+                            { last_name:  { startsWith: q.split(' ')[1] || '', mode: 'insensitive' } },
+                    ]
+                }
+            ]
+        },
+        omit: {
+            password: true,
+            bio: true,
+            pw_set: true,
+            username: true
+        },
+        orderBy: [
+            { first_name: 'asc' },
+            { last_name: 'asc' },
+        ],
+        take: 5
+    })
+}
+
+exports.getMostFollowedUsers = async(clientId) => {
+    return await prisma.user.findMany({
+        where: {
+            id: {
+                not: clientId
+            },
+        },
+        omit: {
+            password: true,
+            bio: true,
+            pw_set: true,
+            username: true
+        },
+        orderBy: {
+            followers: {
+                _count: 'desc'
+            }
+        },
+        include: {
+            _count: {
+                select: {
+                    followers: true
+                }
+            }
+        },
+        take: 3
+    })
 }
 
 // Follow Requests ____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
@@ -828,6 +922,38 @@ exports.removePostLike = async(userId, postId) => {
                 }
             },
         }
+    })
+}
+
+exports.getPopularPosts = async(clientId) => {
+    return await prisma.post.findMany({
+        where: {
+            authorId: {
+                not: clientId
+            },
+        },
+        include: {
+            _count: {
+                select: {
+                    comments: true,
+                    likes: true
+                }
+            },
+            author: {
+                omit: {
+                    password: true,
+                    bio: true,
+                    pw_set: true,
+                    username: true
+                }
+            },
+        },
+        orderBy: {
+            likes: {
+                _count: 'desc'
+            }
+        },
+        take: 3
     })
 }
 

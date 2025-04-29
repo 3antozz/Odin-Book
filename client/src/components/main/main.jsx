@@ -4,6 +4,9 @@ import { Outlet } from 'react-router'
 import { useState, useEffect, useContext, useMemo, useRef } from 'react'
 import { AuthContext } from '../../contexts'
 import CreatePost from '../create-post/create-post'
+import SearchUser from '../search-user/search-user';
+import MostFollowed from '../most-followed/most-followed';
+import MostLiked from '../most-liked/most-liked'
 export default function Main () {
     const { user, socket, socketOn } = useContext(AuthContext);
     const [posts, setPosts] = useState({})
@@ -459,6 +462,11 @@ export default function Main () {
             <Sidebar notifsCount={unseenNotificationsCount} setCreatingPost={setCreatingPost} />
             {creatingPost && <CreatePost creatingPost={creatingPost} setCreatingPost={setCreatingPost} setProfiles={setProfiles} setPosts={setPosts}  />}
             <Outlet context={{posts, setPosts, postsLoading, error, fullPosts, setFullPosts, profiles, setProfiles, followage, setFollowage, notifications, notificationsArray, setNotifications, notifsCount, setCreatingPost}} />
+            <section className={styles.right}>
+                <SearchUser />
+                <MostLiked />
+                <MostFollowed />
+            </section>
         </div>
     )
 }

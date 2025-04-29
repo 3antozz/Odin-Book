@@ -48,22 +48,9 @@ passport.serializeUser((user, done) => {
     })
 })
 
-passport.deserializeUser(async (user, done) => {
+passport.deserializeUser((user, done) => {
     return done(null, user);
 })
-
-// passport.serializeUser((user, done) => {
-//     done(null, user.username)
-// })
-
-// passport.deserializeUser(async (username, done) => {
-//     try {
-//         const user = await db.getUser(username);
-//         done(null, user);
-//     } catch(error) {
-//         done(error)
-//     }
-// })
 
 const validateLogin = [body("username").trim().notEmpty().withMessage("Username must not be empty").bail().matches(/^[a-zA-Z0-9_]+$/). 
 withMessage("Incorrect Username").bail().isLength({min: 3, max: 20}).withMessage("Incorrect Username"),

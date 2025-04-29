@@ -1,0 +1,42 @@
+.container {
+    border-radius: 10px;
+    padding: 0.5rem;
+    display: block;
+    border: 1px solid rgba(128, 128, 128, 0.465);
+}
+
+.container h3 {
+    padding-bottom: 0.5rem;
+}
+
+.result {
+    padding: 0.5rem 0;
+}
+
+.result li {
+    list-style: none;
+}
+
+.result img {
+    width: 2.4rem;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    align-self: flex-start;
+    flex-shrink: 0;
+}
+
+.member a {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.3rem;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    font-weight: bold;
+}
+
+.member a:hover {
+    background-color: rgb(30, 35, 51);
+}
