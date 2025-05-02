@@ -2,7 +2,7 @@ import styles from './search-user.module.css'
 import { memo, useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router';
 import PropTypes from 'prop-types';
-import { X, LoaderCircle, Image, Trash, Search } from 'lucide-react';
+import { LoaderCircle, Search } from 'lucide-react';
 import { AuthContext } from '../../contexts'
 
 const SearchUser = memo(function CreatePost () {
@@ -10,14 +10,17 @@ const SearchUser = memo(function CreatePost () {
     const [cache, setCache] = useState({})
     const [value, setValue] = useState('')
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(false)
     const delay = useRef(null)
     const controller = useRef(null)
     const handleInput = (e) => {
         setValue(e.target.value)
+        setLoading(true)
         const search = e.target.value.trim();
         clearTimeout(delay.current);
         if(cache[search]) {
             setResult(cache[search])
+            setLoading(false)
             return;
         }
         delay.current = setTimeout(() => searchUser(search), 300)
@@ -25,6 +28,7 @@ const SearchUser = memo(function CreatePost () {
     const searchUser = async(query) => {
         if(query.length < 2) {
             setResult([]);
+            setLoading(false)
             return;
         }
         controller.current?.abort();
@@ -36,6 +40,9 @@ const SearchUser = memo(function CreatePost () {
                 signal: abortControl.signal,
                 credentials: 'include',
             })
+            if(request.status === 401) {
+                window.location.href = '/login';
+            }
             if(!request.ok) {
                 const error = new Error('An error has occured, please try again later')
                 throw error;
@@ -64,7 +71,15 @@ const SearchUser = memo(function CreatePost () {
                 <Search className={styles.searchIcon}/>
             </div>
             <div className={styles.result}>
-                {result.length > 0 ? result.map(user => 
+                {loading ? 
+                <div className={styles.loadingDiv}>
+                    <LoaderCircle className={styles.loading} size={30} />
+                </div> :
+                error ?
+                <div className={styles.loadingDiv}>
+                    <p>Error loading content</p>
+                </div> :
+                result.length > 0 ? result.map(user => 
                 <li className={styles.member} key={user.id}>
                     <Link to={`/profile/${user.id}`} className={styles.memberButton}>
                         <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture`}></img>

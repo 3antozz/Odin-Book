@@ -1,6 +1,5 @@
 .main {
     width: 42rem;
-    max-width: 42rem;
     border: 1px solid rgba(128, 128, 128, 0.465);
     border-top: none;
     padding: 0.5rem 0;
@@ -65,6 +64,7 @@
 
 
 .bio {
+    text-align: center;
     margin-bottom: 1rem;
     font-size: 1.07rem;
 }
@@ -231,6 +231,30 @@ input::file-selector-button {
     border-radius: 3px;
     margin-bottom: 0.4rem;
     cursor: pointer;
+}
+
+.loading {
+    animation: 800ms linear 0s infinite loading;
+    margin: auto;
+}
+
+.loadingDiv {
+    align-content: center;
+    height: 50%;
+    text-align: center;
+}
+
+.loadingDiv h1 {
+    font-size: 1.5vw;
+}
+
+@keyframes loading {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(1turn);
+    }
 }
 
 

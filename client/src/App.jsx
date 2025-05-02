@@ -17,6 +17,7 @@ function App() {
   const [user, setUser] = useState(null)
   const [isFetched, setFetched] = useState(false)
   const [isAuthenticated, setAuthentication] = useState(false)
+  const [loadingUser, setLoadingUser] = useState(true)
   const socket = useRef(null)
   const [socketOn, setSocket] = useState(false)
 
@@ -40,6 +41,7 @@ function App() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        setLoadingUser(true)
         const request = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
           credentials: 'include'
         })
@@ -55,6 +57,8 @@ function App() {
       // eslint-disable-next-line no-unused-vars
       } catch(err) {
         setFetched(false)
+      } finally {
+        setLoadingUser(false)
       }
     }
     if(!isFetched && !isAuthenticated) {
@@ -71,6 +75,7 @@ function App() {
   useEffect(() => {
     if(user && isAuthenticated && !socketOn) {
       socket.current = io(`${import.meta.env.VITE_API_URL}`, {
+      withCredentials: true,
         query: {
           userId: user.id
         }
@@ -80,7 +85,7 @@ function App() {
   }, [isAuthenticated, socketOn, user])
 
   return (
-    <AuthContext.Provider value={{user, setUser, setAuthentication, socketOn, socket, logout}}>
+    <AuthContext.Provider value={{user, setUser, loadingUser, setAuthentication, socketOn, socket, logout}}>
         <Routes>
             <Route path="/" element={< Main />}>
               <Route index element={<Index />} />

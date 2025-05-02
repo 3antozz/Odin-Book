@@ -23,11 +23,11 @@ router.get('/search', asyncHandler(controller.searchUsers))
 
 router.get('/most-followed', asyncHandler(controller.getMostFollowed))
 
-router.get('/:userId/following', fns.checkAuth, asyncHandler(controller.getFollowing))
+router.get('/:userId/following', asyncHandler(controller.getFollowing))
 
-router.get('/:userId/followers', fns.checkAuth, asyncHandler(controller.getFollowers))
+router.get('/:userId/followers', asyncHandler(controller.getFollowers))
 
-router.get('/:userId', fns.checkAuth, asyncHandler(controller.getProfile))
+router.get('/:userId', asyncHandler(controller.getProfile))
 
 router.put('/:userId/upload', fns.checkAuth, upload.single('image'), validateProfileEdit, asyncHandler(controller.editProfilePicture))
 

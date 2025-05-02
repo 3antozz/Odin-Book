@@ -36,6 +36,9 @@ export default function SetPassword () {
             })
             const response = await request.json();
             console.log(response);
+            if(request.status === 401) {
+                window.location.href = '/login';
+            }
             if(!request.ok) {
                 const error = new Error(response.message || 'Invalid Request')
                 error.errors = response.errors;

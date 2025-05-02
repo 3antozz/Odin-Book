@@ -14,7 +14,7 @@ router.post('/text', fns.checkAuth, asyncHandler(controller.createTextPost))
 
 router.post('/image', fns.checkAuth, upload.single('image'), asyncHandler(controller.createImagePost))
 
-router.get('/popular-followed', asyncHandler(controller.getPopularPosts))
+router.get('/popular', asyncHandler(controller.getPopularPosts))
 
 router.get('/:postId', asyncHandler(controller.getPost))
 

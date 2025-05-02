@@ -55,6 +55,9 @@ const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, set
                 })
             }
             const response = await request.json();
+            if(request.status === 401) {
+                window.location.href = '/login';
+            }
             if(!request.ok) {
                 const error = new Error(response.message)
                 throw error;

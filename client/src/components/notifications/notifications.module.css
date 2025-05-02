@@ -1,6 +1,5 @@
 .main {
     width: 42rem;
-    max-width: 42rem;
     border: 1px solid rgba(128, 128, 128, 0.465);
     border-top: none;
     padding: 0.5rem 0;
@@ -82,4 +81,28 @@
     right: 3%;
     top: 50%;
     transform: translateY(-50%);
+}
+
+.loading {
+    animation: 800ms linear 0s infinite loading;
+    margin: auto;
+}
+
+.loadingDiv {
+    align-content: center;
+    height: 50dvh;
+    text-align: center;
+}
+
+.loadingDiv h1 {
+    font-size: 1.5vw;
+}
+
+@keyframes loading {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(1turn);
+    }
 }

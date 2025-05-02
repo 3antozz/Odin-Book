@@ -5,12 +5,14 @@ const { validationResult } = require('express-validator');
 
 exports.getClient = async(req, res) => {
     const user = await db.getUserNoPw(req.user.username)
-    return res.send({user})
+    setTimeout(() => res.json({user}), 3000)
+    // return res.json({user})
 }
 
 exports.getProfile = async(req, res) => {
     const userId = +req.params.userId;
-    const profile = await db.getProfile(userId, req.user?.id)
+    const clientId = req.user?.id || 0;
+    const profile = await db.getProfile(userId, clientId)
     if(!profile) {
         const error = new Error('Data not found')
         error.code = 404;
@@ -25,7 +27,7 @@ exports.getProfile = async(req, res) => {
         }
         return post;
     })
-    if(req.user) {
+    if(req.user && req.user !== 0) {
         if(profile.followers.length > 0) {
             profile.isFollowed = true
         }
@@ -37,7 +39,8 @@ exports.getProfile = async(req, res) => {
         }
     }
     profile.posts = formattedPosts
-    res.json({profile})
+    setTimeout(() => res.json({profile}), 3000)
+    // res.json({profile})
 }
 
 exports.getAllUsers = async(req, res) => {
@@ -47,7 +50,7 @@ exports.getAllUsers = async(req, res) => {
 }
 
 exports.getFollowers = async(req, res) => {
-    const clientId = req.user.id;
+    const clientId = req.user?.id || 0;
     const userId = +req.params.userId;
     const profile = await db.getUserFollowage(userId, clientId, 'followers', 'follower')
     let taggedFollowers;
@@ -64,11 +67,12 @@ exports.getFollowers = async(req, res) => {
         })
         profile.followers = taggedFollowers;
     }
-    res.json({profile})
+    setTimeout(() => res.json({profile}), 3000)
+    // res.json({profile})
 }
 
 exports.getFollowing = async(req, res) => {
-    const clientId = req.user.id;
+    const clientId = req.user?.id || 0;
     const userId = +req.params.userId;
     const profile = await db.getUserFollowage(userId, clientId, 'following', 'following')
     let taggedFollowers;
@@ -85,7 +89,8 @@ exports.getFollowing = async(req, res) => {
         })
         profile.following = taggedFollowers;
     }
-    res.json({profile})
+    setTimeout(() => res.json({profile}), 3000)
+    // res.json({profile})
 }
 
 exports.setSeenNotifications = async(userId) => {
@@ -122,7 +127,7 @@ exports.editProfilePicture = async(req, res, next) => {
         }).end(req.file.buffer);
     });
     const user = await db.updateProfile(userId, first_name, last_name, bio, uploadResult.secure_url)
-    res.send({user})
+    res.json({user})
 }
 
 exports.updateProfile = async(req, res, next) => {
@@ -135,7 +140,7 @@ exports.updateProfile = async(req, res, next) => {
     const userId = +req.params.userId;
     const { first_name, last_name, bio } = req.body;
     const user = await db.updateProfile(userId, first_name, last_name, bio)
-    res.send({user})
+    res.json({user})
 }
 
 exports.searchUsers = async(req, res) => {
@@ -148,5 +153,6 @@ exports.searchUsers = async(req, res) => {
 exports.getMostFollowed = async(req, res) => {
     const clientId = req.user?.id || 0;
     const users = await db.getMostFollowedUsers(clientId);
-    res.json({users})
+    setTimeout(() => res.json({users}), 3000)
+    // res.json({users})
 }

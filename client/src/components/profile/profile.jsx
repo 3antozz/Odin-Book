@@ -1,5 +1,5 @@
 import styles from './profile.module.css'
-import { useState, useContext, useEffect, useMemo, useRef } from 'react'
+import { useState, useContext, useEffect, useMemo} from 'react'
 import { useOutletContext, useParams, Link } from 'react-router'
 import { ArrowLeft, CalendarDays, LoaderCircle } from 'lucide-react'
 import { AuthContext } from '../../contexts'
@@ -9,6 +9,7 @@ export default function Profile () {
     const { user } = useContext(AuthContext);
     const { userId }  = useParams();
     const { setPosts, profiles, setProfiles, followage, setFollowage, setFullPosts } = useOutletContext();
+    const [profileLoading, setProfileLoading] = useState(true)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
     const [type, setType] = useState(null)
@@ -22,8 +23,6 @@ export default function Profile () {
     const [profileError, setProfileError] = useState(null);
     const [profileSuccess, setProfileSuccess] = useState(false)
     const profile = useMemo(() => profiles[userId], [userId, profiles])
-    const prevUserId = useRef(null);
-
     const handleEditButton = () => {
         setEdit(prev => {
             setFirstName(profile?.first_name);
@@ -45,6 +44,9 @@ export default function Profile () {
                     method: 'DELETE',
                     credentials: 'include',
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
@@ -92,6 +94,9 @@ export default function Profile () {
                     method: 'POST',
                     credentials: 'include',
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
@@ -138,6 +143,9 @@ export default function Profile () {
                     method: 'DELETE',
                     credentials: 'include',
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
@@ -181,6 +189,9 @@ export default function Profile () {
                 method: 'POST',
                 credentials: 'include',
             })
+            if(request.status === 401) {
+                window.location.href = '/login';
+            }
             if(!request.ok) {
                 const error = new Error('An error has occured, please try again later')
                 throw error;
@@ -215,6 +226,9 @@ export default function Profile () {
                 method: 'DELETE',
                 credentials: 'include',
             })
+            if(request.status === 401) {
+                window.location.href = '/login';
+            }
             if(!request.ok) {
                 const error = new Error('An error has occured, please try again later')
                 throw error;
@@ -242,6 +256,9 @@ export default function Profile () {
                 method: 'DELETE',
                 credentials: 'include',
             })
+            if(request.status === 401) {
+                window.location.href = '/login';
+            }
             if(!request.ok) {
                 const error = new Error('An error has occured, please try again later')
                 throw error;
@@ -299,6 +316,9 @@ export default function Profile () {
                     credentials: 'include',
                     body: form
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 const response = await request.json();
                 if(!request.ok) {
                     const error = new Error(response.message || 'Invalid Request')
@@ -335,6 +355,9 @@ export default function Profile () {
                         bio: bio
                     })
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 const response = await request.json();
                 if(!request.ok) {
                     const error = new Error(response.message || 'Invalid Request')
@@ -359,15 +382,18 @@ export default function Profile () {
     }
     useEffect(() => {
         const fetchProfile = async() => {
-            setLoading(true)
+            setProfileLoading(true)
             try {
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
                     credentials: 'include'
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
-                  }
+                }
                 const response = await request.json();
                 console.log(response)
                 setProfiles((prev) => ({...prev, [response.profile.id]: response.profile}))
@@ -376,36 +402,45 @@ export default function Profile () {
                 console.log(err)
                 setError(true);
             } finally {
-                setLoading(false)
+                setProfileLoading(false)
             }
         }
         if(userId) {
             const profile = profiles[userId];
             if(!profile) {
                 fetchProfile();
-            }
-        }
-        return () => {
-            if(prevUserId.current !== userId) {
-                setType(null)
-                prevUserId.current = userId
+            } else {
+                setProfileLoading(false)
             }
         }
     }, [userId, profiles, setProfiles])
-    if(!profile || !user) {
-        return;
-    }
     return (
         <>
         <Users userId={userId} type={type} setType={setType} handleFollowage={handleFollowage} followage={followage} setFollowage={setFollowage} removeFollower={removeFollower} />
         <main className={styles.main}>
             <header>
                 <Link to={-1} className={styles.close}><ArrowLeft size={35} color='white'/></Link>
-                <h1>{profile.id === user.id ? 'My' : `${profile.first_name}'s`} Profile</h1>
+                {!profile ? 
+                <h1>Profile</h1> :
+                user ?
+                <h1>{profile.id === user.id ? 'My' : `${profile.first_name}'s`} Profile</h1> :
+                <h1>{profile.first_name}&apos;s Profile</h1>
+                }
             </header>
+            {(!profileLoading && !profile) && 
+                    <div className={styles.loadingDiv}>
+                        <p>Couldn&apos;t Load Content</p>
+                    </div>}
+            {profileLoading && 
+                    <div className={styles.loadingDiv}>
+                        <LoaderCircle className={styles.loading} size={50} />
+                        <p>This may take a while</p>
+                    </div>}
+            {(!profileLoading && profile) && 
             <div className={styles.container}>
-                    <section className={styles.info}>
-                    {profile.hasRequested && <section className={styles.request}>
+                <section className={styles.info}>
+                    {profile.hasRequested && 
+                    <section className={styles.request}>
                         <div>
                             <p><em>{profile.first_name} has requested to follow you</em></p>
                             <div className={styles.buttons}>
@@ -418,7 +453,12 @@ export default function Profile () {
                         <img src={profile.picture_url || '/no-profile-pic.jpg'} alt={`${profile.first_name} ${profile.last_name} profile picture`} />
                     </div>
                     <div className={styles.right}>
-                        {!edit ?
+                        {(!user && !edit) &&
+                        <div className={styles.top}>
+                            <p className={styles.name}>{profile.first_name} {profile.last_name}</p>
+                        </div>
+                        }
+                        {user && (!edit ?
                         <div className={styles.top}>
                             <p className={styles.name}>{profile.first_name} {profile.last_name}</p>
                             {profile.id !== user.id ? <button id={profile.id} data-name={profile.first_name} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} data-func={profile.isFollowed ? 'unfollow' : profile.isPending ? 'cancel' : 'follow'} onClick={handleFollowage} style={{backgroundColor: (profile.isFollowed && isHovered) || (profile.isPending && isHovered) ? 'red' : profile.isPending || (profile.isFollowed && !isHovered) ? '#181818' : null, color: profile.isFollowed || profile.isPending ? 'inherit' : 'black'}}>{profile.isFollowed && !isHovered ? 'Following' : profile.isFollowed && isHovered ? 'Unfollow' : profile.isPending && !isHovered ? 'Pending' : profile.isPending && isHovered ? 'Cancel' : 'Follow'}</button> :
@@ -443,7 +483,7 @@ export default function Profile () {
                                 <button type='button' className={styles.cancel} disabled={editingProfile} onClick={() => setEdit(false)}>Cancel</button>
                             </div>
                         </form>
-                        }
+                        )}
                         {!edit && <p className={styles.bio}>{profile.bio}</p>}
                         <div className={styles.followage}>
                             <button onClick={() => setType('following')}><em>{profile._count.following}</em> Following</button>
@@ -458,7 +498,7 @@ export default function Profile () {
                 </section>
                 <h2>Posts</h2>
                 {profile.posts.map(post => <Post key={post.id} post={post} setPosts={setPosts} setProfiles={setProfiles} setFullPosts={setFullPosts} />)}
-            </div>
+            </div>}
         </main>
         </>
     )

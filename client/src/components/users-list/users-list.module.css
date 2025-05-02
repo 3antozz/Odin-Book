@@ -168,6 +168,7 @@
 
 .loading {
     animation: 800ms linear 0s infinite loading;
+    margin: auto;
 }
 
 .memberButton > a {
@@ -200,6 +201,12 @@
 .removeFollower:hover {
     background-color: #d51111;
     filter: brightness(1) !important;
+}
+
+.loadingDiv {
+    align-content: center;
+    height: 50%;
+    text-align: center;
 }
 
 @keyframes loading {

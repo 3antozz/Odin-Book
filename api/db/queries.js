@@ -931,6 +931,11 @@ exports.getPopularPosts = async(clientId) => {
             authorId: {
                 not: clientId
             },
+            author: {
+                followers: {
+                    some: {followerId: clientId}
+                }
+            }
         },
         include: {
             _count: {

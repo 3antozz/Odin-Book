@@ -9,7 +9,7 @@ const Sidebar = memo(function Sidebar ({notifsCount, setCreatingPost}) {
     return (
         <aside className={styles.sidebar}>
             <h2>OdinBook</h2>
-            <nav>
+            <nav style={{marginBottom: user ? null : '0.8rem'}}>
                 <NavLink to='/'>
                     <House size={30} />
                     <p>Home</p>

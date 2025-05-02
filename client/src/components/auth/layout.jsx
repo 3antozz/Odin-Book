@@ -1,7 +1,13 @@
 import styles from './layout.module.css'
-import { Outlet } from 'react-router'
+import { useContext } from 'react'
+import { Outlet, Navigate } from 'react-router'
+import { AuthContext } from "../../contexts"
 
 export default function AuthLayout () {
+    const { user } = useContext(AuthContext)
+    if(user) {
+        return <Navigate to='/' replace />
+    }
     return (
         <div className={styles.container}>
         <section className={styles.brand}>

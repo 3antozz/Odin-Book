@@ -35,10 +35,13 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}/${type}`, {
                     credentials: 'include'
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
-                    }
+                }
                 const response = await request.json();
                 console.log(response)
                 setFollowage((prev) => ({...prev, [response.profile.id]: {...prev[response.profile.id], ...response.profile}}))
@@ -57,7 +60,7 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
             }
         }
     }, [followage, type, userId, setType, setFollowage])
-    if(!users) {
+    if(!loading && !users) {
         return <></>
     }
     return (
@@ -67,32 +70,41 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                 setLikes(null)
             }}}>
             <section className={styles.addUsers}>
-                {type && <h2>{profile.first_name}&apos;s {type}</h2>}
+                {(type && !profile) &&<h2>{type}</h2>}
+                {(type && profile) &&<h2>{profile.first_name}&apos;s {type}</h2>}
                 {likes && <h2>Likes</h2>}
                 <>
                 <div className={styles.searchDiv}>
                     <label htmlFor="user" hidden>Search for a user</label>
-                    <input type="text" id='user' value={searchValue} placeholder='Search a user' onChange={(e) => setSearchValue(e.target.value)} />
+                    <input type="text" id='user' disabled={!profile} value={searchValue} placeholder='Search a user' onChange={(e) => setSearchValue(e.target.value)} />
                     <Search className={styles.searchIcon}/>
                 </div>
+                {loading ? 
+                <div className={styles.loadingDiv}>
+                    <LoaderCircle className={styles.loading} size={50} />
+                    <p>This may take a while</p>
+                </div> :
                 <ul className={styles.members}>
-                    {filteredUsers.map((follow) => {
-                        let member = follow;
-                        if(type) {
-                            member = type === 'followers' ? follow.follower : follow.following
-                        }
-                        return (
-                            <li className={styles.member} key={member.id}>
-                                <div className={styles.memberButton}>
-                                    <Link to={`/profile/${member.id}`}><img src={member.picture_url || '/no-profile-pic.jpg'} alt={`${member.first_name} ${member.last_name} profile picture`}></img></Link>
-                                    <Link to={`/profile/${member.id}`}>{member.first_name} {member.last_name}</Link>
-                                    {(member.id !== user.id && type ==='following') && <button id={member.id} data-name={member.first_name} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} data-func={member.isFollowed ? 'unfollow' : member.isPending ? 'cancel' : 'follow'} onClick={handleFollowage} style={{backgroundColor: (member.isFollowed && hoverId === member.id) || (member.isPending && hoverId === member.id) ? '#d51111' : member.isPending || (member.isFollowed && hoverId !== member.id) ? '#181818' : null, color: member.isFollowed || member.isPending ? 'inherit' : 'black'}}>{member.isFollowed && hoverId !== member.id ? 'Following' : member.isFollowed && hoverId === member.id ? 'Unfollow' : member.isPending && hoverId !== member.id ? 'Pending' : member.isPending && hoverId === member.id ? 'Cancel' : 'Follow'}</button>}
-                                    {(member.id !== user.id && type ==='followers') && <button className={styles.removeFollower} id={member.id} onClick={removeFollower} data-name={member.first_name} data-func='remove-follower'>Remove</button>}
-                                </div>
-                            </li>
-                        )
-                    })}
-                </ul>
+                {filteredUsers.map((follow) => {
+                    let member = follow;
+                    if(type) {
+                        member = type === 'followers' ? follow.follower : follow.following
+                    }
+                    return (
+                        <li className={styles.member} key={member.id}>
+                            <div className={styles.memberButton}>
+                                <Link to={`/profile/${member.id}`} onClick={() => setType(null)}><img src={member.picture_url || '/no-profile-pic.jpg'} alt={`${member.first_name} ${member.last_name} profile picture`}></img></Link>
+                                <Link to={`/profile/${member.id}`} onClick={() => setType(null)}>{member.first_name} {member.last_name}</Link>
+                                {
+                                (user && (member.id !== user?.id && type ==='following')) && <button id={member.id} data-name={member.first_name} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} data-func={member.isFollowed ? 'unfollow' : member.isPending ? 'cancel' : 'follow'} onClick={handleFollowage} style={{backgroundColor: (member.isFollowed && hoverId === member.id) || (member.isPending && hoverId === member.id) ? '#d51111' : member.isPending || (member.isFollowed && hoverId !== member.id) ? '#181818' : null, color: member.isFollowed || member.isPending ? 'inherit' : 'black'}}>{member.isFollowed && hoverId !== member.id ? 'Following' : member.isFollowed && hoverId === member.id ? 'Unfollow' : member.isPending && hoverId !== member.id ? 'Pending' : member.isPending && hoverId === member.id ? 'Cancel' : 'Follow'}</button>
+                                }
+                                {(user && (member.id !== user?.id && type ==='followers')) && <button className={styles.removeFollower} id={member.id} onClick={removeFollower} data-name={member.first_name} data-func='remove-follower'>Remove</button>}
+                            </div>
+                        </li>
+                    )
+                })}
+            </ul>
+                }
                 <button className={styles.close} onClick={() => {
                     setType(null)
                     setLikes(null)}}><X size={38} color='white'/></button>

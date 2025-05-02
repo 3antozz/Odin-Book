@@ -3,7 +3,7 @@ const { cloudinary } = require('../routes/uploadConfig')
 const fns = require('../routes/fns');
 
 exports.getPost = async(req, res) => {
-    const userId = req.user?.id
+    const userId = req.user?.id || 0;
     const postId = +req.params.postId;
     const post = await db.getFullPost(postId);
     if(!post) {
@@ -13,33 +13,32 @@ exports.getPost = async(req, res) => {
     }
     const date = fns.formatDate(post.createdAt)
     post.createdAt = date;
-    if(userId) {
-        for(const like of post.likes) {
+    for(const like of post.likes) {
+        if(like.userId === userId) {
+            post.isLiked = true;
+            break;
+        }
+    }
+    for(const comment1 of post.comments) {
+        comment1.createdAt = fns.formatDate(comment1.createdAt)
+        for(const like of comment1.likes) {
             if(like.userId === userId) {
-                post.isLiked = true;
+                comment1.isLiked = true;
                 break;
             }
         }
-        for(const comment1 of post.comments) {
-            comment1.createdAt = fns.formatDate(comment1.createdAt)
-            for(const like of comment1.likes) {
+        for(const comment2 of comment1.comments) {
+            comment2.createdAt = fns.formatDate(comment2.createdAt)
+            for(const like of comment2.likes) {
                 if(like.userId === userId) {
-                    comment1.isLiked = true;
+                    comment2.isLiked = true;
                     break;
-                }
-            }
-            for(const comment2 of comment1.comments) {
-                comment2.createdAt = fns.formatDate(comment2.createdAt)
-                for(const like of comment2.likes) {
-                    if(like.userId === userId) {
-                        comment2.isLiked = true;
-                        break;
-                    }
                 }
             }
         }
     }
-    return res.json({post});
+    setTimeout(() => res.json({post}), 3000)
+    // return res.json({post});
 }
 
 exports.getAllPosts = async(req, res) => {
@@ -58,7 +57,8 @@ exports.getFollowingPosts = async(req, res) => {
         }
         return post;
     })
-    res.json({posts: formattedPosts})
+    setTimeout(() => res.json({posts: formattedPosts}), 3000)
+    // res.json({posts: formattedPosts})
 }
 
 exports.createTextPost = async(req, res) => {
@@ -140,5 +140,6 @@ exports.removePostLike = async(userId, postId) => {
 exports.getPopularPosts = async(req, res) => {
     const clientId = req.user?.id || 0;
     const posts = await db.getPopularPosts(clientId);
-    res.json({posts})
+    setTimeout(() => res.json({posts}), 3000)
+    // res.json({posts})
 }

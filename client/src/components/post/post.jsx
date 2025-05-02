@@ -94,6 +94,9 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
                     method: 'DELETE',
                     credentials: 'include',
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
@@ -128,9 +131,6 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
             }
         }
     }
-    if(!user) {
-        return;
-    }
     return (
         <article className={styles.post} role="button" onClick={handlePostClick} tabIndex={0} data-func='comment' id={post.id}>
             <Link to={`/profile/${post.authorId}`}
@@ -146,8 +146,8 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
                     {post.picture_url && 
                     <img src={post.picture_url} alt={post.content} loading='lazy' />}
                 </div>
-                <div className={styles.interactions}>
-                    <button className={styles.likes} onClick={handlePostClick} id={post.id} data-func={post.isLiked ? "unlike" : "like"} data-author={post.authorId}>
+                 <div className={styles.interactions}>
+                    <button className={styles.likes} disabled={!user} onClick={handlePostClick} id={post.id} data-func={post.isLiked ? "unlike" : "like"} data-author={post.authorId}>
                         <Heart size={35} fill={post.isLiked ? "red" : null} color={post.isLiked ? null : "white"} />
                         <p style={{display: post._count.likes > 0 ? 'block' : 'none'}}>{post._count.likes}</p>
                     </button>
@@ -155,7 +155,7 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
                         <MessageCircle size={35} />
                         <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{commentsNumber}</p>
                     </button>
-                    {post.authorId === user.id &&
+                    {post.authorId === user?.id &&
                         <button className={styles.delete} onClick={handlePostClick} id={post.id} data-func="delete" data-author={post.authorId}>
                             <Trash size={35} />
                         </button>

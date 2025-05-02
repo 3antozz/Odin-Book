@@ -45,15 +45,15 @@ const corsOptions = {
     credentials: true,
     optionsSuccessStatus: 200
 };
-app.use(
-    session({
+const sessionMiddleware = session({
       cookie: {
-       maxAge: 15 * 60 * 1000, // ms
+       maxAge: 15 * 60 * 1000, // ms  15 mins
     //    secure: true
       },
       secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
+      rolling: true,
       store: new PrismaSessionStore(
         prisma,
         {
@@ -63,18 +63,15 @@ app.use(
         }
       )
     })
-  );
-
+app.use(sessionMiddleware);
 app.use(cors(corsOptions));
 app.options('*', cors((corsOptions)))
 app.set('trust proxy', 1)
 app.use(passport.session());
 app.use(express.json())
-// app.use(cookieParser())
 app.use(express.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('io', io)
-
 
 io.on('connection', (socket) => {
   socket.on('join rooms', (followingIds) => {

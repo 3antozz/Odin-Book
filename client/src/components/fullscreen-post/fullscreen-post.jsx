@@ -15,6 +15,7 @@ export default function FullscreenPost () {
     const location = useLocation();
     const commentLocation = new URLSearchParams(location.search).get('comment');
     const [loading, setLoading] = useState(false)
+    const [postLoading, setPostLoading] = useState(true)
     const [loadingError, setLoadingError] = useState(false)
     const [postDeleted, setPostDeleted] = useState(false)
     const [imageURL, setImageURL] = useState(null)
@@ -91,6 +92,9 @@ export default function FullscreenPost () {
                     method: 'DELETE',
                     credentials: 'include',
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
@@ -246,9 +250,11 @@ export default function FullscreenPost () {
                     credentials: 'include',
                 })
                 const response = await request.json();
-                if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
-                    throw error;
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
+                if(request.status === 401) {
+                    window.location.href = '/login';
                 }
                 console.log(response);
                 if(!commentOn) {
@@ -309,15 +315,18 @@ export default function FullscreenPost () {
     }
     useEffect(() => {
         const fetchPost = async() => {
-            setLoading(true)
+            setPostLoading(true)
             try {
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/posts/${postId}`, {
                     credentials: 'include'
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
-                  }
+                }
                 const response = await request.json();
                 console.log(response)
                 setFullPosts((prev) => ({...prev, [response.post.id]: response.post}))
@@ -326,7 +335,7 @@ export default function FullscreenPost () {
                 console.log(err)
                 setLoadingError(true);
             } finally {
-                setLoading(false)
+                setPostLoading(false)
             }
         }
         if(postId) {
@@ -341,7 +350,6 @@ export default function FullscreenPost () {
             commentLocation && document.querySelector(`#comment-${commentLocation}`) && document.querySelector(`#comment-${commentLocation}`).scrollIntoView({behavior: 'smooth', block: 'center'})
         }, 500)
     }, [commentLocation])
-    if(!post || !user) return;
     return (
         <>
         <Image imageURL={imageURL} setImageURL={setImageURL}/>
@@ -351,9 +359,22 @@ export default function FullscreenPost () {
                 <Link to={-1} className={styles.close}><ArrowLeft size={35} color='white'/></Link>
                 <h1>Post</h1>
             </header>
+            {(!postLoading && !post) && 
+            <div className={styles.loadingDiv}>
+                <p>Couldn&apos;t Load Content</p>
+            </div>
+            }
+            {postLoading && 
+            <div className={styles.loadingDiv}>
+                <LoaderCircle className={styles.loading} size={50} />
+                <p>This may take a while</p>
+            </div>
+            }
             <div className={styles.container}>
                 <section className={styles.post}>
-                <Link to={`/profile/${post.authorId}`}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} /></Link>
+                    {post &&
+                    <>
+                    <Link to={`/profile/${post.authorId}`}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} /></Link>
                     <div className={styles.right}>
                         <div className={styles.info}>
                         <Link to={`/profile/${post.authorId}`}><p>{post.author.first_name} {post.author.last_name}</p></Link>
@@ -366,22 +387,25 @@ export default function FullscreenPost () {
                         </div>
                         <div className={styles.interactions}>
                             <div className={styles.likes}>
-                                <button onClick={handlePostClick} id={post.id} data-func={post.isLiked ? "unlike" : "like"}><Heart size={35} fill={post.isLiked ? "red" : null} color={post.isLiked ? null : "white"} /></button>
+                                <button onClick={handlePostClick} disabled={!user} id={post.id} data-func={post.isLiked ? "unlike" : "like"}><Heart size={35} fill={post.isLiked ? "red" : null} color={post.isLiked ? null : "white"} /></button>
                                 <button disabled={post.likes.length === 0} onClick={showLikes}><p style={{display: post.likes.length > 0 ? 'block' : 'none'}}>{post.likes.length}</p></button>
                             </div>
-                            <button className={styles.comments} id={post.id} data-func="comment">
+                            <button className={styles.comments} disabled={!user} id={post.id} data-func="comment">
                                 <MessageCircle size={35} />
                                 <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{commentsNumber}</p>
                             </button>
-                            {post.authorId === user.id &&
+                            {post.authorId === user?.id &&
                             <button className={styles.delete} onClick={handlePostClick} id={post.id} data-func="delete" data-author={post.authorId}>
                                 <Trash size={35} />
                             </button>
                             }
                         </div>
                     </div>
+                    </>
+                    }
                 </section>
                 <AddComment postId={postId} post={post} setFullPosts={setFullPosts} setPosts={setPosts} setProfiles={setProfiles} />
+                {post && 
                 <section className={styles.commentsContainer}>
                     {post.comments.map((comment, index) => {
                         let isLast = false;
@@ -391,6 +415,7 @@ export default function FullscreenPost () {
                         return <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setFullPosts={setFullPosts} setPosts={setPosts} isLast={isLast} setLikes={setLikes} highlightedComment={commentLocation} setImageURL={setImageURL} />
                         })}
                 </section>
+                }
             </div>
         </main>
         </>
@@ -468,11 +493,14 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
                     })
                 })
             }
-            const response = await request.json();
+            if(request.status === 401) {
+                window.location.href = '/login';
+            }
             if(!request.ok) {
                 const error = new Error('An error has occured, please try again later')
                 throw error;
             }
+            const response = await request.json();
             console.log(response);
             setFullPosts(prev => ({...prev, [postId]: {...prev[postId], comments: [response.comment, ...prev[postId].comments]}}))
             setPosts(prev => {
@@ -504,10 +532,10 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
         <section className={styles.happening}>
             <form onSubmit={createComment}>
                 <div className={styles.text}>
-                    <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture`} />
+                    <img src={user?.picture_url || '/no-profile-pic.jpg'} alt={`${user?.first_name} ${user?.last_name} profile picture`} />
                     <label htmlFor="post"></label>
-                    <textarea placeholder="Comment on the post" value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post" onClick={() => setOpen(true)} style={{height: isOpen ? '5rem' : null}}></textarea>
-                    {!isOpen && <button type='button'>Reply</button>}
+                    <textarea placeholder={user ? "Comment on the post" : "Login to comment"} disabled={!user} value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post" onClick={() => setOpen(true)} style={{height: isOpen ? '5rem' : null}}></textarea>
+                    {!isOpen && <button disabled={!user} type='button'>Reply</button>}
                 </div>
                 <div className={styles.fileDiv}>
                    {isOpen && (<label htmlFor="image" disabled={isUploading} className={styles.label}>{!isUploading ? <ImageIcon color='white' size={29} /> : <LoaderCircle  size={40} color='white' className={styles.loading}/>}</label>)}

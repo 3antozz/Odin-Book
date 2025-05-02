@@ -7,8 +7,10 @@ import CreatePost from '../create-post/create-post'
 import SearchUser from '../search-user/search-user';
 import MostFollowed from '../most-followed/most-followed';
 import MostLiked from '../most-liked/most-liked'
+import { Link } from 'react-router'
+import { LoaderCircle } from 'lucide-react'
 export default function Main () {
-    const { user, socket, socketOn } = useContext(AuthContext);
+    const { user, loadingUser, socket, socketOn } = useContext(AuthContext);
     const [posts, setPosts] = useState({})
     const [fullPosts, setFullPosts] = useState({})
     const [profiles, setProfiles] = useState({})
@@ -16,9 +18,9 @@ export default function Main () {
     const [notifications, setNotifications] = useState({})
     const [isFetched, setFetched] = useState(false)
     const [creatingPost, setCreatingPost] = useState(false)
-    const [postsLoading, setPostsLoading] = useState(false)
+    const [postsLoading, setPostsLoading] = useState(true)
     const [connectedToRooms, setConnectedToRooms] = useState(false)
-    const [error, setError] = useState(false)
+    const [postsError, setPostsError] = useState(false)
     const notifsCount = useRef(0)
     const notificationsArray = useMemo(() => Object.values(notifications).reverse().slice(1), [notifications])
     const unseenNotificationsCount = useMemo(() => {
@@ -422,6 +424,14 @@ export default function Main () {
         listener.on('new comment', addComment);
         listener.on('delete comment', deleteComment);
 
+        listener.on("connect_error", () => {
+            window.location.href = '/login';
+        });
+
+        listener.on("session_expired", () => {
+            window.location.href = '/login';
+        });
+
         return () => {
             if(listener) {
                 listener.off();
@@ -435,20 +445,23 @@ export default function Main () {
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/posts/following`, {
                     credentials: 'include'
                 })
-                const response = await request.json();
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
                 }
+                const response = await request.json();
                 console.log(response);
                 const posts = {};
                 response.posts.forEach((post) => posts[post.id] = post)
                 setPosts(posts)
-                setError(false)
+                setPostsError(false)
                 setFetched(true)
             } catch(err) {
                 console.log(err)
-                setError(true)
+                setPostsError(true)
             } finally {
                 setPostsLoading(false)
             }
@@ -457,15 +470,29 @@ export default function Main () {
             fetchPosts();
         }
     }, [isFetched, user])
+    if(loadingUser) {
+        return (
+        <div className={styles.loadingDiv}>
+            <LoaderCircle className={styles.loading} size={50} />
+            <p>This may take a while</p>
+        </div>
+        )
+    }
     return (
         <div className={styles.main}>
             <Sidebar notifsCount={unseenNotificationsCount} setCreatingPost={setCreatingPost} />
             {creatingPost && <CreatePost creatingPost={creatingPost} setCreatingPost={setCreatingPost} setProfiles={setProfiles} setPosts={setPosts}  />}
-            <Outlet context={{posts, setPosts, postsLoading, error, fullPosts, setFullPosts, profiles, setProfiles, followage, setFollowage, notifications, notificationsArray, setNotifications, notifsCount, setCreatingPost}} />
+            <Outlet context={{posts, setPosts, postsLoading, postsError, fullPosts, setFullPosts, profiles, setProfiles, followage, setFollowage, notifications, notificationsArray, setNotifications, notifsCount, setCreatingPost}} />
             <section className={styles.right}>
                 <SearchUser />
                 <MostLiked />
                 <MostFollowed />
+                <section className={styles.bottom}>
+                    <Link to='https://github.com/3antozz/Odin-Book'>Github Repo</Link>
+                    <span> | </span>
+                    <Link to='https://github.com/3antozz'>Dev Profile</Link>
+                    <p>© 2025 3antozz</p>
+                </section>
             </section>
         </div>
     )

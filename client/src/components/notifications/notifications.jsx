@@ -1,14 +1,13 @@
 import styles from './notifications.module.css'
-import { useState, useContext, useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { useOutletContext, Link } from 'react-router'
+import { useOutletContext, Link, Navigate } from 'react-router'
 import { AuthContext } from '../../contexts'
 import { formatDate } from '../../date-format'
-import { ArrowLeft, Heart, MessageSquareMore, User, Circle } from 'lucide-react';
+import { ArrowLeft, Heart, MessageSquareMore, User, Circle, LoaderCircle } from 'lucide-react';
 export default function Notifications () {
     const { user, socket } = useContext(AuthContext);
     const { notificationsArray, setNotifications, notifsCount } = useOutletContext();
-    const [error, setError] = useState(false)
     useEffect(() => {
         const setSeenNotifications = () => {
             try {
@@ -31,8 +30,8 @@ export default function Notifications () {
         const count = notifsCount.current
         return () => count > 0 && setSeenNotifications()
     }, [notifsCount, setNotifications, socket])
-    if(!user || notificationsArray.length === 0) {
-        return;
+    if(!user) {
+        return <Navigate to='/login' replace />
     }
     return (
         <main className={styles.main}>
@@ -41,7 +40,9 @@ export default function Notifications () {
                 <h1>Notifications</h1>
             </header>
             <ul className={styles.notifications}>
-                {notificationsArray.map(notification => <Notification key={notification.id} userId={user.id} notification={notification}/>)}
+                {
+                notificationsArray.map(notification => <Notification key={notification.id} userId={user.id} notification={notification}/>)
+                }
             </ul>
         </main>
     )

@@ -1,21 +1,26 @@
 import styles from './most-liked.module.css'
-import { memo, useState, useEffect } from 'react'
+import { memo, useState, useEffect, useContext } from 'react'
 import { Link } from 'react-router';
 import PropTypes from 'prop-types';
 import { Heart, LoaderCircle } from 'lucide-react';
 import { AuthContext } from '../../contexts'
 
 const MostLiked = memo(function CreatePost () {
+    const { user } = useContext(AuthContext)
     const [posts, setPosts] = useState([])
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(false)
     const [isFetched, setFetched] = useState(false)
     useEffect(() => {
-        const fetchUsers = async() => {
+        const fetchPosts = async() => {
             try {
                 setLoading(true)
-                const request = await fetch(`${import.meta.env.VITE_API_URL}/posts/popular-followed`, {
+                const request = await fetch(`${import.meta.env.VITE_API_URL}/posts/popular`, {
                     credentials: 'include',
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
@@ -24,21 +29,31 @@ const MostLiked = memo(function CreatePost () {
                 console.log(response)
                 setPosts(response.posts);
                 setFetched(true)
+                setError(false)
             } catch(err) {
                 console.error(err);
+                setError(true)
             } finally {
                 setLoading(false)
             }
         }
         if(!isFetched) {
-            fetchUsers();
+            fetchPosts();
         }
     }, [isFetched])
     return (
         <section className={styles.container}>
-            <h3>Popular In Your Following</h3>
+            <h3>{user ? 'Popular In Your Following' : 'Popular Public Posts'} </h3>
+            {loading ? 
+            <div className={styles.loadingDiv}>
+                <LoaderCircle className={styles.loading} size={30} />
+            </div> :
+            error ?
+            <div className={styles.loadingDiv}>
+                <p>Error loading content</p>
+            </div> :
             <ul className={styles.result}>
-            {posts.map(p => (
+            {posts.map(p => 
                 <li key={p.id} className={styles.member}>
                     <Link to={`/post/${p.id}`}>
                         <img src={p.author.avatar_url || "/no-profile-pic.jpg"} alt={`${p.author.first_name} ${p.author.last_name} profile picture`}/>
@@ -53,8 +68,9 @@ const MostLiked = memo(function CreatePost () {
                         </div>
                     </Link>
                 </li>
-            ))}
+            )}
             </ul>
+            }
         </section>
     )
 })

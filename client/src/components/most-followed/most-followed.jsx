@@ -7,7 +7,8 @@ import { AuthContext } from '../../contexts'
 
 const MostFollowed = memo(function CreatePost () {
     const [users, setUsers] = useState([])
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(false)
     const [isFetched, setFetched] = useState(false)
     useEffect(() => {
         const fetchUsers = async() => {
@@ -16,6 +17,9 @@ const MostFollowed = memo(function CreatePost () {
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/users/most-followed`, {
                     credentials: 'include',
                 })
+                if(request.status === 401) {
+                    window.location.href = '/login';
+                }
                 if(!request.ok) {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
@@ -24,8 +28,10 @@ const MostFollowed = memo(function CreatePost () {
                 console.log(response)
                 setUsers(response.users);
                 setFetched(true)
+                setError(false)
             } catch(err) {
                 console.error(err);
+                setError(true)
             } finally {
                 setLoading(false)
             }
@@ -37,7 +43,15 @@ const MostFollowed = memo(function CreatePost () {
     return (
         <section className={styles.container}>
             <h3>Most Followed</h3>
-            <div className={styles.result}>
+            {loading ? 
+            <div className={styles.loadingDiv}>
+                <LoaderCircle className={styles.loading} size={30} />
+            </div> :
+            error ?
+            <div className={styles.loadingDiv}>
+                <p>Error loading content</p>
+            </div> :
+            <ul className={styles.result}>
                 {users.map(user => 
                 <li className={styles.member} key={user.id}>
                     <Link to={`/profile/${user.id}`} className={styles.memberButton}>
@@ -47,7 +61,8 @@ const MostFollowed = memo(function CreatePost () {
                     </Link>
                 </li>
                 )}
-            </div>
+            </ul>
+            }
         </section>
     )
 })
