@@ -5,8 +5,7 @@ const { validationResult } = require('express-validator');
 
 exports.getClient = async(req, res) => {
     const user = await db.getUserNoPw(req.user.username)
-    setTimeout(() => res.json({user}), 3000)
-    // return res.json({user})
+    return res.json({user})
 }
 
 exports.getProfile = async(req, res) => {
@@ -27,10 +26,13 @@ exports.getProfile = async(req, res) => {
         }
         return post;
     })
-    if(req.user && req.user !== 0) {
-        if(profile.followers.length > 0) {
-            profile.isFollowed = true
-        }
+    profile.posts = formattedPosts
+    if(profile.followers?.length > 0 || profile.id === clientId) {
+        profile.isFollowed = true
+    } else if (profile.id !== clientId) {
+        profile.isLocked = true;
+    }
+    if(req.user && req.user !== 0 && profile.id !== clientId) {
         if(profile.sent_requests.length > 0) {
             profile.hasRequested = true
         }
@@ -38,7 +40,6 @@ exports.getProfile = async(req, res) => {
             profile.isPending = true
         }
     }
-    profile.posts = formattedPosts
     setTimeout(() => res.json({profile}), 3000)
     // res.json({profile})
 }
@@ -47,50 +48,6 @@ exports.getAllUsers = async(req, res) => {
     const userId = req.user.id;
     const users = await db.getAllUsers(userId)
     res.json({users})
-}
-
-exports.getFollowers = async(req, res) => {
-    const clientId = req.user?.id || 0;
-    const userId = +req.params.userId;
-    const profile = await db.getUserFollowage(userId, clientId, 'followers', 'follower')
-    let taggedFollowers;
-    if(req.user) {
-        taggedFollowers = profile.followers.map(follow => {
-            const follower = follow.follower;
-            if(follower.followers.length > 0) {
-                follow.follower.isFollowed = true
-            }
-            if(follower.received_requests.length > 0) {
-                follow.follower.isPending = true
-            }
-            return follow;
-        })
-        profile.followers = taggedFollowers;
-    }
-    setTimeout(() => res.json({profile}), 3000)
-    // res.json({profile})
-}
-
-exports.getFollowing = async(req, res) => {
-    const clientId = req.user?.id || 0;
-    const userId = +req.params.userId;
-    const profile = await db.getUserFollowage(userId, clientId, 'following', 'following')
-    let taggedFollowers;
-    if(req.user) {
-        taggedFollowers = profile.following.map(follow => {
-            const following = follow.following;
-            if(following.followers.length > 0) {
-                follow.following.isFollowed = true
-            }
-            if(following.received_requests.length > 0) {
-                follow.following.isPending = true
-            }
-            return follow;
-        })
-        profile.following = taggedFollowers;
-    }
-    setTimeout(() => res.json({profile}), 3000)
-    // res.json({profile})
 }
 
 exports.setSeenNotifications = async(userId) => {

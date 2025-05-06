@@ -1,9 +1,9 @@
 import styles from './most-liked.module.css'
 import { memo, useState, useEffect, useContext } from 'react'
 import { Link } from 'react-router';
-import PropTypes from 'prop-types';
-import { Heart, LoaderCircle } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { AuthContext } from '../../contexts'
+import { formatNumber } from '../../date-format'
 
 const MostLiked = memo(function CreatePost () {
     const { user } = useContext(AuthContext)
@@ -48,6 +48,10 @@ const MostLiked = memo(function CreatePost () {
             <div className={styles.loadingDiv}>
                 <LoaderCircle className={styles.loading} size={30} />
             </div> :
+            (!loading && posts.length === 0) ?
+            <div className={styles.loadingDiv}>
+                <p>No popular posts at the moment</p>
+            </div> :
             error ?
             <div className={styles.loadingDiv}>
                 <p>Error loading content</p>
@@ -62,8 +66,8 @@ const MostLiked = memo(function CreatePost () {
                                 {p.content.length > 50 ? p.content.slice(0, 47) + "…" : p.content}
                             </p>
                             <small style={{ color: "#666" }}>
-                                {p.author.first_name} {p.author.last_name} • {p._count.likes}{" "}
-                                {p._count.likes === 1 ? "like" : "likes"}
+                                {p.author.first_name} {p.author.last_name} • {formatNumber(p._count.likes)}
+                                {p._count.likes === 1 ? " like" : " likes"}
                             </small>
                         </div>
                     </Link>

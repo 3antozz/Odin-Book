@@ -44,6 +44,10 @@
     margin-bottom: 2rem;
 }
 
+.fileDiv > button:disabled {
+    background-color: #efefef;
+}
+
 .post > a > img {
     width: 3rem;
     border-radius: 50%;

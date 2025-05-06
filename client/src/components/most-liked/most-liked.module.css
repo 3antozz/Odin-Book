@@ -3,7 +3,7 @@
     padding: 0.5rem;
     display: block;
     border: 1px solid rgba(128, 128, 128, 0.465);
-    min-height: 200px;
+    overflow-y: auto;
 }
 
 .container h3 {
@@ -24,6 +24,7 @@
     border-radius: 50%;
     align-self: flex-start;
     flex-shrink: 0;
+    border: 1px solid rgba(128, 128, 128, 0.2);
 }
 
 .member a {
@@ -49,7 +50,7 @@
 
 .loadingDiv {
     align-content: center;
-    height: 50%;
+    height: 100px;
     text-align: center;
 }
 

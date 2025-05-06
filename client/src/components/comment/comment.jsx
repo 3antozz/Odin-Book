@@ -4,18 +4,25 @@ import PropTypes from 'prop-types'
 import { useContext, useState, memo, useRef } from 'react'
 import { AuthContext } from '../../contexts'
 import { Heart, MessageCircle, Trash, Image as ImageIcon, LoaderCircle } from 'lucide-react';
-import Image from '../full-image/image';
-const Comment = memo(function Comment ({comment, handleClick, isSub, isLast, setPosts, setFullPosts, setLikes, setImageURL, highlightedComment}) {
+import { formatNumber } from '../../date-format'
+import Popup from '../popup/popup'
+const Comment = memo(function Comment ({comment, handleClick, isSub, setPosts, setFullPosts, setLikes, setImageURL, highlightedComment}) {
     const { user } = useContext(AuthContext);
     const [commentsOpen, setCommentsOpen] = useState(false);
+    const [loading, setLoading] = useState(false)
     const commentsNumber = comment.comments.length;
     const showLikes = () => {
         const users = [];
         comment.likes.forEach(like => users.push(like.user))
         setLikes(users);
     }
+    const handleDelete = async(e) => {
+        setLoading(true);
+        await handleClick(e);
+        setLoading(false)
+    }
     return (
-        <section id={`comment-${comment.id}`} className={`${styles.comment} ${comment.id == highlightedComment ? styles.highlighted : ''}`} style={{borderBottom: isSub ? null : isLast ? null : "2px solid grey"}}>
+        <section id={`comment-${comment.id}`} className={`${styles.comment} ${comment.id == highlightedComment ? styles.highlighted : ''}`} style={{borderBottom: isSub ? null : "2px solid grey"}}>
             <section className={isSub ? styles.subComment : styles.topComment}>
             <Link to={`/profile/${comment.authorId}`}><img src={comment.author.picture_url || '/no-profile-pic.jpg'} alt={`${comment.author.first_name} ${comment.author.last_name} profile picture`} loading='lazy' /></Link>
                 <div className={styles.right}>
@@ -31,15 +38,17 @@ const Comment = memo(function Comment ({comment, handleClick, isSub, isLast, set
                     <div className={styles.interactions}>
                         <div className={styles.likes}>
                             <button onClick={handleClick} disabled={!user} id={comment.id} data-func={comment.isLiked ? "unlike" : "like"} data-commenton={comment.commentOnId} data-postid={comment.postId}><Heart size={35} fill={comment.isLiked ? "red" : null} color={comment.isLiked ? null : "white"} /></button>
-                            <button disabled={comment.likes.length === 0} onClick={(showLikes)}><p style={{display: comment.likes.length > 0 ? 'block' : 'none'}}>{comment.likes.length}</p></button>
+                            <button disabled={comment.likes.length === 0} onClick={(showLikes)}><p style={{display: comment.likes.length > 0 ? 'block' : 'none'}}>{formatNumber(comment.likes.length)}</p></button>
                         </div>
                         {!isSub && <button className={styles.comments} onClick={() => setCommentsOpen(prev => !prev)} id={comment.id} data-func="comment" data-commenton={comment.commentOnId} data-postid={comment.postId}>
                             <MessageCircle size={35} color={commentsOpen ? 'red' : 'white'} />
-                            <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{commentsNumber}</p>
+                            <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{formatNumber(commentsNumber)}</p>
                         </button>}
                         {(comment.authorId === user?.id || comment.post.authorId === user?.id) &&
-                        <button className={styles.delete} disabled={!user} onClick={handleClick} id={comment.id} data-func="delete" data-commenton={comment.commentOnId} data-postid={comment.postId}>
-                            <Trash size={35} />
+                        <button className={styles.delete} disabled={!user} onClick={handleDelete} id={comment.id} data-func="delete" data-commenton={comment.commentOnId} data-postid={comment.postId}>
+                            {loading ? 
+                            <LoaderCircle size={35} color='white' className={styles.loading}/> :
+                            <Trash size={35} />}
                         </button>
                         }
                     </div>
@@ -52,10 +61,9 @@ const Comment = memo(function Comment ({comment, handleClick, isSub, isLast, set
 })
 
 function AddSubComment ({comment, setPosts, setFullPosts}) {
-        const { user } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
     const [commentTxt, setCommentTxt] = useState('')
     const [image, setImage] = useState(null);
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false)
     const [uploadError, setUploadError] = useState(false)
     const [isUploading, setUploading] = useState(false)
@@ -95,7 +103,7 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
         if(!commentTxt && !image) {
             return;
         }
-        setLoading(true)
+        setUploading(true)
         try {
             const form = new FormData();
             let request;
@@ -155,32 +163,43 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
         } catch(err) {
             console.log(err)
             setError(true)
+            setTimeout(() => setError(false), 3000)
         } finally {
-            setLoading(false)
+            setUploading(false)
         }
     }
     return (
-        <section className={styles.happening}>
+        <>
+        <Popup borderColor='red' shouldRender={error} close={setError} >
+            <p>An error has occured, please try again later</p>
+        </Popup>
+        <section className={styles.happening} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 130)}>
             <form onSubmit={createComment}>
                 <div className={styles.text}>
                     <img src={user?.picture_url || '/no-profile-pic.jpg'} alt={`${user?.first_name} ${user?.last_name} profile picture`} />
                     <label htmlFor="post"></label>
-                    <textarea placeholder={user ? `Reply to ${comment.author.first_name}` : 'Login to comment'} disabled={!user} value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post" onClick={() => setOpen(true)} style={{height: isOpen ? '3.5rem' : null}}></textarea>
-                    {!isOpen && <button disabled={!user} type='button'>Reply</button>}
+                    <textarea placeholder={user ? `Reply to ${comment.author.first_name}` : 'Login to comment'} disabled={!user || isUploading} value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post"  style={{height: isOpen ? '5rem' : image ? '5rem' : null}}></textarea>
+                    {(!isOpen && !image) && <button disabled={!user} type='submit'>Reply</button>}
                 </div>
-                <div className={styles.fileDiv}>
-                   {isOpen && (<label htmlFor="image2" disabled={isUploading} className={styles.label}>{!isUploading ? <ImageIcon color='white' size={29} /> : <LoaderCircle  size={40} color='white' className={styles.loading}/>}</label>)}
+                {(isOpen || image) &&
+                <div className={styles.fileDiv}> 
+                   <label htmlFor="image2" className={styles.label}>
+                    <ImageIcon color='white' size={29} />
+                    </label>
                     <div className={styles.file} ref={fileDivRef}>
                         <div>
-                            <input type="file" id="image2" accept='image/*' onChange={handleFileClick} />
+                            <input type="file" id="image2" disabled={isUploading} accept='image/*' onChange={handleFileClick} />
                             <button onClick={cancelFile}><Trash color='white' size={24} /></button>
                         </div>
                     </div>
-                    {isOpen && <button type='submit'>Reply</button>}
+                    <button type='submit' disabled={isUploading}>{isUploading ? 
+                    <LoaderCircle  size={33} color='#2a3040' className={styles.loading}/> : 'Reply'}</button>
                 </div>
+                }
                 {uploadError ? <p className={styles.fileError}>{uploadError}</p> : <p className={styles.requirement} id='max-size2' ref={requirement}>* Max size: 5 MB</p>}
             </form>
         </section>
+        </>
     )
 }
 
@@ -189,7 +208,6 @@ Comment.propTypes = {
     comment: PropTypes.object.isRequired,
     handleClick: PropTypes.func.isRequired,
     isSub: PropTypes.bool.isRequired,
-    isLast: PropTypes.bool.isRequired,
     setPosts: PropTypes.func.isRequired,
     setFullPosts: PropTypes.func.isRequired,
     setLikes: PropTypes.func.isRequired,

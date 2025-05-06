@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { useOutletContext, Link, Navigate } from 'react-router'
 import { AuthContext } from '../../contexts'
 import { formatDate } from '../../date-format'
-import { ArrowLeft, Heart, MessageSquareMore, User, Circle, LoaderCircle } from 'lucide-react';
+import { ArrowLeft, Heart, MessageSquareMore, User, Circle } from 'lucide-react';
 export default function Notifications () {
     const { user, socket } = useContext(AuthContext);
     const { notificationsArray, setNotifications, notifsCount } = useOutletContext();
@@ -57,7 +57,7 @@ const Notification = ({notification, userId}) => {
                 <img src={notification.actor.picture_url || '/no-profile-pic.jpg'} alt={`${notification.actor.first_name} ${notification.actor.last_name} profile picture`} loading='lazy' />
                 {(notification.type === 'Request_received' || notification.type === 'Request_accepted') ? 
                 <User size={24} fill='white' style={{backgroundColor: '#4444b0'}} /> : notification.type === 'Like' ?
-                <Heart size={24} fill='white' style={{backgroundColor: 'red'}} /> : <MessageSquareMore size={24}  style={{backgroundColor: '#139c13'}} fill='white' />
+                <Heart size={24} fill='white' style={{backgroundColor: 'red'}} /> : <MessageSquareMore size={24} style={{backgroundColor: '#139c13'}} fill='white' />
                 }
             </div>
             <div className={styles.right}>
@@ -83,7 +83,7 @@ const Notification = ({notification, userId}) => {
                 </p>}
                 {(notification.type === 'Comment' && notification.commentId && notification.postAuthorId === userId) && 
                 <p>
-                    <em>{notification.actor.first_name} {notification.actor.last_name}</em> replied to a comment on your post
+                    <em>{notification.actor.first_name} {notification.actor.last_name}</em> replied to a comment on your post.
                 </p>}
                 {(notification.type === 'Comment' && notification.commentId && notification.postAuthorId !== userId) && 
                 <p>

@@ -1,11 +1,12 @@
 import styles from './layout.module.css'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { Outlet, Navigate } from 'react-router'
 import { AuthContext } from "../../contexts"
 
 export default function AuthLayout () {
     const { user } = useContext(AuthContext)
-    if(user) {
+    const [success, setSuccess] = useState(false)
+    if(user && !success) {
         return <Navigate to='/' replace />
     }
     return (
@@ -18,7 +19,7 @@ export default function AuthLayout () {
         </section>
         <section className={styles.form}>
             <h1>Join Today</h1>
-            <Outlet />
+            <Outlet context={{success, setSuccess}} />
         </section>
         </div>
     )

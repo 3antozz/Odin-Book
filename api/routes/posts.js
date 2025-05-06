@@ -6,7 +6,7 @@ const controller = require('../controllers/posts')
 
 const router = Router();
 
-router.get('/following', fns.checkAuth, asyncHandler(controller.getFollowingPosts))
+router.get('/following', asyncHandler(controller.getFollowingPosts))
 
 router.get('/all', asyncHandler(controller.getAllPosts))
 

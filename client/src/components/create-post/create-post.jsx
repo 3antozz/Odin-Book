@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { X, LoaderCircle, Image, Trash } from 'lucide-react';
 import { AuthContext } from '../../contexts'
 
-const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, setPosts, setProfiles}) {
+const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, setPosts, setProfiles, setFullPosts}) {
     const { user } = useContext(AuthContext);
     const [postTxt, setPostTxt] = useState('')
     const [image, setImage] = useState(null);
@@ -64,6 +64,7 @@ const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, set
             }
             console.log(response)
             setPosts(prev => ({[response.post.id]: response.post, ...prev}))
+            setFullPosts((prev) => ({...prev, [response.post.id]: response.post}))
             setProfiles(prev => {
                 const profileId = response.post.authorId;
                 const profile = prev[profileId];
@@ -109,17 +110,22 @@ const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, set
                     <div className={styles.textarea}>
                         <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture`} />
                         <label htmlFor="text"></label>
-                        <textarea ref={textArea} placeholder="What's happening?" value={postTxt} onChange={(e) => setPostTxt(e.target.value)} id="text"></textarea>
+                        <textarea  disabled={isUploading} ref={textArea} placeholder="What's happening?" value={postTxt} onChange={(e) => setPostTxt(e.target.value)} id="text"></textarea>
                     </div>
                     <div className={styles.buttons}>
-                        <label htmlFor="image" disabled={isUploading} className={styles.label}>{!isUploading ? <Image color='white' size={33} /> : <LoaderCircle  size={40} color='white' className={styles.loading}/>}</label>
+                        <label htmlFor="image" className={styles.label}><Image color='white' size={33} /></label>
                         <div className={styles.file} ref={fileDivRef}>
                             <div>
-                                <input type="file" id="image" accept='image/*' onChange={handleFileClick} />
+                                <input type="file" id="image"
+                                disabled={isUploading} accept='image/*' onChange={handleFileClick} />
                                 <button onClick={cancelFile}><Trash color='white' size={25} /></button>
                             </div>
                         </div>
-                        <button className={styles.post}>Post</button>
+                        <button className={styles.post} disabled={isUploading}>
+                        {isUploading ? 
+                        <LoaderCircle  size={33} color='#2a3040' className={styles.loading}/> :
+                        'Post'}
+                        </button>
                     </div>
                     {uploadError ? <p className={styles.fileError}>{uploadError}</p> : <p className={styles.requirement} id='max-size' ref={requirement}>* Max size: 5 MB</p>}
                 </form>
@@ -135,6 +141,7 @@ CreatePost.propTypes = {
     setCreatingPost: PropTypes.func.isRequired,
     setPosts: PropTypes.func.isRequired,
     setProfiles: PropTypes.func.isRequired,
+    setFullPosts: PropTypes.func.isRequired,
 }
 
 export default CreatePost;

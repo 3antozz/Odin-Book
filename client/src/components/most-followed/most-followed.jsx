@@ -1,9 +1,8 @@
 import styles from './most-followed.module.css'
 import { memo, useState, useEffect } from 'react'
 import { Link } from 'react-router';
-import PropTypes from 'prop-types';
-import { X, LoaderCircle, Image, Trash, Search } from 'lucide-react';
-import { AuthContext } from '../../contexts'
+import { LoaderCircle, Image, Trash, Search } from 'lucide-react';
+import { formatNumber } from '../../date-format'
 
 const MostFollowed = memo(function CreatePost () {
     const [users, setUsers] = useState([])
@@ -57,7 +56,7 @@ const MostFollowed = memo(function CreatePost () {
                     <Link to={`/profile/${user.id}`} className={styles.memberButton}>
                         <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture`}></img>
                         <p>{user.first_name} {user.last_name}</p>
-                        <small><em>{user._count.followers}</em> {user._count.followers === 1 ? 'Follower' : 'Followers'}</small>
+                        <small><em>{formatNumber(user._count.followers)}</em> {user._count.followers === 1 ? 'Follower' : 'Followers'}</small>
                     </Link>
                 </li>
                 )}

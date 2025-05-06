@@ -2,18 +2,16 @@ import styles from './users-list.module.css'
 import { useState, useContext, useEffect } from 'react'
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
-import Popup from "../popup/popup"
 import { AuthContext } from '../../contexts'
-import { X, UserPlus, LoaderCircle, Search } from 'lucide-react';
+import { X, LoaderCircle, Search } from 'lucide-react';
 
 export default function Users ({userId = null, type = null, setType = () => {}, followage = {}, setFollowage = () => {}, handleFollowage = () => {}, removeFollower = () => {}, likes = null, setLikes = () => {}}) {
     const { user } = useContext(AuthContext)
     const [searchValue, setSearchValue] = useState('');
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(false)
-    const [addingMember, setAddingMember] = useState(0);
-    const [memberAdded, setMemberAdded] = useState(false);
+    const [loadingError, setLoadingError] = useState(false)
     const [hoverId, setHoverId] = useState(null)
+    const [userLoading, setUserLoading] = useState(0)
     const users = followage[userId]?.[type] || likes;
     const profile = followage[userId];
     let filteredUsers = users;
@@ -26,13 +24,23 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
             return `${profile.first_name} ${profile.last_name}`.toLowerCase().includes(searchValue.toLowerCase()
         )});
     }
+    const handleFollowing = async(e) => {
+        setUserLoading(+e.target.id);
+        await handleFollowage(e)
+        setUserLoading(0)
+    }
+    const handleFollowers = async(e) => {
+        setUserLoading(+e.target.id);
+        await removeFollower(e)
+        setUserLoading(0)
+    }
     const handleMouseEnter = (e) => setHoverId(+e.target.id)
     const handleMouseLeave = () => setHoverId(null)
     useEffect(() => {
         const fetchFollowage = async() => {
             setLoading(true)
             try {
-                const request = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}/${type}`, {
+                const request = await fetch(`${import.meta.env.VITE_API_URL}/followage/${userId}/${type}`, {
                     credentials: 'include'
                 })
                 if(request.status === 401) {
@@ -45,10 +53,11 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                 const response = await request.json();
                 console.log(response)
                 setFollowage((prev) => ({...prev, [response.profile.id]: {...prev[response.profile.id], ...response.profile}}))
-                setError(false)
+                setLoadingError(false)
             } catch(err) {
                 console.log(err)
-                setError(true);
+                setLoadingError(true);
+                setTimeout(() => setLoadingError(false), 3000)
             } finally {
                 setLoading(false)
             }
@@ -84,6 +93,10 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                     <LoaderCircle className={styles.loading} size={50} />
                     <p>This may take a while</p>
                 </div> :
+                loadingError ? 
+                    <div className={styles.loadingDiv}>
+                        <p>Couldn&apos;t Load Content</p>
+                    </div> :
                 <ul className={styles.members}>
                 {filteredUsers.map((follow) => {
                     let member = follow;
@@ -96,9 +109,19 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                                 <Link to={`/profile/${member.id}`} onClick={() => setType(null)}><img src={member.picture_url || '/no-profile-pic.jpg'} alt={`${member.first_name} ${member.last_name} profile picture`}></img></Link>
                                 <Link to={`/profile/${member.id}`} onClick={() => setType(null)}>{member.first_name} {member.last_name}</Link>
                                 {
-                                (user && (member.id !== user?.id && type ==='following')) && <button id={member.id} data-name={member.first_name} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} data-func={member.isFollowed ? 'unfollow' : member.isPending ? 'cancel' : 'follow'} onClick={handleFollowage} style={{backgroundColor: (member.isFollowed && hoverId === member.id) || (member.isPending && hoverId === member.id) ? '#d51111' : member.isPending || (member.isFollowed && hoverId !== member.id) ? '#181818' : null, color: member.isFollowed || member.isPending ? 'inherit' : 'black'}}>{member.isFollowed && hoverId !== member.id ? 'Following' : member.isFollowed && hoverId === member.id ? 'Unfollow' : member.isPending && hoverId !== member.id ? 'Pending' : member.isPending && hoverId === member.id ? 'Cancel' : 'Follow'}</button>
+                                (user && (+userId === user?.id && type !== 'followers' || +userId !== user?.id) && (member.id !== user?.id)) && 
+                                <button id={member.id} data-name={member.first_name} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} data-func={member.isFollowed ? 'unfollow' : member.isPending ? 'cancel' : 'follow'} onClick={handleFollowing} style={{backgroundColor: (member.isFollowed && hoverId === member.id) || (member.isPending && hoverId === member.id) ? '#d51111' : member.isPending || (member.isFollowed && hoverId !== member.id) ? '#181818' : null, color: member.isFollowed || member.isPending ? 'inherit' : 'black'}}>
+                                {userLoading === member.id ?
+                                <LoaderCircle  size={28} color='white' className={styles.loading}/> :
+                                member.isFollowed && hoverId !== member.id ? 'Following' : member.isFollowed && hoverId === member.id ? 'Unfollow' : member.isPending && hoverId !== member.id ? 'Pending' : member.isPending && hoverId === member.id ? 'Cancel' : 'Follow'}
+                                </button>
                                 }
-                                {(user && (member.id !== user?.id && type ==='followers')) && <button className={styles.removeFollower} id={member.id} onClick={removeFollower} data-name={member.first_name} data-func='remove-follower'>Remove</button>}
+                                {(user && (userId == user?.id) && (member.id !== user?.id && type ==='followers')) && <button className={styles.removeFollower} id={member.id} onClick={handleFollowers} data-name={member.first_name} data-func='remove-follower'>
+                                {userLoading === member.id ?
+                                <LoaderCircle  size={28} color='white' className={styles.loading}/> :
+                                'Remove'
+                                }
+                                </button>}
                             </div>
                         </li>
                     )

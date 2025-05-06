@@ -75,21 +75,21 @@ export default function Main () {
                 const otherUser = prev[userId];
                 const copy = {...prev}
                 if(otherUser) {
-                    copy[userId] = {...prev[userId],_count: {...prev[userId]._count, followers: prev[userId]._count.followers + 1}, isPending: false, isFollowed: true}
+                    copy[userId] = {...prev[userId],_count: {...prev[userId]._count, followers: prev[userId]._count.followers + 1}, isPending: false, isFollowed: true, isLocked: false}
                 }
                 if(currentUser) {
-                    copy[user.id] = {...prev[userId],_count: {...prev[userId]._count, following: prev[userId]._count.following + 1}}
+                    copy[user.id] = {...prev[user.id],_count: {...prev[user.id]._count, following: prev[user.id]._count.following + 1}}
                 }
                 return copy
             })
             setFollowage(prev => {
                 const copy = {...prev}
                 if(prev[userId]?.followers) {
-                    const {followers, ...rest} = copy[userId];
+                    const {_followers, ...rest} = copy[userId];
                     copy[userId] = rest;
                 }
                 if(prev[user.id]?.following) {
-                    const {following, ...rest} = copy[user.id];
+                    const {_following, ...rest} = copy[user.id];
                     copy[user.id] = rest;
                 }
                 return copy;
@@ -106,25 +106,25 @@ export default function Main () {
                     copy[userId] = {...prev[userId],_count: {...prev[userId]._count, followers: prev[userId]._count.followers - 1}, isPending: false, isFollowed: false}
                 }
                 if(currentUser) {
-                    copy[user.id] = {...prev[userId],_count: {...prev[userId]._count, following: prev[userId]._count.following - 1}}
+                    copy[user.id] = {...prev[user.id],_count: {...prev[user.id]._count, following: prev[user.id]._count.following - 1}}
                 }
                 return copy
             })
             setFollowage(prev => {
                 const copy = {...prev}
                 if(prev[userId]?.followers) {
-                    const {followers, ...rest} = copy[userId];
+                    const {_followers, ...rest} = copy[userId];
                     copy[userId] = rest;
                 }
                 if(prev[user.id]?.following) {
-                    const {following, ...rest} = copy[user.id];
+                    const {_following, ...rest} = copy[user.id];
                     copy[user.id] = rest;
                 }
                 return copy;
             })
             setPosts(prev => {
                 return Object.fromEntries(
-                    Object.entries(prev).filter(([id, post]) => post.authorId !== userId)
+                    Object.entries(prev).filter(([_id, post]) => post.authorId !== userId)
                 )
             })
         }
@@ -144,11 +144,11 @@ export default function Main () {
             setFollowage(prev => {
                 const copy = {...prev}
                 if(prev[user.id]?.followers) {
-                    const {followers, ...rest} = copy[user.id];
+                    const {_followers, ...rest} = copy[user.id];
                     copy[user.id] =  rest;
                 }
                 if(prev[userId]?.following) {
-                    const {following, ...rest} = copy[userId];
+                    const {_following, ...rest} = copy[userId];
                     copy[userId] =  rest;
                 }
                 return copy;
@@ -466,7 +466,7 @@ export default function Main () {
                 setPostsLoading(false)
             }
         }
-        if(!isFetched && user) {
+        if(!isFetched) {
             fetchPosts();
         }
     }, [isFetched, user])
@@ -481,7 +481,7 @@ export default function Main () {
     return (
         <div className={styles.main}>
             <Sidebar notifsCount={unseenNotificationsCount} setCreatingPost={setCreatingPost} />
-            {creatingPost && <CreatePost creatingPost={creatingPost} setCreatingPost={setCreatingPost} setProfiles={setProfiles} setPosts={setPosts}  />}
+            {creatingPost && <CreatePost creatingPost={creatingPost} setCreatingPost={setCreatingPost} setProfiles={setProfiles} setPosts={setPosts} setFullPosts={setFullPosts} />}
             <Outlet context={{posts, setPosts, postsLoading, postsError, fullPosts, setFullPosts, profiles, setProfiles, followage, setFollowage, notifications, notificationsArray, setNotifications, notifsCount, setCreatingPost}} />
             <section className={styles.right}>
                 <SearchUser />

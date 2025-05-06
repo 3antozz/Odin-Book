@@ -25,6 +25,27 @@ exports.getUser = async(username) => {
 }
 
 exports.getProfile = async(userId, clientId = 0) => {
+    if(clientId === 0) {
+        return await prisma.user.findUnique({
+            where: {
+                id: userId
+            },
+            omit: {
+                password: true,
+                pw_set: true,
+                username: true
+            },
+            include: {
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        posts: true
+                    }
+                },
+            }
+        })
+    }
     return await prisma.user.findUnique({
         where: {
             id: userId
@@ -501,13 +522,20 @@ exports.removeFollower = async(clientId, userId) => {
 // Posts ____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 // 
 
-exports.getFullPost = async(id) => {
+exports.getFullPost = async(id, clientId = 0) => {
     return await prisma.post.findUnique({
         where: {
             id
         },
         include: {
             author: {
+                include: {
+                    followers: {
+                        where: {
+                            followerId: clientId
+                        }
+                    }
+                },
                 omit: {
                     password: true,
                     bio: true,
@@ -755,7 +783,37 @@ exports.getAllPosts = async() => {
     })
 }
 
-exports.getFollowingPosts = async(userId) => {
+exports.getFollowingPosts = async(userId = 0) => {
+    if(userId === 0) {
+        return await prisma.post.findMany({
+            where: {
+                author: {
+                    isPublic: true
+                }
+            },
+            include: {
+                _count: {
+                    select: {
+                        comments: true,
+                        likes: true
+                    }
+                },
+                author: {
+                    omit: {
+                        password: true,
+                        bio: true,
+                        pw_set: true,
+                        username: true
+                    }
+                },
+                likes: {
+                    where: {
+                        userId
+                    }
+                },
+            },
+        })
+    }
     return await prisma.post.findMany({
         where: {
             OR: [
@@ -770,6 +828,11 @@ exports.getFollowingPosts = async(userId) => {
                 },
                 {
                     authorId: userId
+                },
+                {
+                    author: {
+                        isPublic: true
+                    }
                 }
             ]
         },
@@ -925,16 +988,54 @@ exports.removePostLike = async(userId, postId) => {
     })
 }
 
-exports.getPopularPosts = async(clientId) => {
+exports.getPopularPosts = async(clientId = 0) => {
+    if(clientId === 0) {
+        return await prisma.post.findMany({
+            where: {
+                author: {
+                    isPublic: true
+                }
+            },
+            include: {
+                _count: {
+                    select: {
+                        comments: true,
+                        likes: true
+                    }
+                },
+                author: {
+                    omit: {
+                        password: true,
+                        bio: true,
+                        pw_set: true,
+                        username: true
+                    }
+                },
+            },
+            orderBy: {
+                likes: {
+                    _count: 'desc'
+                }
+            },
+            take: 3
+        })
+    }
     return await prisma.post.findMany({
         where: {
             authorId: {
                 not: clientId
             },
             author: {
-                followers: {
-                    some: {followerId: clientId}
-                }
+                OR: [
+                    {
+                        followers: {
+                        some: {followerId: clientId}
+                        }
+                    },
+                    {
+                        isPublic: true
+                    }
+                ]
             }
         },
         include: {

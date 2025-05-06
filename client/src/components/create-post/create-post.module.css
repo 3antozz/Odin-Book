@@ -63,6 +63,10 @@
     margin-left: auto;
 }
 
+.post:disabled {
+    background-color: #efefef;
+}
+
 .buttons > label:hover, .file > div > button:hover {
     background-color: #2a3040;
     transform: scale(1.05);
@@ -94,7 +98,7 @@
     background-color: red;
     font-weight: bold;
     padding: 0.2rem 0.5rem;
-    border-radius: 5px;
+    border-radius: 15px;
 }
 
 .requirement {
@@ -152,6 +156,22 @@
     padding: 0.5rem 1rem;
     gap: 0.3rem;
 }
+
+
+.loading {
+    animation: 800ms linear 0s infinite loading;
+    margin: auto;
+}
+
+@keyframes loading {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(1turn);
+    }
+}
+
 
 
 

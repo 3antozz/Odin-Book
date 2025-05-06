@@ -75,7 +75,6 @@ function App() {
   useEffect(() => {
     if(user && isAuthenticated && !socketOn) {
       socket.current = io(`${import.meta.env.VITE_API_URL}`, {
-      withCredentials: true,
         query: {
           userId: user.id
         }

@@ -5,10 +5,20 @@ const fns = require('../routes/fns');
 exports.getPost = async(req, res) => {
     const userId = req.user?.id || 0;
     const postId = +req.params.postId;
-    const post = await db.getFullPost(postId);
+    const post = await db.getFullPost(postId, userId);
+    if(userId === 0 && !post.author.isPublic) {
+        const error = new Error('Unauthorized Access')
+        error.code = 401;
+        throw error;
+    }
     if(!post) {
         const error = new Error('Data not found')
         error.code = 404;
+        throw error;
+    }
+    if(post.author.id !== userId && (post.author.followers.length === 0 && !post.author.isPublic)) {
+        const error = new Error('Unauthorized Access')
+        error.code = 403;
         throw error;
     }
     const date = fns.formatDate(post.createdAt)
@@ -47,7 +57,7 @@ exports.getAllPosts = async(req, res) => {
 }
 
 exports.getFollowingPosts = async(req, res) => {
-    const userId = req.user.id;
+    const userId = req.user?.id || 0;
     const posts = await db.getFollowingPosts(userId);
     const formattedPosts = posts.map(post => {
         const date = fns.formatDate(post.createdAt)
@@ -74,7 +84,8 @@ exports.createTextPost = async(req, res) => {
     post.createdAt = date;
     const io = req.app.get('io');
     io.to(`following${userId}`).emit('new post', post);
-    res.json({post});
+    setTimeout(() => res.json({post}), 3000);
+    // res.json({post});
 }
 
 exports.deletePost = async(req, res) => {
@@ -94,7 +105,8 @@ exports.deletePost = async(req, res) => {
     await db.removePost(post.id);
     const io = req.app.get('io');
     io.to(`following${userId}`).emit('remove post', post);
-    res.json({done: true})
+    setTimeout(() => res.json({done: true}), 3000);
+    // res.json({done: true})
     if(post.public_id) {
         cloudinary.uploader.destroy(post.public_id)
     }

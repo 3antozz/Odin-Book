@@ -20,6 +20,10 @@
     background-color: rgba(30, 26, 24);
 }
 
+.fileDiv > button:disabled {
+    background-color: #efefef;
+}
+
 .topComment > a > img, .subComment > a > img {
     width: 3rem;
     border-radius: 50%;
@@ -102,6 +106,7 @@
 
 .right {
     width: 100%;
+    margin-bottom: 0.3rem;
 }
 
 .right > div {
@@ -119,12 +124,14 @@
 }
 
 .happening {
-    border-radius: 10px;
+    border-radius: 5px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
     background-color: #252525;
     width: 100%;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.465);
-    border-top: 1px solid rgba(128, 128, 128, 0.465);
-    padding: 0.5rem 1rem;
+    border: 1px solid rgba(128, 128, 128, 0.465);
+    border-right: none;
+    padding: 0.4rem 1rem;
 }
 
 .text {
@@ -138,7 +145,7 @@
 }
 
 .happening textarea {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: inherit;
     resize: none;
     flex: 1;
@@ -169,7 +176,7 @@
 
 .text button, .fileDiv > button {
     padding: 0.3rem 1rem;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: bold;
     border-radius: 20px;
     border: none;
@@ -247,6 +254,20 @@
 
 .highlighted {
     animation: 3s ease-in highlight;
+}
+
+.loading {
+    animation: 800ms linear 0s infinite loading;
+    margin: auto;
+}
+
+@keyframes loading {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(1turn);
+    }
 }
 
 @keyframes highlight {

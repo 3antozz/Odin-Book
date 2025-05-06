@@ -44,6 +44,7 @@
     width: 9rem;
     border-radius: 50%;
     flex-shrink: 0;
+    border: 1px solid rgba(128, 128, 128, 0.2);
 }
 
 .left {
@@ -233,6 +234,33 @@ input::file-selector-button {
     cursor: pointer;
 }
 
+.locked {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.locked > svg {
+    padding: 0.5rem;
+    box-sizing: content-box;
+    border: 1px solid white;
+    border-radius: 40%;
+}
+
+.lockedRight > p:last-child {
+    color: rgb(156, 156, 156);
+}
+
+.lockedRight a {
+    text-decoration: none;
+    color: red
+}
+
+.lockedRight a:hover {
+    text-decoration: underline;
+}
 .loading {
     animation: 800ms linear 0s infinite loading;
     margin: auto;

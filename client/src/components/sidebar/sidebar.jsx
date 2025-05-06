@@ -6,6 +6,13 @@ import { AuthContext } from "../../contexts"
 import { House, Bell, LogIn, User, LogOut, PencilLine } from 'lucide-react';
 const Sidebar = memo(function Sidebar ({notifsCount, setCreatingPost}) {
     const { user, logout } = useContext(AuthContext);
+    const confirmLogout = () => {
+        const confirm = window.confirm('Are you sure you want to logout?')
+        if(!confirm) {
+            return;
+        }
+        logout()
+    }
     return (
         <aside className={styles.sidebar}>
             <h2>OdinBook</h2>
@@ -18,15 +25,17 @@ const Sidebar = memo(function Sidebar ({notifsCount, setCreatingPost}) {
                 <NavLink to='/notifications' className={styles.notifications}>
                     <div>
                         <Bell size={30} />
-                        {notifsCount > 0 && 
-                        <p className={styles.count}>{notifsCount}</p>
+                        {notifsCount > 0 &&
+                        <div className={styles.countDiv}>
+                            <p className={styles.count}>{notifsCount}</p>
+                        </div> 
                         }
                     </div>
                     <p>Notifications</p>
                 </NavLink>}
                 {user && 
-                <NavLink to={`/profile/${user.id}`}>
-                    <User size={30} />
+                <NavLink to={`/profile/${user.id}`} className={styles.user}>
+                    <img src={user?.picture_url || '/no-profile-pic.jpg'} alt={`${user?.first_name} ${user?.last_name} profile picture`} />
                     <p>Profile</p>
                 </NavLink>}
                 {user && 
@@ -36,7 +45,7 @@ const Sidebar = memo(function Sidebar ({notifsCount, setCreatingPost}) {
                 </button>}
             </nav>
             {user ? 
-            <button className={styles.logout} onClick={logout}>
+            <button className={styles.logout} onClick={confirmLogout}>
                 <LogOut size={30} />
                 <p>Logout</p>
             </button> :

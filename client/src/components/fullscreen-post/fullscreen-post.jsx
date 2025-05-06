@@ -7,6 +7,8 @@ import { ArrowLeft, Heart, MessageCircle, Trash, LoaderCircle, Image as ImageIco
 import Comment from '../comment/comment';
 import Users from '../users-list/users-list'
 import Image from '../full-image/image';
+import { formatNumber } from '../../date-format'
+import Popup from '../popup/popup'
 
 export default function FullscreenPost () {
     const { user, socket } = useContext(AuthContext);
@@ -15,8 +17,9 @@ export default function FullscreenPost () {
     const location = useLocation();
     const commentLocation = new URLSearchParams(location.search).get('comment');
     const [loading, setLoading] = useState(false)
-    const [postLoading, setPostLoading] = useState(true)
+    const [postLoading, setPostLoading] = useState(false)
     const [loadingError, setLoadingError] = useState(false)
+    const [error, setError] = useState(false)
     const [postDeleted, setPostDeleted] = useState(false)
     const [imageURL, setImageURL] = useState(null)
     const [likes, setLikes] = useState(null)
@@ -88,6 +91,7 @@ export default function FullscreenPost () {
                 return;
             }
             try {
+                setLoading(true)
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/posts/${post.id}`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -120,11 +124,12 @@ export default function FullscreenPost () {
                     return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
                 })
                 setPostDeleted(true)
-                setLoadingError(false)
+                setError(false)
                 navigate(-1)
             } catch(err) {
                 console.log(err)
-                setLoadingError(true)
+                setError(true)
+                setTimeout(() => setError(false), 3000)
             } finally {
                 setLoading(false)
             }
@@ -243,8 +248,8 @@ export default function FullscreenPost () {
             const postId = +e.currentTarget.dataset.postid;
             const commentId = +e.currentTarget.id;
             const commentOn = +e.currentTarget.dataset.commenton;
-            setLoading(true)
             try {
+                setLoading(true)
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/comments/${commentId}`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -253,14 +258,18 @@ export default function FullscreenPost () {
                 if(request.status === 401) {
                     window.location.href = '/login';
                 }
-                if(request.status === 401) {
-                    window.location.href = '/login';
+                if(!request.ok) {
+                    const error = new Error('An error has occured, please try again later')
+                    throw error;
                 }
                 console.log(response);
                 if(!commentOn) {
                     setFullPosts(prev => {
                         const post = prev[postId];
                         const commentIndex = post.comments.findIndex(comment => comment.id === commentId)
+                        if(commentIndex < -1) {
+                            return prev;
+                        }
                         const comments = post.comments.slice();
                         comments.splice(commentIndex, 1)
                         return {...prev,
@@ -274,9 +283,15 @@ export default function FullscreenPost () {
                     setFullPosts(prev => {
                         const post = prev[postId];
                         const commentIndex = post.comments.findIndex(comment => comment.id === commentOn)
+                        if(commentIndex < -1) {
+                            return prev;
+                        }
                         const comments = post.comments.slice();
                         const subComments = comments[commentIndex].comments.slice();
                         const subCommentIndex = subComments.findIndex(comment => comment.id === commentId)
+                        if(subCommentIndex === -1) {
+                            return prev;
+                        }
                         subComments.splice(subCommentIndex, 1)
                         comments[commentIndex] = {
                             ...comments[commentIndex],
@@ -296,13 +311,17 @@ export default function FullscreenPost () {
                     if(!profile) return prev
                     const posts = profile.posts.slice();
                     const index = posts.findIndex(post => post.id === +postId);
+                    if(index < -1) {
+                        return prev;
+                    }
                     posts[index] = {...posts[index], _count: {...posts[index]._count, comments: posts[index]._count.comments - 1}}
                     return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
                 })
-                setLoadingError(false)
+                setError(false)
             } catch(err) {
                 console.log(err)
-                setLoadingError(true)
+                setError(true)
+                setTimeout(() => setError(false), 3000)
             } finally {
                 setLoading(false)
             }
@@ -352,6 +371,9 @@ export default function FullscreenPost () {
     }, [commentLocation])
     return (
         <>
+        <Popup borderColor='red' shouldRender={error} close={setError} >
+            <p>An error has occured, please try again later</p>
+        </Popup>
         <Image imageURL={imageURL} setImageURL={setImageURL}/>
         <Users likes={likes} setLikes={setLikes} />
         <main className={styles.main}>
@@ -359,7 +381,7 @@ export default function FullscreenPost () {
                 <Link to={-1} className={styles.close}><ArrowLeft size={35} color='white'/></Link>
                 <h1>Post</h1>
             </header>
-            {(!postLoading && !post) && 
+            {(loadingError || (!postLoading && !post)) && 
             <div className={styles.loadingDiv}>
                 <p>Couldn&apos;t Load Content</p>
             </div>
@@ -388,15 +410,17 @@ export default function FullscreenPost () {
                         <div className={styles.interactions}>
                             <div className={styles.likes}>
                                 <button onClick={handlePostClick} disabled={!user} id={post.id} data-func={post.isLiked ? "unlike" : "like"}><Heart size={35} fill={post.isLiked ? "red" : null} color={post.isLiked ? null : "white"} /></button>
-                                <button disabled={post.likes.length === 0} onClick={showLikes}><p style={{display: post.likes.length > 0 ? 'block' : 'none'}}>{post.likes.length}</p></button>
+                                <button disabled={post.likes.length === 0} onClick={showLikes}><p style={{display: post.likes.length > 0 ? 'block' : 'none'}}>{formatNumber(post.likes.length)}</p></button>
                             </div>
                             <button className={styles.comments} disabled={!user} id={post.id} data-func="comment">
                                 <MessageCircle size={35} />
-                                <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{commentsNumber}</p>
+                                <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{formatNumber(commentsNumber)}</p>
                             </button>
                             {post.authorId === user?.id &&
-                            <button className={styles.delete} onClick={handlePostClick} id={post.id} data-func="delete" data-author={post.authorId}>
-                                <Trash size={35} />
+                            <button className={styles.delete} disabled={loading} onClick={handlePostClick} id={post.id} data-func="delete" data-author={post.authorId}>
+                                {loading ? 
+                                <LoaderCircle size={35} color='white' className={styles.loading}/> :
+                                <Trash size={35} />}
                             </button>
                             }
                         </div>
@@ -407,13 +431,8 @@ export default function FullscreenPost () {
                 <AddComment postId={postId} post={post} setFullPosts={setFullPosts} setPosts={setPosts} setProfiles={setProfiles} />
                 {post && 
                 <section className={styles.commentsContainer}>
-                    {post.comments.map((comment, index) => {
-                        let isLast = false;
-                        if(index === post.comments.length - 1) {
-                            isLast = true;
-                        }
-                        return <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setFullPosts={setFullPosts} setPosts={setPosts} isLast={isLast} setLikes={setLikes} highlightedComment={commentLocation} setImageURL={setImageURL} />
-                        })}
+                    {post.comments.map((comment) => <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setFullPosts={setFullPosts} setPosts={setPosts} setLikes={setLikes} highlightedComment={commentLocation} setImageURL={setImageURL} />
+                    )}
                 </section>
                 }
             </div>
@@ -426,7 +445,6 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
     const { user } = useContext(AuthContext);
     const [commentTxt, setCommentTxt] = useState('')
     const [image, setImage] = useState(null);
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false)
     const [uploadError, setUploadError] = useState(false)
     const [isUploading, setUploading] = useState(false)
@@ -465,8 +483,8 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
         if(!commentTxt && !image) {
             return;
         }
-        setLoading(true)
         try {
+            setUploading(true)
             const form = new FormData();
             let request;
             form.append('postAuthorId', post.authorId)
@@ -523,33 +541,44 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
         } catch(err) {
             console.log(err)
             setError(true)
+            setTimeout(() => setError(false), 3000)
         } finally {
-            setLoading(false)
+            setUploading(false)
         }
     }
-    useEffect(() => setOpen(false), [])
+    useEffect(() => setOpen((prev) => prev ? false : prev), [])
     return (
-        <section className={styles.happening}>
+        <>
+        <Popup borderColor='red' shouldRender={error} close={setError} >
+            <p>An error has occured, please try again later</p>
+        </Popup>
+        <section className={styles.happening} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 130)}>
             <form onSubmit={createComment}>
                 <div className={styles.text}>
                     <img src={user?.picture_url || '/no-profile-pic.jpg'} alt={`${user?.first_name} ${user?.last_name} profile picture`} />
                     <label htmlFor="post"></label>
-                    <textarea placeholder={user ? "Comment on the post" : "Login to comment"} disabled={!user} value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post" onClick={() => setOpen(true)} style={{height: isOpen ? '5rem' : null}}></textarea>
-                    {!isOpen && <button disabled={!user} type='button'>Reply</button>}
+                    <textarea placeholder={user ? "Comment on the post" : "Login to comment"} disabled={!post || !user || isUploading} value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post" style={{height: isOpen ? '6rem' : image ? '6rem' : null}}></textarea>
+                    {(!isOpen && !image) && <button disabled={!post || !user} type='submit'>Reply</button>}
                 </div>
+                {(isOpen || image) &&
                 <div className={styles.fileDiv}>
-                   {isOpen && (<label htmlFor="image" disabled={isUploading} className={styles.label}>{!isUploading ? <ImageIcon color='white' size={29} /> : <LoaderCircle  size={40} color='white' className={styles.loading}/>}</label>)}
+                    <label htmlFor="image" className={styles.label}>
+                    <ImageIcon color='white' size={29} /></label>
                     <div className={styles.file} ref={fileDivRef}>
                         <div>
-                            <input type="file" id="image" accept='image/*' onChange={handleFileClick} />
+                            <input type="file" disabled={isUploading} id="image" accept='image/*' onChange={handleFileClick} />
                             <button onClick={cancelFile}><Trash color='white' size={24} /></button>
                         </div>
                     </div>
-                    {isOpen && <button type='submit'>Reply</button>}
+                    <button type='submit' disabled={isUploading}>{isUploading ? 
+                    <LoaderCircle  size={33} color='#2a3040' className={styles.loading}/> : 'Reply'}
+                    </button>
                 </div>
+                }
                 {uploadError ? <p className={styles.fileError}>{uploadError}</p> : <p className={styles.requirement} id='max-size' ref={requirement}>* Max size: 5 MB</p>}
             </form>
         </section>
+        </>
     )
 }
 

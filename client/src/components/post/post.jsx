@@ -2,8 +2,10 @@ import styles from './post.module.css'
 import { Link, useNavigate } from 'react-router'
 import PropTypes from 'prop-types'
 import { useContext, useState, memo } from 'react';
-import { Heart, MessageCircle, Trash} from 'lucide-react';
+import { Heart, MessageCircle, Trash, LoaderCircle} from 'lucide-react';
 import { AuthContext } from '../../contexts'
+import { formatNumber } from '../../date-format'
+import Popup from '../popup/popup'
 const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
     const { user, socket } = useContext(AuthContext);
     const commentsNumber = post._count.comments;
@@ -90,6 +92,7 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
                 return;
             }
             try {
+                setLoading(true)
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/posts/${post.id}`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -126,12 +129,17 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
             } catch(err) {
                 console.log(err)
                 setError(true)
+                setTimeout(() => setError(false), 3000)
             } finally {
                 setLoading(false)
             }
         }
     }
     return (
+        <>
+        <Popup borderColor='red' shouldRender={error} close={setError} >
+            <p>An error has occured, please try again later</p>
+        </Popup>
         <article className={styles.post} role="button" onClick={handlePostClick} tabIndex={0} data-func='comment' id={post.id}>
             <Link to={`/profile/${post.authorId}`}
             onClick={(e) => e.stopPropagation()}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} loading='lazy' /></Link>
@@ -147,22 +155,25 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
                     <img src={post.picture_url} alt={post.content} loading='lazy' />}
                 </div>
                  <div className={styles.interactions}>
-                    <button className={styles.likes} disabled={!user} onClick={handlePostClick} id={post.id} data-func={post.isLiked ? "unlike" : "like"} data-author={post.authorId}>
+                    <button className={styles.likes} disabled={!user || loading} onClick={handlePostClick} id={post.id} data-func={post.isLiked ? "unlike" : "like"} data-author={post.authorId}>
                         <Heart size={35} fill={post.isLiked ? "red" : null} color={post.isLiked ? null : "white"} />
-                        <p style={{display: post._count.likes > 0 ? 'block' : 'none'}}>{post._count.likes}</p>
+                        <p style={{display: post._count.likes > 0 ? 'block' : 'none'}}>{formatNumber(post._count.likes)}</p>
                     </button>
-                    <button className={styles.comments} onClick={handlePostClick} id={post.id} data-func="comment">
+                    <button className={styles.comments} disabled={loading} onClick={handlePostClick} id={post.id} data-func="comment">
                         <MessageCircle size={35} />
-                        <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{commentsNumber}</p>
+                        <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{formatNumber(commentsNumber)}</p>
                     </button>
                     {post.authorId === user?.id &&
-                        <button className={styles.delete} onClick={handlePostClick} id={post.id} data-func="delete" data-author={post.authorId}>
-                            <Trash size={35} />
+                        <button className={styles.delete} disabled={loading} onClick={handlePostClick} id={post.id} data-func="delete" data-author={post.authorId}>
+                            {loading ? 
+                            <LoaderCircle size={35} color='white' className={styles.loading}/> :
+                            <Trash size={35} />}
                         </button>
                     }
                 </div>
             </div>
         </article>
+        </>
     )
 })
 

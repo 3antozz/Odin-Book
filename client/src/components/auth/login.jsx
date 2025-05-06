@@ -1,19 +1,21 @@
 import styles from './layout.module.css'
 import { useState } from "react"
-import { useNavigate, Link } from "react-router"
+import { Link, useOutletContext } from "react-router"
 import { useContext } from 'react'
 import { AuthContext } from "../../contexts"
 import Popup from "../popup/popup"
 import { LoaderCircle } from 'lucide-react'
 export default function Login () {
-    const navigate = useNavigate();
-    const { setAuthentication } = useContext(AuthContext)
+    const { user, setAuthentication } = useContext(AuthContext)
+    const {success, setSuccess} = useOutletContext()
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState(null);
-    const [success, setSuccess] = useState(false)
     const handleSubmit = async(e) => {
+        if(user) {
+            return;
+        }
         e.preventDefault();
         try {
             setLoading(true)
@@ -40,13 +42,10 @@ export default function Login () {
                 if(!success) {
                     setSuccess(false)
                 }
-            }, 2500)
-            setErrors(null)
-            setAuthentication(true)
-            setTimeout(() => {
-                navigate('/')
                 setLoading(false)
             }, 3000)
+            setErrors(null)
+            setAuthentication(true)
         } catch(err) {
             if(err.errors) {
                 setErrors(err.errors)

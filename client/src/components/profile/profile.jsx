@@ -1,15 +1,17 @@
 import styles from './profile.module.css'
 import { useState, useContext, useEffect, useMemo} from 'react'
 import { useOutletContext, useParams, Link } from 'react-router'
-import { ArrowLeft, CalendarDays, LoaderCircle } from 'lucide-react'
+import { ArrowLeft, CalendarDays, LoaderCircle, Lock } from 'lucide-react'
 import { AuthContext } from '../../contexts'
 import Post from '../post/post'
 import Users from '../users-list/users-list'
+import { formatNumber } from '../../date-format'
+import Popup from '../popup/popup'
 export default function Profile () {
     const { user } = useContext(AuthContext);
     const { userId }  = useParams();
     const { setPosts, profiles, setProfiles, followage, setFollowage, setFullPosts } = useOutletContext();
-    const [profileLoading, setProfileLoading] = useState(true)
+    const [profileLoading, setProfileLoading] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
     const [type, setType] = useState(null)
@@ -23,6 +25,7 @@ export default function Profile () {
     const [profileError, setProfileError] = useState(null);
     const [profileSuccess, setProfileSuccess] = useState(false)
     const profile = useMemo(() => profiles[userId], [userId, profiles])
+    console.log(profile)
     const handleEditButton = () => {
         setEdit(prev => {
             setFirstName(profile?.first_name);
@@ -39,6 +42,7 @@ export default function Profile () {
                 return;
             }
             try {
+                setLoading(true)
                 const userId = +e.target.id
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/followage/unfollow/${userId}`, {
                     method: 'DELETE',
@@ -53,10 +57,10 @@ export default function Profile () {
                 }
                 const response = await request.json();
                 console.log(response)
-                setProfiles(prev => ({...prev, [profile.id]: {...prev[profile.id], isFollowed: false, _count: {...prev[profile.id]._count, followers: prev[profile.id]._count.followers - 1}}}))
+                setProfiles(prev => (prev[userId] ? {...prev, [userId]: {...prev[userId], isFollowed: false, isLocked: true, _count: {...prev[userId]._count, followers: prev[userId]._count.followers - 1}}} : prev))
                 setPosts(prev => {
                     return Object.fromEntries(
-                        Object.entries(prev).filter(([id, post]) => post.authorId !== userId)
+                        Object.entries(prev).filter(([_id, post]) => post.authorId !== userId)
                     )
                 })
                 const isFetched = followage[profile.id]?.[type];
@@ -76,7 +80,7 @@ export default function Profile () {
                             followage[index].following = {...followage[index].following, isFollowed: false}
                         }
                         return {...prev,
-                            [profile.id]: {...prev[profile.id],
+                            [profile.idd]: {...prev[profile.id],
                             [type]: followage}}
                     })
                 }
@@ -84,12 +88,14 @@ export default function Profile () {
             } catch(err) {
                 console.log(err)
                 setError(true)
+                setTimeout(() => setError(false), 3000)
             } finally {
                 setLoading(false)
             }
         } else if(e.currentTarget.dataset.func === 'follow') {
             try {
-                const userId = e.target.id
+                setLoading(true)
+                const userId = +e.target.id
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/followage/send/${userId}`, {
                     method: 'POST',
                     credentials: 'include',
@@ -103,7 +109,7 @@ export default function Profile () {
                 }
                 const response = await request.json();
                 console.log(response)
-                setProfiles(prev => ({...prev, [profile.id]: {...prev[profile.id], isPending: true}}))
+                setProfiles(prev => ({...prev, [userId]: {...prev[userId], isPending: true}}))
                 const isFetched = followage[profile.id]?.[type];
                 if(isFetched) {
                     setFollowage(prev => {
@@ -129,6 +135,7 @@ export default function Profile () {
             } catch(err) {
                 console.log(err)
                 setError(true)
+                setTimeout(() => setError(false), 3000)
             } finally {
                 setLoading(false)
             }
@@ -138,7 +145,8 @@ export default function Profile () {
                 return;
             }
             try {
-                const userId = e.target.id
+                setLoading(true)
+                const userId = +e.target.id;
                 const request = await fetch(`${import.meta.env.VITE_API_URL}/followage/cancel-request/${userId}`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -152,7 +160,7 @@ export default function Profile () {
                 }
                 const response = await request.json();
                 console.log(response)
-                setProfiles(prev => ({...prev, [profile.id]: {...prev[profile.id], isPending: false, isFollowed: false}}))
+                setProfiles(prev => ({...prev, [userId]: {...prev[userId], isPending: false, isFollowed: false}}))
                 const isFetched = followage[profile.id]?.[type];
                 if(isFetched) {
                     setFollowage(prev => {
@@ -178,6 +186,7 @@ export default function Profile () {
             } catch(err) {
                 console.log(err)
                 setError(true)
+                setTimeout(() => setError(false), 3000)
             } finally {
                 setLoading(false)
             }
@@ -185,6 +194,7 @@ export default function Profile () {
     }
     const acceptRequest = async() => {
         try {
+            setLoading(true)
             const request = await fetch(`${import.meta.env.VITE_API_URL}/followage/accept/${profile.id}`, {
                 method: 'POST',
                 credentials: 'include',
@@ -212,6 +222,7 @@ export default function Profile () {
         } catch(err) {
             console.log(err)
             setError(true)
+            setTimeout(() => setError(false), 3000)
         } finally {
             setLoading(false)
         }
@@ -222,6 +233,7 @@ export default function Profile () {
             return;
         }
         try {
+            setLoading(true)
             const request = await fetch(`${import.meta.env.VITE_API_URL}/followage/reject/${profile.id}`, {
                 method: 'DELETE',
                 credentials: 'include',
@@ -240,6 +252,7 @@ export default function Profile () {
         } catch(err) {
             console.log(err)
             setError(true)
+            setTimeout(() => setError(false), 3000)
         } finally {
             setLoading(false)
         }
@@ -251,7 +264,8 @@ export default function Profile () {
             return;
         }
         try {
-            const userId = e.target.id
+            setLoading(true)
+            const userId = +e.target.id;
             const request = await fetch(`${import.meta.env.VITE_API_URL}/followage/remove-follower/${userId}`, {
                 method: 'DELETE',
                 credentials: 'include',
@@ -278,6 +292,7 @@ export default function Profile () {
         } catch(err) {
             console.log(err)
             setError(true)
+            setTimeout(() => setError(false), 3000)
         } finally {
             setLoading(false)
         }
@@ -409,13 +424,18 @@ export default function Profile () {
             const profile = profiles[userId];
             if(!profile) {
                 fetchProfile();
-            } else {
-                setProfileLoading(false)
             }
         }
     }, [userId, profiles, setProfiles])
     return (
         <>
+        <Popup borderColor={error ? 'red' : profileSuccess ? '#00d846' : null} shouldRender={error || profileSuccess} close={setError} >
+            {profileSuccess ? 
+            <p>Profile edited successfully</p>
+            :
+            <p>An error has occured, please try again later</p>
+            }
+        </Popup>
         <Users userId={userId} type={type} setType={setType} handleFollowage={handleFollowage} followage={followage} setFollowage={setFollowage} removeFollower={removeFollower} />
         <main className={styles.main}>
             <header>
@@ -444,8 +464,16 @@ export default function Profile () {
                         <div>
                             <p><em>{profile.first_name} has requested to follow you</em></p>
                             <div className={styles.buttons}>
-                                <button onClick={acceptRequest}>Accept</button>
-                                <button onClick={cancelRequest}>Cancel</button>
+                                <button disabled={loading} onClick={acceptRequest}>
+                                    {loading ? 
+                                    <LoaderCircle  size={28} color='white' className={styles.loading}/> :
+                                    'Accept'}
+                                    </button>
+                                <button disabled={loading} onClick={cancelRequest}>
+                                    {loading ? 
+                                    <LoaderCircle  size={28} color='white' className={styles.loading}/> :
+                                    'Cancel'}
+                                </button>
                             </div>
                         </div>
                     </section>}
@@ -461,7 +489,10 @@ export default function Profile () {
                         {user && (!edit ?
                         <div className={styles.top}>
                             <p className={styles.name}>{profile.first_name} {profile.last_name}</p>
-                            {profile.id !== user.id ? <button id={profile.id} data-name={profile.first_name} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} data-func={profile.isFollowed ? 'unfollow' : profile.isPending ? 'cancel' : 'follow'} onClick={handleFollowage} style={{backgroundColor: (profile.isFollowed && isHovered) || (profile.isPending && isHovered) ? 'red' : profile.isPending || (profile.isFollowed && !isHovered) ? '#181818' : null, color: profile.isFollowed || profile.isPending ? 'inherit' : 'black'}}>{profile.isFollowed && !isHovered ? 'Following' : profile.isFollowed && isHovered ? 'Unfollow' : profile.isPending && !isHovered ? 'Pending' : profile.isPending && isHovered ? 'Cancel' : 'Follow'}</button> :
+                            {profile.id !== user.id ? <button id={profile.id} disabled={loading} data-name={profile.first_name} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} data-func={profile.isFollowed ? 'unfollow' : profile.isPending ? 'cancel' : 'follow'} onClick={handleFollowage} style={{backgroundColor: (profile.isFollowed && isHovered) || (profile.isPending && isHovered) ? 'red' : profile.isPending || (profile.isFollowed && !isHovered) ? '#181818' : null, color: profile.isFollowed || profile.isPending ? 'inherit' : 'black'}}>
+                                {loading ? 
+                                <LoaderCircle  size={30} color='white' className={styles.loading}/>
+                                : profile.isFollowed && !isHovered ? 'Following' : profile.isFollowed && isHovered ? 'Unfollow' : profile.isPending && !isHovered ? 'Pending' : profile.isPending && isHovered ? 'Cancel' : 'Follow'}</button> :
                             <button style={{color: 'black'}} onClick={handleEditButton}>Edit</button>}
                         </div> :
                         <form onSubmit={editProfile} className={styles.profileForm}>
@@ -486,9 +517,9 @@ export default function Profile () {
                         )}
                         {!edit && <p className={styles.bio}>{profile.bio}</p>}
                         <div className={styles.followage}>
-                            <button onClick={() => setType('following')}><em>{profile._count.following}</em> Following</button>
-                            <button onClick={() => setType('followers')}><em>{profile._count.followers}</em> Followers</button>
-                            <p><em>{profile.posts.length}</em> Posts</p>
+                            <button disabled={profile.isLocked} onClick={() => setType('following')}><em>{formatNumber(profile._count.following)}</em> Following</button>
+                            <button disabled={profile.isLocked} onClick={() => setType('followers')}><em>{formatNumber(profile._count.followers)}</em> Followers</button>
+                            <p><em>{formatNumber(profile._count?.posts || profile.posts?.length)}</em> Posts</p>
                         </div>
                         <div className={styles.joinDate}>
                             <CalendarDays size={20} color='rgb(149, 149, 149)' />
@@ -497,7 +528,20 @@ export default function Profile () {
                     </div>
                 </section>
                 <h2>Posts</h2>
-                {profile.posts.map(post => <Post key={post.id} post={post} setPosts={setPosts} setProfiles={setProfiles} setFullPosts={setFullPosts} />)}
+                {profile.isLocked ? 
+                <div className={styles.locked}>
+                    <Lock size={25} />
+                    <div className={styles.lockedRight}>
+                        <p><em>This account is private</em></p>
+                        <p>{user ? 'Follow to see their posts' :
+                        <>
+                        <Link to='/login'>Login</Link>
+                        &nbsp;to follow them
+                        </>
+                        }</p>
+                    </div>
+                </div> :
+                profile.posts.map(post => <Post key={post.id} post={post} setPosts={setPosts} setProfiles={setProfiles} setFullPosts={setFullPosts} />)}
             </div>}
         </main>
         </>

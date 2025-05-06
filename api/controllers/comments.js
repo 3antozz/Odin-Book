@@ -16,7 +16,8 @@ exports.createPostTextComment = async(req, res) => {
     if(notification) {
         io.to(`user${postAuthorId}`).emit('notification', notification);
     }
-    res.json({comment})
+    setTimeout(() => res.json({comment}), 3000)
+    // res.json({comment})
 }
 
 exports.createPostImageComment = async(req, res) => {
@@ -71,7 +72,8 @@ exports.createCommentTextComment = async(req, res) => {
         io.to(`user${notif.userId}`).emit('notification', notification)
         io.to(`user${notif.userId}`).emit('new comment', comment)
     })
-    res.json({comment})
+    setTimeout(() => res.json({comment}), 3000)
+    // res.json({comment})
 }
 
 exports.createCommentImageComment = async(req, res) => {
@@ -128,21 +130,13 @@ exports.deleteComment = async(req, res) => {
     } else if (comment.commentOnId) {
         comment.commentOn.comments.forEach((comment2) => (comment2.authorId !== userId) && io.to(`user${comment2.authorId}`).emit('delete comment', comment))
     }
-    res.json({done: true})
+    setTimeout(() => res.json({done: true}), 3000)
+    // res.json({done: true})
     if(comment.public_id) {
         cloudinary.uploader.destroy(comment.public_id)
     }
 }
 
-// exports.likeComment = async(req, res) => {
-//     const userId = req.user.id;
-//     const commentId = +req.params.commentId;
-//     const {like, notification} = await db.likeComment(userId, commentId)
-//     const io = req.app.get('io');
-//     io.to(`user${like.comment.authorId}`).emit('new like', like);
-//     io.to(`user${like.comment.authorId}`).emit('notification', notification);
-//     res.json({done: true})
-// }
 
 exports.likeComment = async(userId, commentId) => {
     return await db.likeComment(userId, commentId)
@@ -151,10 +145,3 @@ exports.likeComment = async(userId, commentId) => {
 exports.removeCommentLike = async(userId, commentId) => {
     return await db.removeCommentLike(userId, commentId)
 }
-
-// exports.removeCommentLike = async(req, res) => {
-//     const userId = req.user.id;
-//     const commentId = +req.params.commentId;
-//     await db.removeCommentLike(userId, commentId)
-//     res.json({done: true})
-// }

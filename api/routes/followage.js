@@ -17,5 +17,9 @@ router.delete('/unfollow/:userId', fns.checkAuth, asyncHandler(controller.unfoll
 
 router.delete('/remove-follower/:userId', fns.checkAuth, asyncHandler(controller.removeFollower))
 
+router.get('/:userId/following', asyncHandler(controller.getFollowing))
+
+router.get('/:userId/followers', asyncHandler(controller.getFollowers))
+
 
 module.exports = router;

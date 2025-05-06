@@ -52,7 +52,7 @@ const SearchUser = memo(function CreatePost () {
             setResult(response.users);
             setCache(prev => ({...prev, [query]: response.users}))
         } catch(err) {
-            if (err.name !== "AbortError") console.error(err);
+            if (err.name !== "AbortError") setError(true);
         } finally {
             setLoading(false)
         }

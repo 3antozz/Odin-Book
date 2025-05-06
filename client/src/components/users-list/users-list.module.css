@@ -3,7 +3,7 @@
     height: 100vh;
     width: 100%;
     background-color: rgba(0, 0, 0, 0.464);
-    z-index: 9999999;
+    z-index: 9999;
     align-content: center;
     top: 0;
     left: 0;
@@ -128,6 +128,7 @@
     aspect-ratio: 1/1;
     border-radius: 50%;
     align-self: flex-start;
+    border: 1px solid rgba(128, 128, 128, 0.2);
 }
 
 .memberButton > button, .memberButton > div > button {
