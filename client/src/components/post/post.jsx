@@ -4,9 +4,9 @@ import PropTypes from 'prop-types'
 import { useContext, useState, memo } from 'react';
 import { Heart, MessageCircle, Trash, LoaderCircle} from 'lucide-react';
 import { AuthContext } from '../../contexts'
-import { formatNumber } from '../../date-format'
+import { formatNumber, formatPostDate } from '../../date-format'
 import Popup from '../popup/popup'
-const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
+const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts}) {
     const { user, socket } = useContext(AuthContext);
     const commentsNumber = post._count.comments;
     const [error, setError] = useState(false)
@@ -26,10 +26,10 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
                         }
                         return {...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, likes: prev[postId]._count.likes + 1}, isLiked: true}
                     }})
-                    setProfiles(prev => {
-                        const profile = prev[profileId];
+                    setCachedUsers(prev => {
+                        const profile = prev[profileId]?.posts;
                         if(!profile) return prev
-                        const posts = profile.posts.slice();
+                        const posts = profile.slice();
                         const index = posts.findIndex(post => post.id === postId);
                         posts[index] = {...posts[index], isLiked: true, _count: {...posts[index]._count, likes: posts[index]._count.likes + 1}}
                         return {...prev, [profileId]: {...prev[profileId], posts}}
@@ -54,10 +54,10 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
                             }
                             return {...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, likes: prev[postId]._count.likes - 1} , isLiked: false}
                         }})
-                        setProfiles(prev => {
-                            const profile = prev[profileId];
+                        setCachedUsers(prev => {
+                            const profile = prev[profileId]?.posts;
                             if(!profile) return prev;
-                            const posts = profile.posts.slice();
+                            const posts = profile.slice();
                             const index = posts.findIndex(post => post.id === postId);
                             posts[index] = {...posts[index], isLiked: false, _count: {...posts[index]._count, likes: posts[index]._count.likes - 1}}
                             return {...prev, [profileId]: {...prev[profileId], posts}}
@@ -84,6 +84,7 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
               return;
             }
             navigate(`/post/${postId}`)
+            window.scrollTo({top: 0, behavior: 'instant'})
         } else if (e.currentTarget.dataset.func === 'delete') {
             const profileId = +e.currentTarget.dataset.author;
             const postId = e.currentTarget.id;
@@ -111,10 +112,10 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
                     delete posts[post.id]
                     return posts
                 })
-                setProfiles(prev => {
-                    const profile = prev[profileId];
+                setCachedUsers(prev => {
+                    const profile = prev[profileId]?.posts;
                     if(!profile) return prev;
-                    const posts = profile.posts.slice();
+                    const posts = profile.slice();
                     const index = posts.findIndex(post2 => post2.id === post.id);
                     posts.splice(index, 1)
                     return {...prev, [profileId]: {...prev[profileId], posts}}
@@ -147,7 +148,7 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
                 <div className={styles.info}>
                     <Link to={`/profile/${post.authorId}`} onClick={(e) => e.stopPropagation()
                 }><p>{post.author.first_name} {post.author.last_name}</p></Link>
-                    <p>• {post.createdAt}</p>
+                    <p>• {formatPostDate(post.createdAt)}</p>
                 </div>
                 <div className={styles.content}>
                     <p>{post.content}</p>
@@ -181,7 +182,7 @@ const Post = memo(function Post ({post, setPosts, setProfiles, setFullPosts}) {
 Post.propTypes = {
     post: PropTypes.object.isRequired,
     setPosts: PropTypes.func.isRequired,
-    setProfiles: PropTypes.func.isRequired,
+    setCachedUsers: PropTypes.func.isRequired,
     setFullPosts: PropTypes.func.isRequired,
 }
 

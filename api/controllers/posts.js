@@ -1,6 +1,5 @@
 const db = require('../db/queries');
 const { cloudinary } = require('../routes/uploadConfig')
-const fns = require('../routes/fns');
 
 exports.getPost = async(req, res) => {
     const userId = req.user?.id || 0;
@@ -21,8 +20,6 @@ exports.getPost = async(req, res) => {
         error.code = 403;
         throw error;
     }
-    const date = fns.formatDate(post.createdAt)
-    post.createdAt = date;
     for(const like of post.likes) {
         if(like.userId === userId) {
             post.isLiked = true;
@@ -30,7 +27,6 @@ exports.getPost = async(req, res) => {
         }
     }
     for(const comment1 of post.comments) {
-        comment1.createdAt = fns.formatDate(comment1.createdAt)
         for(const like of comment1.likes) {
             if(like.userId === userId) {
                 comment1.isLiked = true;
@@ -38,7 +34,6 @@ exports.getPost = async(req, res) => {
             }
         }
         for(const comment2 of comment1.comments) {
-            comment2.createdAt = fns.formatDate(comment2.createdAt)
             for(const like of comment2.likes) {
                 if(like.userId === userId) {
                     comment2.isLiked = true;
@@ -60,15 +55,12 @@ exports.getFollowingPosts = async(req, res) => {
     const userId = req.user?.id || 0;
     const posts = await db.getFollowingPosts(userId);
     const formattedPosts = posts.map(post => {
-        const date = fns.formatDate(post.createdAt)
-        post.createdAt = date;
         if(post.likes.length > 0) {
             post.isLiked = true;
         }
         return post;
     })
-    setTimeout(() => res.json({posts: formattedPosts}), 3000)
-    // res.json({posts: formattedPosts})
+    res.json({posts: formattedPosts})
 }
 
 exports.createTextPost = async(req, res) => {
@@ -80,8 +72,6 @@ exports.createTextPost = async(req, res) => {
         throw error;
     }
     const post = await db.createPost(userId, content)
-    const date = fns.formatDate(post.createdAt)
-    post.createdAt = date;
     const io = req.app.get('io');
     io.to(`following${userId}`).emit('new post', post);
     setTimeout(() => res.json({post}), 3000);
@@ -132,8 +122,6 @@ exports.createImagePost = async(req, res) => {
         }).end(req.file.buffer);
     });
     const post = await db.createPost(userId, content, uploadResult.secure_url, uploadResult.public_id)
-    const date = fns.formatDate(post.createdAt)
-    post.createdAt = date;
     const io = req.app.get('io');
     io.to(`following${userId}`).emit('new post', post);
     res.json({post});

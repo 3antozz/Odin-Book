@@ -86,8 +86,7 @@ exports.getFollowers = async(req, res) => {
         })
         profile.followers = taggedFollowers;
     }
-    setTimeout(() => res.json({profile}), 3000)
-    // res.json({profile})
+    res.json({profile})
 }
 
 exports.getFollowing = async(req, res) => {
@@ -113,6 +112,5 @@ exports.getFollowing = async(req, res) => {
         })
         profile.following = taggedFollowers;
     }
-    setTimeout(() => res.json({profile}), 3000)
-    // res.json({profile})
+    res.json({profile})
 }

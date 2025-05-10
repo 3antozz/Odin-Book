@@ -1,5 +1,4 @@
 const db = require('../db/queries');
-const fns = require('../routes/fns');
 const { cloudinary } = require('../routes/uploadConfig')
 const { validationResult } = require('express-validator');
 
@@ -17,31 +16,33 @@ exports.getProfile = async(req, res) => {
         error.code = 404;
         throw error;
     }
-    profile.join_date = fns.formatDateWithoutTimeAndDay(profile.join_date);
-    const formattedPosts = profile.posts.map(post => {
-        const date = fns.formatDate(post.createdAt)
-        post.createdAt = date;
-        if(post.likes.length > 0) {
-            post.isLiked = true;
+    if(req.user) {
+        const formattedPosts = profile.posts.map(post => {
+            if(post.likes.length > 0) {
+                post.isLiked = true;
+            }
+            return post;
+        })
+        profile.posts = formattedPosts
+        if(req.user !== 0 && profile.id !== clientId) {
+            if(profile.sent_requests.length > 0) {
+                profile.hasRequested = true
+            }
+            if(profile.received_requests.length > 0) {
+                profile.isPending = true
+            }
         }
-        return post;
-    })
-    profile.posts = formattedPosts
+    }
     if(profile.followers?.length > 0 || profile.id === clientId) {
         profile.isFollowed = true
     } else if (profile.id !== clientId) {
         profile.isLocked = true;
     }
-    if(req.user && req.user !== 0 && profile.id !== clientId) {
-        if(profile.sent_requests.length > 0) {
-            profile.hasRequested = true
-        }
-        if(profile.received_requests.length > 0) {
-            profile.isPending = true
-        }
+    if(!req.user) {
+        profile.isLoggedOut = true;
+        profile.posts = [];
     }
-    setTimeout(() => res.json({profile}), 3000)
-    // res.json({profile})
+    res.json({profile})
 }
 
 exports.getAllUsers = async(req, res) => {

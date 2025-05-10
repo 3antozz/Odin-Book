@@ -1,20 +1,5 @@
-.main {
-    width: 42rem;
-    border: 1px solid rgba(128, 128, 128, 0.465);
-    border-top: none;
-    padding: 0.5rem 0;
-    z-index: 99;
-}
-
 .container {
     border-top: 1px solid rgba(128, 128, 128, 0.465);
-}
-
-.main header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.5rem 0.5rem;
 }
 
 .close {
@@ -78,7 +63,8 @@ em {
 .followage {
     display: flex;
     align-items: center;
-    gap: 1.2rem;
+    justify-content: center;
+    gap: 3.5rem;
     margin-bottom: 1rem;
     font-size: 1.1rem;
 }
@@ -89,6 +75,7 @@ em {
     cursor: pointer;
     background: none;
     border: none;
+    padding: 0;
 }
 
 .followage button:hover {
@@ -127,9 +114,9 @@ em {
     color: black;
 }
 
-.edit:hover, .cancel:hover {
+.edit:hover, .cancel:hover, .top > button:hover {
     transform: scale(1.05);
-    filter: brightness(0.8);
+    filter: brightness(0.85);
 }
 
 .cancel {
@@ -208,9 +195,13 @@ em {
     font-size: 1.1rem;
     color: inherit;
     padding: 0.3rem 0.5rem;
-    flex: 1;
     border: 2px solid grey;
 }
+
+.profileForm textarea:focus {
+    height: 120px;
+}
+
 
 .profileForm ul {
     background-color: red;
@@ -282,6 +273,35 @@ input::file-selector-button {
     }
     100% {
         transform: rotate(1turn);
+    }
+}
+
+@media (max-width: 500px) {
+    .info {
+        align-items: stretch;
+    }
+    .info img {
+        margin: auto;
+    }
+    .top {
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .followage {
+        justify-content: space-between;
+    }
+    .main em {
+        display: block;
+        text-align: center;
+    }
+
+    .followage button, .followage > p {
+        font-size: 0.95rem;
+    }
+
+    .profileForm input[type='text'], .profileForm textarea {
+        font-size: 1rem;
     }
 }
 

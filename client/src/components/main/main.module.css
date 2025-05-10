@@ -1,5 +1,24 @@
+main {
+    width: 42rem;
+    max-width: 42rem;
+    border: 1px solid rgba(128, 128, 128, 0.465);
+    border-top: none;
+    padding-bottom: 0.5rem;
+    z-index: 99;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0.5rem;
+}
+
+header h1 {
+    font-size: max(2.5vw, 1.6rem);
+}
+
 .main {
-    padding: 0 1rem;
     display: flex;
     justify-content: center;
 }
@@ -17,25 +36,17 @@
 }
 
 .loadingDiv p {
-    font-size: 1.5vw;
+    font-size: max(1.2rem, 1.5vw);
     margin-top: 0.5rem;
     font-weight: 500;
 }
 
-@keyframes loading {
-    0% {
-        transform: rotate(0);
-    }
-    100% {
-        transform: rotate(1turn);
-    }
-}
 
 .bottom {
     text-align: center;
     color: grey;
     font-size: 0.8rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.2rem;
 }
 
 .bottom a {
@@ -58,5 +69,50 @@
     width: 350px;
     overflow-y: auto;
 }
-@media (max-width: 800px) {
+
+.right > *:nth-child(2), .right > *:nth-child(3) {
+    margin: 0.4rem 0;
+}
+
+.container > *:last-child {
+    display: none;
+}
+
+@keyframes loading {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(1turn);
+    }
+}
+
+@media (max-width: 900px) {
+    .right {
+        display: none;
+    }
+}
+
+@media (max-width: 500px) {
+    .container {
+        height: 100dvh;
+        overflow-y: auto;
+    }
+    .container > *:last-child {
+        display: flex;
+    }
+
+    .main > *:first-child {
+        display: none;
+    }
+
+    .main {
+        display: flex;
+        flex-direction: column;
+    }
+    main {
+        width: 100%;
+        border: none;
+        min-height: 100dvh;
+    }
 }

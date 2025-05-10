@@ -97,7 +97,7 @@
 }
 
 .members li {
-    padding: 0.15rem 1rem;
+    padding: 0 1rem;
     list-style: none;
 }
 
@@ -216,6 +216,30 @@
     }
     100% {
         transform: rotate(1turn);
+    }
+}
+
+@media (max-width: 900px) {
+    .backdrop {
+        align-content: normal;
+    }
+    .addUsers {
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .addUsers {
+        width: 100%;
+    }
+    .head > h2 {
+        font-size: 1.3rem;
+    }
+    .memberButton {
+        font-size: 0.9rem;
+    }
+    .member img{
+        width: 2.6rem;
     }
 }
 

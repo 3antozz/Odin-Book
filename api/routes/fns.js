@@ -1,4 +1,3 @@
-const { format } = require('date-fns')
 exports.checkAuth = (req, res, next) => {
     if(req.isAuthenticated()) {
         next();
@@ -7,16 +6,4 @@ exports.checkAuth = (req, res, next) => {
         error.code = 401;
         next(error); 
     }
-}
-
-exports.formatDate = (date) => {
-    return format(new Date(date), 'PP, H:mm');
-}
-
-exports.formatDateWithoutTime = (date) => {
-    return format(new Date(date), 'PP');
-}
-
-exports.formatDateWithoutTimeAndDay = (date) => {
-    return format(new Date(date), 'MMMM y');
 }

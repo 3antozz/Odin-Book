@@ -118,3 +118,19 @@
         transform: rotate(1turn);
     }
 }
+
+@media (max-width: 500px) {
+    .post {
+        padding: 0.9rem;
+        gap: 0.8rem;
+    }
+    .info > a  {
+        font-size: 0.95rem;
+    }
+    .info > p:last-of-type {
+        font-size: 0.9rem;
+    }
+    .interactions > button svg {
+        width: 2.1rem;
+    }
+}

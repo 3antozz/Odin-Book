@@ -25,7 +25,7 @@
 }
 
 .topComment > a > img, .subComment > a > img {
-    width: 3rem;
+    width: 2.8rem;
     border-radius: 50%;
     border: 1px solid rgba(128, 128, 128, 0.2);
     flex-shrink: 0;
@@ -106,7 +106,6 @@
 
 .right {
     width: 100%;
-    margin-bottom: 0.3rem;
 }
 
 .right > div {
@@ -117,6 +116,10 @@
     max-height: 400px;
     border-radius: 5px;
     cursor: pointer;
+}
+
+.content {
+    padding-right: 1rem;
 }
 
 .content > p {
@@ -154,6 +157,7 @@
     border: none;
     border-radius: 5px;
     height: 2.8rem;
+    width: 100%;
 }
 
 .text textarea:focus {
@@ -163,10 +167,9 @@
 }
 
 .happening form img {
-    width: 2.75rem;
+    width: 2.6rem;
     border-radius: 50%;
     border: 1px solid rgba(128, 128, 128, 0.2);
-    flex-shrink: 0;
 }
 
 .text button {
@@ -252,6 +255,10 @@
     margin-left: 3rem;
 }
 
+.send {
+    display: none;
+}
+
 .highlighted {
     animation: 3s ease-in highlight;
 }
@@ -276,5 +283,32 @@
     }
     to {
         background-color: #181818;
+    }
+}
+
+@media (max-width: 500px) {
+    .text button, .fileDiv > button {
+        padding: 0.3rem 0.7rem;
+    }
+    .send {
+        display: block;
+    }
+    .send + p {
+        display: none;
+    }
+    .topComment > a > img, .subComment > a > img {
+        width: 2.5rem;
+    }
+}
+
+@media (max-width: 350px) {
+    .happening form img {
+        display: none;
+    }
+    .fileDiv {
+        margin-left: 0;
+    }
+    .send {
+        width: 1.3rem;
     }
 }

@@ -368,7 +368,7 @@ exports.searchUsers = async(value, clientId) => {
     })
 }
 
-exports.getMostFollowedUsers = async(clientId) => {
+exports.getMostFollowedUsers = async(clientId = 0) => {
     return await prisma.user.findMany({
         where: {
             id: {
@@ -391,7 +391,7 @@ exports.getMostFollowedUsers = async(clientId) => {
                 select: {
                     followers: true
                 }
-            }
+            },
         },
         take: 3
     })

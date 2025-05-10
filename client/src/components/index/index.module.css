@@ -1,16 +1,7 @@
-.main {
-    border: 1px solid rgba(128, 128, 128, 0.465);
-    border-top: none;
-    width: 42rem;
-    padding-top: 0.5rem;
-    padding: 0.5rem 0;
-    z-index: 99;
-}
-
 .happening {
     margin: 0 auto;
     width: 100%;
-    padding: 1rem;
+    padding: 0.8rem 1rem;
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -63,12 +54,12 @@
 
 .loadingDiv {
     align-content: center;
-    height: 50%;
+    height: 50dvh;
     text-align: center;
 }
 
 .main h1 {
-    font-size: 1.5vw;
+    font-size: max(1.1rem, 1.5vw);
 }
 
 @keyframes loading {
@@ -77,5 +68,11 @@
     }
     100% {
         transform: rotate(1turn);
+    }
+}
+
+@media (max-width: 900px) {
+    .happening {
+        display: none;
     }
 }

@@ -5,13 +5,16 @@ import Post from '../post/post'
 import PropTypes from 'prop-types'
 import { AuthContext } from '../../contexts'
 import { Image, LoaderCircle } from 'lucide-react';
+import SearchUser from '../search-user/search-user';
+import { Virtuoso } from 'react-virtuoso'
 export default function Index () {
     const { user } = useContext(AuthContext);
-    const { posts, postsLoading, postsError, setPosts, setProfiles, setFullPosts, setCreatingPost } = useOutletContext();
+    const { posts, postsLoading, postsError, setPosts, setCachedUsers, setFullPosts, setCreatingPost } = useOutletContext();
     const postsArray = useMemo(() => Object.values(posts).reverse(), [posts])
     return (
         <main className={styles.main}>
-            <AddPost setPosts={setPosts} setProfiles={setProfiles} setCreatingPost={setCreatingPost} />
+            <SearchUser />
+            <AddPost setPosts={setPosts} setCachedUsers={setCachedUsers} setCreatingPost={setCreatingPost} />
             {postsLoading ? 
             <div className={styles.loadingDiv}>
                 <LoaderCircle className={styles.loading} size={40} />
@@ -20,7 +23,7 @@ export default function Index () {
             <div className={styles.loadingDiv}>
                 <h1>An Error has occured, please try again later.</h1>
             </div> : postsArray.length > 0 ?
-            postsArray.map(post => <Post key={post.id} post={post} setPosts={setPosts} setProfiles={setProfiles} setFullPosts={setFullPosts} />) : (postsArray.length > 0 && user) ?
+            postsArray.map(post => <Post key={post.id} post={post} setPosts={setPosts} setCachedUsers={setCachedUsers} setFullPosts={setFullPosts} />) : (postsArray.length > 0 && user) ?
             <div className={styles.loadingDiv}>
                 <h1>Follow users to see their posts</h1>
             </div> :

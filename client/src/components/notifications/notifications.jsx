@@ -3,7 +3,7 @@ import { useContext, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useOutletContext, Link, Navigate } from 'react-router'
 import { AuthContext } from '../../contexts'
-import { formatDate } from '../../date-format'
+import { formatPostDate } from '../../date-format'
 import { ArrowLeft, Heart, MessageSquareMore, User, Circle } from 'lucide-react';
 export default function Notifications () {
     const { user, socket } = useContext(AuthContext);
@@ -93,7 +93,7 @@ const Notification = ({notification, userId}) => {
                 <p>
                     <em>{notification.actor.first_name} {notification.actor.last_name}</em> replied to your comment.
                 </p>}
-                <p className={styles.date}>{formatDate(notification.createdAt)}</p>
+                <p className={styles.date}>{formatPostDate(notification.createdAt)}</p>
             </div>
             {!notification.seen && <Circle size={15} fill='cyan' color='cyan' className={styles.circle} />}
         </Link>

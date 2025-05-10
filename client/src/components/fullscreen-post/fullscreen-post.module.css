@@ -2,22 +2,6 @@
     border-top: 1px solid rgba(128, 128, 128, 0.465);
 }
 
-.main {
-    width: 42rem;
-    max-width: 42rem;
-    border: 1px solid rgba(128, 128, 128, 0.465);
-    border-top: none;
-    padding: 0.5rem 0;
-    z-index: 99;
-}
-
-.main header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.5rem 0.5rem;
-}
-
 .info > p:last-of-type {
     color: rgb(149, 149, 149);
 }
@@ -35,13 +19,11 @@
     background-color: #181818;
     color: white;
     padding: 1rem;
-    border-radius: 10px;
     display: flex;
     gap: 1rem;
     border-bottom: 1px solid grey;
     text-decoration: none;
     color: inherit;
-    margin-bottom: 2rem;
 }
 
 .fileDiv > button:disabled {
@@ -179,9 +161,8 @@
 }
 
 .happening form img {
-    width: 2.75rem;
+    width: 2.7rem;
     border-radius: 50%;
-    flex-shrink: 0;
     border: 1px solid rgba(128, 128, 128, 0.2);
 }
 
@@ -268,6 +249,10 @@
     margin-left: 3rem;
 }
 
+.send {
+    display: none;
+}
+
 .loading {
     animation: 800ms linear 0s infinite loading;
     margin: auto;
@@ -291,6 +276,42 @@
         transform: rotate(1turn);
     }
 }
+
+@media (max-width: 900px) {
+}
+
+
+@media (max-width: 500px) {
+    .post > a > img {
+        width: 2.8rem;
+    }
+    .happening textarea {
+        font-size: 1rem;
+    }
+    .text button, .fileDiv > button {
+        font-size: 1rem;
+        padding: 0.3rem 0.7rem;
+    }
+    .send {
+        display: block;
+    }
+    .send + p {
+        display: none;
+    }
+}
+
+@media (max-width: 350px) {
+    .happening form img {
+        display: none;
+    }
+    .fileDiv {
+        margin-left: 0;
+    }
+    .send {
+        width: 1.3rem;
+    }
+}
+
 
 
 

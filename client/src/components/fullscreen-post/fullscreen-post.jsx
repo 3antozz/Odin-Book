@@ -3,16 +3,16 @@ import {  useState, useEffect, useContext, useMemo, useRef } from 'react'
 import { useParams, Link, useOutletContext, useNavigate, useLocation } from 'react-router';
 import { AuthContext } from '../../contexts'
 import PropTypes from 'prop-types';
-import { ArrowLeft, Heart, MessageCircle, Trash, LoaderCircle, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Trash, LoaderCircle, Image as ImageIcon, Send } from 'lucide-react';
 import Comment from '../comment/comment';
 import Users from '../users-list/users-list'
 import Image from '../full-image/image';
-import { formatNumber } from '../../date-format'
+import { formatNumber, formatPostDate } from '../../date-format'
 import Popup from '../popup/popup'
 
 export default function FullscreenPost () {
     const { user, socket } = useContext(AuthContext);
-    const { setPosts, fullPosts, setFullPosts, setProfiles } = useOutletContext();
+    const { cachedUsers, setPosts, fullPosts, setFullPosts, setCachedUsers } = useOutletContext();
     const { postId }  = useParams()
     const location = useLocation();
     const commentLocation = new URLSearchParams(location.search).get('comment');
@@ -41,10 +41,10 @@ export default function FullscreenPost () {
                         }
                         return {...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, likes: prev[postId]._count.likes + 1}, isLiked: true}
                     }})
-                    setProfiles(prev => {
-                        const profile = prev[post.authorId];
+                    setCachedUsers(prev => {
+                        const profile = prev[post.authorId]?.posts;
                         if(!profile) return prev
-                        const posts = profile.posts.slice();
+                        const posts = profile.slice();
                         const index = posts.findIndex(post => post.id === postId);
                         posts[index] = {...posts[index], isLiked: true, _count: {...posts[index]._count, likes: posts[index]._count.likes + 1}}
                         return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
@@ -72,10 +72,10 @@ export default function FullscreenPost () {
                             }
                             return {...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, likes: prev[postId]._count.likes - 1} , isLiked: false}
                         }})
-                        setProfiles(prev => {
-                            const profile = prev[post.authorId];
+                        setCachedUsers(prev => {
+                            const profile = prev[post.authorId]?.posts;
                             if(!profile) return prev;
-                            const posts = profile.posts.slice();
+                            const posts = profile.slice();
                             const index = posts.findIndex(post => post.id === postId);
                             posts[index] = {...posts[index], isLiked: false, _count: {...posts[index]._count, likes: posts[index]._count.likes - 1}}
                             return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
@@ -115,10 +115,10 @@ export default function FullscreenPost () {
                     delete posts[post.id]
                     return posts
                 })
-                setProfiles(prev => {
-                    const profile = prev[post.authorId];
+                setCachedUsers(prev => {
+                    const profile = prev[post.authorId]?.posts;
                     if(!profile) return prev;
-                    const posts = profile.posts.slice();
+                    const posts = profile.slice();
                     const index = posts.findIndex(post2 => post2.id === post.id);
                     posts.splice(index, 1)
                     return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
@@ -306,10 +306,10 @@ export default function FullscreenPost () {
                 })
                 }
                 setPosts(prev => prev[postId] ? ({...prev, [postId]: {...prev[postId], _count: {...prev[postId]._count, comments: prev[postId]._count.comments - 1}}}) : null)
-                setProfiles(prev => {
-                    const profile = prev[post.authorId];
+                setCachedUsers(prev => {
+                    const profile = prev[post.authorId]?.posts;
                     if(!profile) return prev
-                    const posts = profile.posts.slice();
+                    const posts = profile.slice();
                     const index = posts.findIndex(post => post.id === +postId);
                     if(index < -1) {
                         return prev;
@@ -375,7 +375,7 @@ export default function FullscreenPost () {
             <p>An error has occured, please try again later</p>
         </Popup>
         <Image imageURL={imageURL} setImageURL={setImageURL}/>
-        <Users likes={likes} setLikes={setLikes} />
+        <Users likes={likes} setLikes={setLikes} cachedUsers={cachedUsers} />
         <main className={styles.main}>
             <header>
                 <Link to={-1} className={styles.close}><ArrowLeft size={35} color='white'/></Link>
@@ -393,14 +393,14 @@ export default function FullscreenPost () {
             </div>
             }
             <div className={styles.container}>
-                <section className={styles.post}>
+                <section className={styles.post} style={{display: !post ? 'none' : null}}>
                     {post &&
                     <>
                     <Link to={`/profile/${post.authorId}`}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} /></Link>
                     <div className={styles.right}>
                         <div className={styles.info}>
                         <Link to={`/profile/${post.authorId}`}><p>{post.author.first_name} {post.author.last_name}</p></Link>
-                            <p>• {post.createdAt}</p>
+                            <p>• {formatPostDate(post.createdAt)}</p>
                         </div>
                         <div className={styles.content}>
                             <p>{post.content}</p>
@@ -419,7 +419,7 @@ export default function FullscreenPost () {
                             {post.authorId === user?.id &&
                             <button className={styles.delete} disabled={loading} onClick={handlePostClick} id={post.id} data-func="delete" data-author={post.authorId}>
                                 {loading ? 
-                                <LoaderCircle size={35} color='white' className={styles.loading}/> :
+                                <LoaderCircle size={40} color='white' className={styles.loading}/> :
                                 <Trash size={35} />}
                             </button>
                             }
@@ -428,7 +428,7 @@ export default function FullscreenPost () {
                     </>
                     }
                 </section>
-                <AddComment postId={postId} post={post} setFullPosts={setFullPosts} setPosts={setPosts} setProfiles={setProfiles} />
+                <AddComment postId={postId} post={post} setFullPosts={setFullPosts} setPosts={setPosts} setCachedUsers={setCachedUsers} />
                 {post && 
                 <section className={styles.commentsContainer}>
                     {post.comments.map((comment) => <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setFullPosts={setFullPosts} setPosts={setPosts} setLikes={setLikes} highlightedComment={commentLocation} setImageURL={setImageURL} />
@@ -441,7 +441,7 @@ export default function FullscreenPost () {
     )
 }
 
-function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
+function AddComment ({post, postId, setPosts, setFullPosts, setCachedUsers}) {
     const { user } = useContext(AuthContext);
     const [commentTxt, setCommentTxt] = useState('')
     const [image, setImage] = useState(null);
@@ -476,7 +476,9 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
             requirement.current.style.display = 'none'
         }
         const input = document.querySelector('#image')
-        input.value = '';
+        if(input) {
+            input.value = '';
+        }
     }
     const createComment = async(e) => {
         e.preventDefault();
@@ -484,6 +486,7 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
             return;
         }
         try {
+            setOpen(true)
             setUploading(true)
             const form = new FormData();
             let request;
@@ -526,10 +529,10 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
                 if(!post) return prev;
                 return {...prev, [postId]: {...post, _count: {...post._count, comments: post._count.comments + 1}}}
             })
-            setProfiles(prev => {
-                const profile = prev[post.authorId];
+            setCachedUsers(prev => {
+                const profile = prev[post.authorId]?.posts;
                 if(!profile) return prev
-                const posts = profile.posts.slice();
+                const posts = profile.slice();
                 const index = posts.findIndex(post => post.id === +postId);
                 posts[index] = {...posts[index], _count: {...posts[index]._count, comments: posts[index]._count.comments + 1}}
                 return {...prev, [post.authorId]: {...profile, posts}}
@@ -558,7 +561,10 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
                     <img src={user?.picture_url || '/no-profile-pic.jpg'} alt={`${user?.first_name} ${user?.last_name} profile picture`} />
                     <label htmlFor="post"></label>
                     <textarea placeholder={user ? "Comment on the post" : "Login to comment"} disabled={!post || !user || isUploading} value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post" style={{height: isOpen ? '6rem' : image ? '6rem' : null}}></textarea>
-                    {(!isOpen && !image) && <button disabled={!post || !user} type='submit'>Reply</button>}
+                    {(!isOpen && !image) && <button disabled={!post || !user} type='submit'>
+                        <Send className={styles.send} />
+                        <p>Reply</p>
+                        </button>}
                 </div>
                 {(isOpen || image) &&
                 <div className={styles.fileDiv}>
@@ -571,7 +577,12 @@ function AddComment ({post, postId, setPosts, setFullPosts, setProfiles}) {
                         </div>
                     </div>
                     <button type='submit' disabled={isUploading}>{isUploading ? 
-                    <LoaderCircle  size={33} color='#2a3040' className={styles.loading}/> : 'Reply'}
+                    <LoaderCircle  size={33} color='#2a3040' className={styles.loading}/> : 
+                    <>
+                    <Send className={styles.send} />
+                    <p>Reply</p>
+                    </>
+                    }
                     </button>
                 </div>
                 }
@@ -587,7 +598,7 @@ AddComment.propTypes = {
     post: PropTypes.object.isRequired,
     setPosts: PropTypes.func.isRequired,
     setFullPosts: PropTypes.func.isRequired,
-    setProfiles: PropTypes.func.isRequired,
+    setCachedUsers: PropTypes.func.isRequired,
 }
 
 

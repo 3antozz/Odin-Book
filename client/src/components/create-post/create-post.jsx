@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { X, LoaderCircle, Image, Trash } from 'lucide-react';
 import { AuthContext } from '../../contexts'
 
-const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, setPosts, setProfiles, setFullPosts}) {
+const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, setPosts, setCachedUsers, setFullPosts}) {
     const { user } = useContext(AuthContext);
     const [postTxt, setPostTxt] = useState('')
     const [image, setImage] = useState(null);
@@ -65,11 +65,11 @@ const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, set
             console.log(response)
             setPosts(prev => ({[response.post.id]: response.post, ...prev}))
             setFullPosts((prev) => ({...prev, [response.post.id]: response.post}))
-            setProfiles(prev => {
+            setCachedUsers(prev => {
                 const profileId = response.post.authorId;
-                const profile = prev[profileId];
+                const profile = prev[profileId]?.posts;
                 if(!profile) return prev;
-                const posts = [response.post, ...profile.posts];
+                const posts = [response.post, ...profile];
                 return {...prev, [profileId]: {...prev[profileId], posts}}
             })
             setPostTxt('');
@@ -103,6 +103,7 @@ const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, set
         <dialog open={creatingPost} className={styles.backdrop}>
             <div className={styles.container}>
                 <div className={styles.head}>
+                    <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture`} />
                     <h2>Create Post</h2>
                     <button type='button' className={styles.close} onClick={() => setCreatingPost(null)}><X size={30} color='#c4c4c4'/></button>
                 </div>
@@ -140,7 +141,7 @@ CreatePost.propTypes = {
     creatingPost: PropTypes.bool.isRequired,
     setCreatingPost: PropTypes.func.isRequired,
     setPosts: PropTypes.func.isRequired,
-    setProfiles: PropTypes.func.isRequired,
+    setCachedUsers: PropTypes.func.isRequired,
     setFullPosts: PropTypes.func.isRequired,
 }
 

@@ -1,14 +1,11 @@
 const db = require('../db/queries');
 const { cloudinary } = require('../routes/uploadConfig')
-const fns = require('../routes/fns');
 
 exports.createPostTextComment = async(req, res) => {
     const userId = req.user.id;
     const postId = +req.params.postId;
     const { content, postAuthorId } = req.body;
     const { comment, notification } = await db.createPostComment(userId, postId, content);
-    const date = fns.formatDate(comment.createdAt)
-    comment.createdAt = date;
     const io = req.app.get('io');
     if(comment.authorId !== +postAuthorId) {
         io.to(`user${postAuthorId}`).emit('new comment', comment);
@@ -41,8 +38,6 @@ exports.createPostImageComment = async(req, res) => {
         }).end(req.file.buffer);
     });
     const { comment, notification } = await db.createPostComment(userId, postId, content, uploadResult.secure_url, uploadResult.public_id);
-    const date = fns.formatDate(comment.createdAt)
-    comment.createdAt = date;
     const io = req.app.get('io');
     if(comment.authorId !== +postAuthorId) {
         io.to(`user${postAuthorId}`).emit('new comment', comment);
@@ -66,7 +61,6 @@ exports.createCommentTextComment = async(req, res) => {
     } else {
         ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.post.authorId, existingComment.commentOnId, content))
     }
-    comment.createdAt = fns.formatDate(comment.createdAt)
     const io = req.app.get('io');
     notifications.forEach((notif) => {
         io.to(`user${notif.userId}`).emit('notification', notification)
@@ -105,7 +99,6 @@ exports.createCommentImageComment = async(req, res) => {
     } else {
         ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.post.authorId, existingComment.commentOnId, content, uploadResult.secure_url, uploadResult.public_id))
     }
-    comment.createdAt = fns.formatDate(comment.createdAt)
     const io = req.app.get('io');
     notifications.forEach((notif) => {
         io.to(`user${notif.userId}`).emit('notification', notification)

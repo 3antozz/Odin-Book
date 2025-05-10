@@ -3,8 +3,8 @@ import { Link } from 'react-router'
 import PropTypes from 'prop-types'
 import { useContext, useState, memo, useRef } from 'react'
 import { AuthContext } from '../../contexts'
-import { Heart, MessageCircle, Trash, Image as ImageIcon, LoaderCircle } from 'lucide-react';
-import { formatNumber } from '../../date-format'
+import { Heart, MessageCircle, Trash, Image as ImageIcon, LoaderCircle, Send } from 'lucide-react';
+import { formatNumber, formatCommentDate } from '../../date-format'
 import Popup from '../popup/popup'
 const Comment = memo(function Comment ({comment, handleClick, isSub, setPosts, setFullPosts, setLikes, setImageURL, highlightedComment}) {
     const { user } = useContext(AuthContext);
@@ -28,7 +28,7 @@ const Comment = memo(function Comment ({comment, handleClick, isSub, setPosts, s
                 <div className={styles.right}>
                     <div className={styles.info}>
                     <Link to={`/profile/${comment.authorId}`}><p>{comment.author.first_name} {comment.author.last_name}</p></Link>
-                        <p>• {comment.createdAt}</p>
+                        <p>• {formatCommentDate(comment.createdAt)}</p>
                     </div>
                     <div className={styles.content}>
                         <p>{comment.content}</p>
@@ -44,7 +44,7 @@ const Comment = memo(function Comment ({comment, handleClick, isSub, setPosts, s
                             <MessageCircle size={35} color={commentsOpen ? 'red' : 'white'} />
                             <p style={{display: commentsNumber > 0 ? 'block' : 'none'}}>{formatNumber(commentsNumber)}</p>
                         </button>}
-                        {(comment.authorId === user?.id || comment.post.authorId === user?.id) &&
+                        {(comment.authorId === user?.id || (comment.post.authorId === user?.id && !isSub)) &&
                         <button className={styles.delete} disabled={!user} onClick={handleDelete} id={comment.id} data-func="delete" data-commenton={comment.commentOnId} data-postid={comment.postId}>
                             {loading ? 
                             <LoaderCircle size={35} color='white' className={styles.loading}/> :
@@ -96,7 +96,9 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
             requirement.current.style.display = 'none'
         }
         const input = document.querySelector('#image2')
-        input.value = '';
+        if(input) {
+            input.value = '';
+        }
     }
     const createComment = async(e) => {
         e.preventDefault();
@@ -104,6 +106,7 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
             return;
         }
         setUploading(true)
+        setOpen(true)
         try {
             const form = new FormData();
             let request;
@@ -179,7 +182,10 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
                     <img src={user?.picture_url || '/no-profile-pic.jpg'} alt={`${user?.first_name} ${user?.last_name} profile picture`} />
                     <label htmlFor="post"></label>
                     <textarea placeholder={user ? `Reply to ${comment.author.first_name}` : 'Login to comment'} disabled={!user || isUploading} value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post"  style={{height: isOpen ? '5rem' : image ? '5rem' : null}}></textarea>
-                    {(!isOpen && !image) && <button disabled={!user} type='submit'>Reply</button>}
+                    {(!isOpen && !image) && <button disabled={!user} type='submit'>
+                        <Send className={styles.send} />
+                        <p>Reply</p>
+                    </button>}
                 </div>
                 {(isOpen || image) &&
                 <div className={styles.fileDiv}> 
@@ -193,7 +199,13 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
                         </div>
                     </div>
                     <button type='submit' disabled={isUploading}>{isUploading ? 
-                    <LoaderCircle  size={33} color='#2a3040' className={styles.loading}/> : 'Reply'}</button>
+                    <LoaderCircle  size={33} color='#2a3040' className={styles.loading}/> : 
+                    <>
+                    <Send className={styles.send} />
+                    <p>Reply</p>
+                    </>
+                    }
+                    </button>
                 </div>
                 }
                 {uploadError ? <p className={styles.fileError}>{uploadError}</p> : <p className={styles.requirement} id='max-size2' ref={requirement}>* Max size: 5 MB</p>}

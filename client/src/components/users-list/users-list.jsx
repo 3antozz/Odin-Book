@@ -5,7 +5,7 @@ import { Link } from 'react-router';
 import { AuthContext } from '../../contexts'
 import { X, LoaderCircle, Search } from 'lucide-react';
 
-export default function Users ({userId = null, type = null, setType = () => {}, followage = {}, setFollowage = () => {}, handleFollowage = () => {}, removeFollower = () => {}, likes = null, setLikes = () => {}}) {
+export default function Users ({userId = null, type = null, setType = () => {}, cachedUsers, setCachedUsers, followage = {}, setFollowage = () => {}, handleFollowage = () => {}, removeFollower = () => {}, likes = null, setLikes = () => {}}) {
     const { user } = useContext(AuthContext)
     const [searchValue, setSearchValue] = useState('');
     const [loading, setLoading] = useState(false)
@@ -13,14 +13,11 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
     const [hoverId, setHoverId] = useState(null)
     const [userLoading, setUserLoading] = useState(0)
     const users = followage[userId]?.[type] || likes;
-    const profile = followage[userId];
+    const profile = cachedUsers[userId];
     let filteredUsers = users;
     if(searchValue && users) {
-        filteredUsers = users.filter((user) => {
-            let profile = user;
-            if(type) {
-                profile = type === 'followers' ? user.follower : user.following;
-            }
+        filteredUsers = users.filter((id) => {
+            let profile = cachedUsers[id];
             return `${profile.first_name} ${profile.last_name}`.toLowerCase().includes(searchValue.toLowerCase()
         )});
     }
@@ -52,7 +49,22 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                 }
                 const response = await request.json();
                 console.log(response)
-                setFollowage((prev) => ({...prev, [response.profile.id]: {...prev[response.profile.id], ...response.profile}}))
+                let followIds = [];
+                setCachedUsers((prev) => {
+                    const follows = {};
+                    followIds = [];
+                    response.profile[type].forEach((follow) => {
+                        if(type === 'followers') {
+                            follows[follow.follower.id] = follow.follower
+                            followIds.push(follow.follower.id)
+                        } else if (type === 'following') {
+                            follows[follow.following.id] = follow.following
+                            followIds.push(follow.following.id)
+                        }
+                    })
+                    return {...prev, ...follows}
+                })
+                setFollowage((prev) => ({...prev, [response.profile.id]: {...prev[response.profile.id], [type]: followIds}}))
                 setLoadingError(false)
             } catch(err) {
                 console.log(err)
@@ -68,7 +80,7 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                 fetchFollowage();
             }
         }
-    }, [followage, type, userId, setType, setFollowage])
+    }, [followage, type, userId, setType, setFollowage, setCachedUsers])
     if(!loading && !users) {
         return <></>
     }
@@ -85,7 +97,7 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                 <>
                 <div className={styles.searchDiv}>
                     <label htmlFor="user" hidden>Search for a user</label>
-                    <input type="text" id='user' disabled={!profile} value={searchValue} placeholder='Search a user' onChange={(e) => setSearchValue(e.target.value)} />
+                    <input type="text" id='user' disabled={!users} value={searchValue} placeholder='Search a user' onChange={(e) => setSearchValue(e.target.value)} />
                     <Search className={styles.searchIcon}/>
                 </div>
                 {loading ? 
@@ -99,9 +111,11 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                     </div> :
                 <ul className={styles.members}>
                 {filteredUsers.map((follow) => {
-                    let member = follow;
-                    if(type) {
-                        member = type === 'followers' ? follow.follower : follow.following
+                    let member;
+                    if(!likes) {
+                        member = cachedUsers[follow];
+                    } else {
+                        member = follow;
                     }
                     return (
                         <li className={styles.member} key={member.id}>
@@ -109,14 +123,14 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                                 <Link to={`/profile/${member.id}`} onClick={() => setType(null)}><img src={member.picture_url || '/no-profile-pic.jpg'} alt={`${member.first_name} ${member.last_name} profile picture`}></img></Link>
                                 <Link to={`/profile/${member.id}`} onClick={() => setType(null)}>{member.first_name} {member.last_name}</Link>
                                 {
-                                (user && (+userId === user?.id && type !== 'followers' || +userId !== user?.id) && (member.id !== user?.id)) && 
+                                (!likes && user && (+userId === user?.id && type !== 'followers' || +userId !== user?.id) && (member.id !== user?.id)) && 
                                 <button id={member.id} data-name={member.first_name} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} data-func={member.isFollowed ? 'unfollow' : member.isPending ? 'cancel' : 'follow'} onClick={handleFollowing} style={{backgroundColor: (member.isFollowed && hoverId === member.id) || (member.isPending && hoverId === member.id) ? '#d51111' : member.isPending || (member.isFollowed && hoverId !== member.id) ? '#181818' : null, color: member.isFollowed || member.isPending ? 'inherit' : 'black'}}>
                                 {userLoading === member.id ?
                                 <LoaderCircle  size={28} color='white' className={styles.loading}/> :
                                 member.isFollowed && hoverId !== member.id ? 'Following' : member.isFollowed && hoverId === member.id ? 'Unfollow' : member.isPending && hoverId !== member.id ? 'Pending' : member.isPending && hoverId === member.id ? 'Cancel' : 'Follow'}
                                 </button>
                                 }
-                                {(user && (userId == user?.id) && (member.id !== user?.id && type ==='followers')) && <button className={styles.removeFollower} id={member.id} onClick={handleFollowers} data-name={member.first_name} data-func='remove-follower'>
+                                {!likes && (user && (userId == user?.id) && (member.id !== user?.id && type ==='followers')) && <button className={styles.removeFollower} id={member.id} onClick={handleFollowers} data-name={member.first_name} data-func='remove-follower'>
                                 {userLoading === member.id ?
                                 <LoaderCircle  size={28} color='white' className={styles.loading}/> :
                                 'Remove'
@@ -149,6 +163,8 @@ Users.propTypes = {
     removeFollower: PropTypes.func.isRequired,
     likes: PropTypes.array.isRequired,
     setLikes: PropTypes.func.isRequired,
+    cachedUsers: PropTypes.object.isRequired,
+    setCachedUsers: PropTypes.func.isRequired,
 }
 
 

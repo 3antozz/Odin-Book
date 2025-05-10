@@ -11,9 +11,9 @@ import { Link } from 'react-router'
 import { LoaderCircle } from 'lucide-react'
 export default function Main () {
     const { user, loadingUser, socket, socketOn } = useContext(AuthContext);
+    const [cachedUsers, setCachedUsers] = useState({})
     const [posts, setPosts] = useState({})
     const [fullPosts, setFullPosts] = useState({})
-    const [profiles, setProfiles] = useState({})
     const [followage, setFollowage] = useState({})
     const [notifications, setNotifications] = useState({})
     const [isFetched, setFetched] = useState(false)
@@ -52,27 +52,30 @@ export default function Main () {
             setNotifications(prev => ({...prev, [notification.id]: notification}))
         }
         const addRequest = (senderId) => {
-            setProfiles(prev => {
+            setCachedUsers(prev => {
                 const isFetched = prev[senderId];
                 if(!isFetched) return prev;
-                return {...prev, [senderId]: {...prev[senderId], hasRequested: true}}})
+                return {...prev, [senderId]: {...prev[senderId], hasRequested: true}}
+            })
         }
         const removeReceivedRequest = (senderId) => {
-            setProfiles(prev => {
+            setCachedUsers(prev => {
                 const isFetched = prev[senderId];
                 if(!isFetched) return prev;
-                return {...prev, [senderId]: {...prev[senderId], hasRequested: false}}})
+                return {...prev, [senderId]: {...prev[senderId], hasRequested: false}}
+            })
         }
         const removeRequest = (senderId) => {
-            setProfiles(prev => {
+            setCachedUsers(prev => {
                 const isFetched = prev[senderId];
                 if(!isFetched) return prev;
-                return {...prev, [senderId]: {...prev[senderId], isPending: false}}})
+                return {...prev, [senderId]: {...prev[senderId], isPending: false}}
+            })
         }
         const addFollowing = (userId) => {
-            setProfiles(prev => {
-                const currentUser = prev[user.id]
-                const otherUser = prev[userId];
+            setCachedUsers(prev => {
+                const currentUser = prev[user.id]?._count;
+                const otherUser = prev[userId]?._count;
                 const copy = {...prev}
                 if(otherUser) {
                     copy[userId] = {...prev[userId],_count: {...prev[userId]._count, followers: prev[userId]._count.followers + 1}, isPending: false, isFollowed: true, isLocked: false}
@@ -85,11 +88,13 @@ export default function Main () {
             setFollowage(prev => {
                 const copy = {...prev}
                 if(prev[userId]?.followers) {
-                    const {_followers, ...rest} = copy[userId];
+                    // eslint-disable-next-line no-unused-vars
+                    const {followers, ...rest} = copy[userId];
                     copy[userId] = rest;
                 }
                 if(prev[user.id]?.following) {
-                    const {_following, ...rest} = copy[user.id];
+                    // eslint-disable-next-line no-unused-vars
+                    const {following, ...rest} = copy[user.id];
                     copy[user.id] = rest;
                 }
                 return copy;
@@ -98,12 +103,12 @@ export default function Main () {
             setConnectedToRooms(false)
         }
         const removeFollowing = (userId) => {
-            setProfiles(prev => {
-                const currentUser = prev[user.id]
-                const otherUser = prev[userId];
+            setCachedUsers(prev => {
+                const currentUser = prev[user.id]?._count;
+                const otherUser = prev[userId]?._count;
                 const copy = {...prev}
                 if(otherUser) {
-                    copy[userId] = {...prev[userId],_count: {...prev[userId]._count, followers: prev[userId]._count.followers - 1}, isPending: false, isFollowed: false}
+                    copy[userId] = {...prev[userId], _count: {...prev[userId]._count, followers: prev[userId]._count.followers - 1}, isPending: false, isFollowed: false, isLocked: true}
                 }
                 if(currentUser) {
                     copy[user.id] = {...prev[user.id],_count: {...prev[user.id]._count, following: prev[user.id]._count.following - 1}}
@@ -113,11 +118,13 @@ export default function Main () {
             setFollowage(prev => {
                 const copy = {...prev}
                 if(prev[userId]?.followers) {
-                    const {_followers, ...rest} = copy[userId];
+                    // eslint-disable-next-line no-unused-vars
+                    const {followers, ...rest} = copy[userId];
                     copy[userId] = rest;
                 }
                 if(prev[user.id]?.following) {
-                    const {_following, ...rest} = copy[user.id];
+                    // eslint-disable-next-line no-unused-vars
+                    const {following, ...rest} = copy[user.id];
                     copy[user.id] = rest;
                 }
                 return copy;
@@ -129,9 +136,9 @@ export default function Main () {
             })
         }
         const removeFollower = (userId) => {
-            setProfiles(prev => {
-                const currentUser = prev[user.id]
-                const otherUser = prev[userId];
+            setCachedUsers(prev => {
+                const currentUser = prev[user.id]?._count;
+                const otherUser = prev[userId]?._count;
                 const copy = {...prev}
                 if(currentUser) {
                     copy[user.id] = {...prev[user.id], _count: {...prev[user.id]._count, followers: prev[user.id]._count.followers - 1}}
@@ -144,11 +151,13 @@ export default function Main () {
             setFollowage(prev => {
                 const copy = {...prev}
                 if(prev[user.id]?.followers) {
-                    const {_followers, ...rest} = copy[user.id];
+                    // eslint-disable-next-line no-unused-vars
+                    const {followers, ...rest} = copy[user.id];
                     copy[user.id] =  rest;
                 }
                 if(prev[userId]?.following) {
-                    const {_following, ...rest} = copy[userId];
+                    // eslint-disable-next-line no-unused-vars
+                    const {following, ...rest} = copy[userId];
                     copy[userId] =  rest;
                 }
                 return copy;
@@ -167,10 +176,10 @@ export default function Main () {
                 }
                 return {...prev, [like.postId]: {...prev[like.postId], _count: {...prev[like.postId]._count, likes: prev[like.postId]._count.likes + 1}}
             }})
-            setProfiles(prev => {
-                const profile = prev[like.post.authorId];
+            setCachedUsers(prev => {
+                const profile = prev[like.post.authorId]?.posts;
                 if(!profile) return prev
-                const posts = profile.posts.slice();
+                const posts = profile.slice();
                 const index = posts.findIndex(post => post.id === like.postId);
                 posts[index] = {...posts[index], _count: {...posts[index]._count, likes: posts[index]._count.likes + 1}}
                 return {...prev, [like.post.authorId]: {...prev[like.post.authorId], posts}}
@@ -178,8 +187,8 @@ export default function Main () {
         }
         const addNewPost = (post) => {
             setPosts(prev => ({...prev, [post.id]: post}))
-            setProfiles(prev => {
-                const profile = prev[post.authorId];
+            setCachedUsers(prev => {
+                const profile = prev[post.authorId]?.posts;
                 if(!profile) return prev;
                 return {...prev, [post.authorId]: {...profile, posts: [post, ...profile.posts]}}
             })
@@ -197,10 +206,10 @@ export default function Main () {
                 delete posts[post.id]
                 return posts
             })
-            setProfiles(prev => {
-                const profile = prev[post.authorId];
+            setCachedUsers(prev => {
+                const profile = prev[post.authorId]?.posts;
                 if(!profile) return prev;
-                const posts = profile.posts.slice();
+                const posts = profile.slice();
                 const index = posts.findIndex(post2 => post2.id === post.id);
                 posts.splice(index, 1)
                 return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
@@ -224,10 +233,10 @@ export default function Main () {
                 }
                 return {...prev, [like.postId]: {...prev[like.postId], _count: {...prev[like.postId]._count, likes: prev[like.postId]._count.likes - 1}}
             }})
-            setProfiles(prev => {
-                const profile = prev[like.post.authorId];
+            setCachedUsers(prev => {
+                const profile = prev[like.post.authorId]?.posts;
                 if(!profile) return prev
-                const posts = profile.posts.slice();
+                const posts = profile.slice();
                 const index = posts.findIndex(post => post.id === like.postId);
                 posts[index] = {...posts[index], _count: {...posts[index]._count, likes: posts[index]._count.likes - 1}}
                 return {...prev, [like.post.authorId]: {...prev[like.post.authorId], posts}}
@@ -353,10 +362,10 @@ export default function Main () {
                 if(!post) return prev;
                 return {...prev, [postId]: {...post, _count: {...post._count, comments: post._count.comments + 1}}}
             })
-            setProfiles(prev => {
-                const profile = prev[comment.post.authorId];
+            setCachedUsers(prev => {
+                const profile = prev[comment.post.authorId]?.posts;
                 if(!profile) return prev
-                const posts = profile.posts.slice();
+                const posts = profile.slice();
                 const index = posts.findIndex(post => post.id === +postId);
                 posts[index] = {...posts[index], _count: {...posts[index]._count, comments: posts[index]._count.comments + 1}}
                 return {...prev, [comment.post.authorId]: {...profile, posts}}
@@ -399,10 +408,10 @@ export default function Main () {
             })
             }
             setPosts(prev => prev[comment.postId] ? ({...prev, [comment.postId]: {...prev[comment.postId], _count: {...prev[comment.postId]._count, comments: prev[comment.postId]._count.comments - 1}}}) : prev)
-            setProfiles(prev => {
-                const profile = prev[comment.post.authorId];
+            setCachedUsers(prev => {
+                const profile = prev[comment.post.authorId]?.posts;
                 if(!profile) return prev
-                const posts = profile.posts.slice();
+                const posts = profile.slice();
                 const index = posts.findIndex(post => post.id === comment.postId);
                 posts[index] = {...posts[index], _count: {...posts[index]._count, comments: posts[index]._count.comments - 1}}
                 return {...prev, [comment.post.authorId]: {...prev[comment.post.authorId], posts}}
@@ -479,21 +488,26 @@ export default function Main () {
         )
     }
     return (
-        <div className={styles.main}>
-            <Sidebar notifsCount={unseenNotificationsCount} setCreatingPost={setCreatingPost} />
-            {creatingPost && <CreatePost creatingPost={creatingPost} setCreatingPost={setCreatingPost} setProfiles={setProfiles} setPosts={setPosts} setFullPosts={setFullPosts} />}
-            <Outlet context={{posts, setPosts, postsLoading, postsError, fullPosts, setFullPosts, profiles, setProfiles, followage, setFollowage, notifications, notificationsArray, setNotifications, notifsCount, setCreatingPost}} />
-            <section className={styles.right}>
-                <SearchUser />
-                <MostLiked />
-                <MostFollowed />
-                <section className={styles.bottom}>
-                    <Link to='https://github.com/3antozz/Odin-Book'>Github Repo</Link>
-                    <span> | </span>
-                    <Link to='https://github.com/3antozz'>Dev Profile</Link>
-                    <p>© 2025 3antozz</p>
+        <div className={styles.container}>
+            <div className={styles.main}>
+                <Sidebar notifsCount={unseenNotificationsCount} setCreatingPost={setCreatingPost} />
+                {creatingPost && 
+                <CreatePost creatingPost={creatingPost} setCreatingPost={setCreatingPost} setCachedUsers={setCachedUsers} setPosts={setPosts} setFullPosts={setFullPosts} />
+                }
+                <Outlet context={{cachedUsers, setCachedUsers, posts, setPosts, postsLoading, postsError, fullPosts, setFullPosts, followage, setFollowage, notifications, notificationsArray, setNotifications, notifsCount, setCreatingPost}} />
+                <section className={styles.right}>
+                    <SearchUser />
+                    <MostLiked />
+                    <MostFollowed />
+                    <section className={styles.bottom}>
+                        <Link to='https://github.com/3antozz/Odin-Book'>Github Repo</Link>
+                        <span> | </span>
+                        <Link to='https://github.com/3antozz'>Dev Profile</Link>
+                        <p>© 2025 3antozz</p>
+                    </section>
                 </section>
-            </section>
+            </div>
+            <Sidebar notifsCount={unseenNotificationsCount} setCreatingPost={setCreatingPost} />
         </div>
     )
 }

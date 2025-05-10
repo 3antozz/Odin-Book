@@ -1,9 +1,7 @@
 import styles from './search-user.module.css'
 import { memo, useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router';
-import PropTypes from 'prop-types';
-import { LoaderCircle, Search } from 'lucide-react';
-import { AuthContext } from '../../contexts'
+import { LoaderCircle, Search, X } from 'lucide-react';
 
 const SearchUser = memo(function CreatePost () {
     const [result, setResult] = useState([])
@@ -65,12 +63,16 @@ const SearchUser = memo(function CreatePost () {
     }, [])
     return (
         <section className={styles.searchContainer}>
-            <div className={styles.searchDiv}>
-                <label htmlFor="search" hidden>Search for a user</label>
-                <input type="text" id="search" placeholder='Search' value={value} onChange={handleInput} />
-                <Search className={styles.searchIcon}/>
+            <div className={styles.top}>
+                <img src="/circ.png" alt="Odinbook logo" />
+                <div className={styles.searchDiv}>
+                    <label htmlFor="search" hidden>Search for a user</label>
+                    <input type="text" id="search" placeholder='Search' value={value} onChange={handleInput} />
+                    <Search className={styles.searchIcon}/>
+                </div>
             </div>
             <div className={styles.result}>
+                <button type='button' className={styles.close} onClick={() => document.activeElement.blur()}><X size={25} color='#c4c4c4'/></button>
                 {loading ? 
                 <div className={styles.loadingDiv}>
                     <LoaderCircle className={styles.loading} size={30} />
@@ -86,7 +88,10 @@ const SearchUser = memo(function CreatePost () {
                         <p>{user.first_name} {user.last_name}</p>
                     </Link>
                 </li>
-                ) : 
+                ) :
+                (value && result.length === 0) ?
+                <p>No user found</p>
+                :
                 <p>Try searching for a user</p>}
             </div>
         </section>
