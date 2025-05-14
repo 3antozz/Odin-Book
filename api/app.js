@@ -5,6 +5,7 @@ const { createServer } = require('node:http');
 const { Server } = require('socket.io');
 const session = require('express-session');
 require('dotenv').config()
+require('./db/seed');
 const passport = require('passport');
 const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
 const prisma = require('./db/client')
@@ -47,8 +48,8 @@ const corsOptions = {
 };
 const sessionMiddleware = session({
       cookie: {
-       maxAge: 15 * 60 * 1000, // ms  15 mins
-    //    secure: true
+      maxAge: 3 * 24 * 60 * 60 * 1000, // ms  3 days
+      secure: true
       },
       secret: process.env.SESSION_SECRET,
       resave: false,
@@ -75,6 +76,10 @@ app.set('io', io)
 
 io.on('connection', (socket) => {
   socket.on('join rooms', (followingIds) => {
+    const socketId = socket.id;
+    const allRooms = socket.rooms;
+    const roomsToLeave = [...allRooms].filter(room => room !== socketId && !followingIds.includes(room));
+    roomsToLeave.forEach(room => socket.leave(room));
     socket.join([`user${socket.handshake.query.userId}`, ...followingIds]);
   })
   socket.on('post like', async(postId, callback) => {
@@ -145,7 +150,6 @@ io.on('connection', (socket) => {
         socket.emit('error', { message: "An error has occured" });
     }
   });
-  socket.on('disconnect', () => console.log('user disconnected'))
 });
 
 

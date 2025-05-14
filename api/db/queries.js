@@ -1219,7 +1219,7 @@ exports.createCommentOnComment = async(userId, postId, postAuthorId, commentId, 
             commentId,
         }
     ))
-    if(comment.authorId !== comment.post.authorId) {
+    if(comment.authorId !== comment.post.authorId && comment.commentOn.authorId !== comment.post.authorId) {
         notificationsData.push({
             userId: comment.post.authorId,
             type: 'Comment',

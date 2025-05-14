@@ -9,9 +9,10 @@ import Users from '../users-list/users-list'
 import Image from '../full-image/image';
 import { formatNumber, formatPostDate } from '../../date-format'
 import Popup from '../popup/popup'
+import { Virtuoso } from 'react-virtuoso'
 
 export default function FullscreenPost () {
-    const { user, socket } = useContext(AuthContext);
+    const { user, socket, containerRef } = useContext(AuthContext);
     const { cachedUsers, setPosts, fullPosts, setFullPosts, setCachedUsers } = useOutletContext();
     const { postId }  = useParams()
     const location = useLocation();
@@ -23,8 +24,10 @@ export default function FullscreenPost () {
     const [postDeleted, setPostDeleted] = useState(false)
     const [imageURL, setImageURL] = useState(null)
     const [likes, setLikes] = useState(null)
+    const [hasScrolled, setHasScrolled] = useState(false)
     const navigate = useNavigate()
     const post = useMemo(() => fullPosts[postId], [postId, fullPosts])
+    const virtuosoRef = useRef(null)
     const commentsNumber = useMemo(() => post && post.comments.reduce((total, current) => 
         total + 1 + current.comments.length, 0), [post])
     const handlePostClick = async(e) => {
@@ -50,8 +53,10 @@ export default function FullscreenPost () {
                         return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
                     })
                 })
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
+                setError(true)
+                setTimeout(() => setError(false), 3000)
             }
         } else if (e.currentTarget.dataset.func === 'unlike') {
             const postId = +e.currentTarget.id;
@@ -82,8 +87,10 @@ export default function FullscreenPost () {
                         })
                     }
                 })
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
+                setError(true)
+                setTimeout(() => setError(false), 3000)
             }
         } else if (e.currentTarget.dataset.func === 'delete') {
             const confirm = window.confirm('Are you sure you want to delete this post?')
@@ -103,8 +110,6 @@ export default function FullscreenPost () {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
                 }
-                const response = await request.json();
-                console.log(response)
                 setFullPosts(prev => {
                     const fullPosts = {...prev};
                     delete fullPosts[post.id]
@@ -126,8 +131,8 @@ export default function FullscreenPost () {
                 setPostDeleted(true)
                 setError(false)
                 navigate(-1)
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
                 setError(true)
                 setTimeout(() => setError(false), 3000)
             } finally {
@@ -184,8 +189,10 @@ export default function FullscreenPost () {
                         })
                     }
                 })
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
+                setError(true)
+                setTimeout(() => setError(false), 3000)
             }
         } else if (e.currentTarget.dataset.func === 'unlike') {
             const commentId = +e.currentTarget.id;
@@ -237,8 +244,10 @@ export default function FullscreenPost () {
                         })
                     }
                 })
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
+                setError(true)
+                setTimeout(() => setError(false), 3000)
             }
         } else if (e.currentTarget.dataset.func === 'delete') {
             const confirm = window.confirm('Are you sure you want to delete this comment?')
@@ -254,7 +263,6 @@ export default function FullscreenPost () {
                     method: 'DELETE',
                     credentials: 'include',
                 })
-                const response = await request.json();
                 if(request.status === 401) {
                     window.location.href = '/login';
                 }
@@ -262,7 +270,7 @@ export default function FullscreenPost () {
                     const error = new Error('An error has occured, please try again later')
                     throw error;
                 }
-                console.log(response);
+                
                 if(!commentOn) {
                     setFullPosts(prev => {
                         const post = prev[postId];
@@ -318,8 +326,8 @@ export default function FullscreenPost () {
                     return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
                 })
                 setError(false)
-            } catch(err) {
-                console.log(err)
+            // eslint-disable-next-line no-unused-vars
+            } catch(err) {            
                 setError(true)
                 setTimeout(() => setError(false), 3000)
             } finally {
@@ -347,11 +355,11 @@ export default function FullscreenPost () {
                     throw error;
                 }
                 const response = await request.json();
-                console.log(response)
+                
                 setFullPosts((prev) => ({...prev, [response.post.id]: response.post}))
                 setLoadingError(false)
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
                 setLoadingError(true);
             } finally {
                 setPostLoading(false)
@@ -365,10 +373,28 @@ export default function FullscreenPost () {
         }
     }, [postId, fullPosts, postDeleted, setFullPosts])
     useEffect(() => {
-        setTimeout(() => {
-            commentLocation && document.querySelector(`#comment-${commentLocation}`) && document.querySelector(`#comment-${commentLocation}`).scrollIntoView({behavior: 'smooth', block: 'center'})
-        }, 500)
-    }, [commentLocation])
+        if(!virtuosoRef.current) {
+            return;
+        }
+        if (!postLoading && commentLocation && !hasScrolled) {
+            const commentIdToIndexMap = Object.fromEntries(
+                post.comments.map((comment, index) => [comment.id, index])
+                );
+            const index = commentIdToIndexMap[commentLocation];
+            if (typeof index === "number") {
+                setTimeout(() => 
+                        virtuosoRef.current.scrollToIndex({
+                        index,
+                        align: "center",
+                        behavior: "smooth",
+                }), 500)
+                setHasScrolled(true)
+            }
+        }
+    }, [postLoading, commentLocation, post, hasScrolled])
+    useEffect(() =>  {
+        containerRef.current.scrollTo({top: 0, behavior: 'instant'})
+    }, [containerRef])
     return (
         <>
         <Popup borderColor='red' shouldRender={error} close={setError} >
@@ -396,7 +422,7 @@ export default function FullscreenPost () {
                 <section className={styles.post} style={{display: !post ? 'none' : null}}>
                     {post &&
                     <>
-                    <Link to={`/profile/${post.authorId}`}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} /></Link>
+                    <Link to={`/profile/${post.authorId}`}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} loading='lazy' /></Link>
                     <div className={styles.right}>
                         <div className={styles.info}>
                         <Link to={`/profile/${post.authorId}`}><p>{post.author.first_name} {post.author.last_name}</p></Link>
@@ -428,11 +454,21 @@ export default function FullscreenPost () {
                     </>
                     }
                 </section>
+                {post &&
                 <AddComment postId={postId} post={post} setFullPosts={setFullPosts} setPosts={setPosts} setCachedUsers={setCachedUsers} />
+                }
                 {post && 
                 <section className={styles.commentsContainer}>
-                    {post.comments.map((comment) => <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} setFullPosts={setFullPosts} setPosts={setPosts} setLikes={setLikes} highlightedComment={commentLocation} setImageURL={setImageURL} />
-                    )}
+                    <Virtuoso
+                        ref={virtuosoRef}
+                        customScrollParent={containerRef.current}
+                        increaseViewportBy={{bottom: 200, top: 200}}
+                        data={post.comments}
+                        itemContent={(index, comment) => {
+                            const isLast = index === post.comments.length-1 ? true : false;
+                            return <Comment key={comment.id} comment={comment} handleClick={handleCommentClick} isSub={false} isLast={isLast} setFullPosts={setFullPosts} setPosts={setPosts} setLikes={setLikes} highlightedComment={commentLocation} setImageURL={setImageURL} />
+                        }}
+                    />
                 </section>
                 }
             </div>
@@ -450,6 +486,7 @@ function AddComment ({post, postId, setPosts, setFullPosts, setCachedUsers}) {
     const [isUploading, setUploading] = useState(false)
     const [isOpen, setOpen] = useState(false)
     const fileDivRef = useRef(null);
+    const fileClickedRef = useRef(false);
     const requirement = useRef(document.querySelector('#max-size'))
     const handleFileClick = (e) => {
         const file = e.target.files[0];
@@ -522,7 +559,7 @@ function AddComment ({post, postId, setPosts, setFullPosts, setCachedUsers}) {
                 throw error;
             }
             const response = await request.json();
-            console.log(response);
+            
             setFullPosts(prev => ({...prev, [postId]: {...prev[postId], comments: [response.comment, ...prev[postId].comments]}}))
             setPosts(prev => {
                 const post = prev[postId];
@@ -541,24 +578,39 @@ function AddComment ({post, postId, setPosts, setFullPosts, setCachedUsers}) {
             setCommentTxt('')
             setOpen(false)
             cancelFile()
-        } catch(err) {
-            console.log(err)
+        // eslint-disable-next-line no-unused-vars
+        } catch(err) {        
             setError(true)
             setTimeout(() => setError(false), 3000)
         } finally {
             setUploading(false)
         }
     }
+    const handleInputClick = () => {
+        fileClickedRef.current = true;
+    };
+
+    const handleBlur = () => {
+        setTimeout(() => {
+            if (fileClickedRef.current) {
+                fileClickedRef.current = false;
+                return;
+            }
+            if (!commentTxt && !image) {
+                setOpen(false);
+            }
+        }, 100);
+    };
     useEffect(() => setOpen((prev) => prev ? false : prev), [])
     return (
         <>
         <Popup borderColor='red' shouldRender={error} close={setError} >
             <p>An error has occured, please try again later</p>
         </Popup>
-        <section className={styles.happening} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 130)}>
+        <section className={styles.happening} onFocus={() => setOpen(true)} onBlur={handleBlur}>
             <form onSubmit={createComment}>
                 <div className={styles.text}>
-                    <img src={user?.picture_url || '/no-profile-pic.jpg'} alt={`${user?.first_name} ${user?.last_name} profile picture`} />
+                    <img src={user?.picture_url || '/no-profile-pic.jpg'} alt={`${user?.first_name} ${user?.last_name} profile picture`} loading='lazy' />
                     <label htmlFor="post"></label>
                     <textarea placeholder={user ? "Comment on the post" : "Login to comment"} disabled={!post || !user || isUploading} value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post" style={{height: isOpen ? '6rem' : image ? '6rem' : null}}></textarea>
                     {(!isOpen && !image) && <button disabled={!post || !user} type='submit'>
@@ -572,7 +624,7 @@ function AddComment ({post, postId, setPosts, setFullPosts, setCachedUsers}) {
                     <ImageIcon color='white' size={29} /></label>
                     <div className={styles.file} ref={fileDivRef}>
                         <div>
-                            <input type="file" disabled={isUploading} id="image" accept='image/*' onChange={handleFileClick} />
+                            <input type="file" disabled={isUploading} id="image" accept='image/*' onClick={handleInputClick} onChange={handleFileClick} />
                             <button onClick={cancelFile}><Trash color='white' size={24} /></button>
                         </div>
                     </div>

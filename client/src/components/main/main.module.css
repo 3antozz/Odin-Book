@@ -1,3 +1,8 @@
+.container {
+    height: 100dvh;
+    overflow-y: auto;
+}
+
 main {
     width: 42rem;
     max-width: 42rem;
@@ -39,6 +44,11 @@ header h1 {
     font-size: max(1.2rem, 1.5vw);
     margin-top: 0.5rem;
     font-weight: 500;
+}
+
+.main + .bottom {
+    margin-bottom: 1rem;
+    display: none;
 }
 
 
@@ -91,12 +101,14 @@ header h1 {
     .right {
         display: none;
     }
+    .main + .bottom {
+        display: block;
+    }
 }
 
 @media (max-width: 500px) {
     .container {
-        height: 100dvh;
-        overflow-y: auto;
+        padding-bottom: 3rem;
     }
     .container > *:last-child {
         display: flex;

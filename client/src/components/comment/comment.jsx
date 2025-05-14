@@ -6,10 +6,12 @@ import { AuthContext } from '../../contexts'
 import { Heart, MessageCircle, Trash, Image as ImageIcon, LoaderCircle, Send } from 'lucide-react';
 import { formatNumber, formatCommentDate } from '../../date-format'
 import Popup from '../popup/popup'
-const Comment = memo(function Comment ({comment, handleClick, isSub, setPosts, setFullPosts, setLikes, setImageURL, highlightedComment}) {
-    const { user } = useContext(AuthContext);
+import { Virtuoso } from 'react-virtuoso'
+const Comment = memo(function Comment ({comment, handleClick, isSub, isLast = false, setPosts, setFullPosts, setLikes, setImageURL, highlightedComment}) {
+    const { user, containerRef } = useContext(AuthContext);
     const [commentsOpen, setCommentsOpen] = useState(false);
     const [loading, setLoading] = useState(false)
+    const subComment = useRef(null);
     const commentsNumber = comment.comments.length;
     const showLikes = () => {
         const users = [];
@@ -21,9 +23,12 @@ const Comment = memo(function Comment ({comment, handleClick, isSub, setPosts, s
         await handleClick(e);
         setLoading(false)
     }
+    const scrollToSubcomments = () => {
+        setTimeout(() => subComment.current.scrollIntoView({behavior: 'smooth', block: 'start' }), 50)
+    }
     return (
-        <section id={`comment-${comment.id}`} className={`${styles.comment} ${comment.id == highlightedComment ? styles.highlighted : ''}`} style={{borderBottom: isSub ? null : "2px solid grey"}}>
-            <section className={isSub ? styles.subComment : styles.topComment}>
+        <section id={`comment-${comment.id}`} className={`${styles.comment} ${comment.id == highlightedComment ? styles.highlighted : ''}`} style={{borderBottom: isSub || isLast ? null : "2px solid grey"}} ref={!isSub ? subComment : null}>
+            <section className={isSub ? styles.subComment : styles.topComment} id={isSub ? `subComment${comment.id}` : null} >
             <Link to={`/profile/${comment.authorId}`}><img src={comment.author.picture_url || '/no-profile-pic.jpg'} alt={`${comment.author.first_name} ${comment.author.last_name} profile picture`} loading='lazy' /></Link>
                 <div className={styles.right}>
                     <div className={styles.info}>
@@ -52,10 +57,19 @@ const Comment = memo(function Comment ({comment, handleClick, isSub, setPosts, s
                         </button>
                         }
                     </div>
-                    {commentsOpen && <AddSubComment comment={comment} setPosts={setPosts} setFullPosts={setFullPosts} />}
                 </div>
             </section>
-            {(commentsOpen && !isSub && comment.comments.length > 0) && comment.comments.map(comment2 => <Comment key={comment2.id} comment={comment2} handleClick={handleClick} isSub={true} setLikes={setLikes} setImageURL={setImageURL}/>)}
+            {commentsOpen &&
+            <div className={styles.animate} onAnimationEnd={scrollToSubcomments}>
+                <AddSubComment comment={comment} setPosts={setPosts} setFullPosts={setFullPosts} />
+                {(!isSub && comment.comments.length > 0) &&
+                <Virtuoso
+                    increaseViewportBy={{bottom: 200, top: 200}}
+                    customScrollParent={containerRef.current}
+                    data={comment.comments}
+                    itemContent={(_, comment2) => (<Comment key={comment2.id} comment={comment2} handleClick={handleClick} isSub={true} setLikes={setLikes} setImageURL={setImageURL}/>)}
+                />}
+            </div>}
         </section>
     )
 })
@@ -69,6 +83,7 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
     const [isUploading, setUploading] = useState(false)
     const [isOpen, setOpen] = useState(false)
     const fileDivRef = useRef(null);
+    const fileClickedRef = useRef(false);
     const requirement = useRef(document.querySelector('#max-size2'))
     const postId = comment.postId;
     const handleFileClick = (e) => {
@@ -142,7 +157,7 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
                 const error = new Error('An error has occured, please try again later')
                 throw error;
             }
-            console.log(response);
+            
             setFullPosts(prev => {
                 const post = prev[postId];
                 const commentIndex = post.comments.findIndex(comment2 => comment2.id === comment.id)
@@ -163,23 +178,38 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
             setCommentTxt('');
             cancelFile();
             setOpen(false)
-        } catch(err) {
-            console.log(err)
+        // eslint-disable-next-line no-unused-vars
+        } catch(err) {    
             setError(true)
             setTimeout(() => setError(false), 3000)
         } finally {
             setUploading(false)
         }
     }
+    const handleInputClick = () => {
+        fileClickedRef.current = true;
+    };
+
+    const handleBlur = () => {
+        setTimeout(() => {
+            if (fileClickedRef.current) {
+                fileClickedRef.current = false;
+                return;
+            }
+            if (!commentTxt && !image) {
+                setOpen(false);
+            }
+        }, 100);
+    };
     return (
         <>
         <Popup borderColor='red' shouldRender={error} close={setError} >
             <p>An error has occured, please try again later</p>
         </Popup>
-        <section className={styles.happening} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 130)}>
+        <section className={styles.happening} onFocus={() => setOpen(true)} onBlur={handleBlur} style={{marginLeft: isOpen ? '0' : null, paddingLeft: !isOpen ? '0' : '1rem'}}>
             <form onSubmit={createComment}>
                 <div className={styles.text}>
-                    <img src={user?.picture_url || '/no-profile-pic.jpg'} alt={`${user?.first_name} ${user?.last_name} profile picture`} />
+                    <img src={user?.picture_url || '/no-profile-pic.jpg'} alt={`${user?.first_name} ${user?.last_name} profile picture`} loading='lazy' />
                     <label htmlFor="post"></label>
                     <textarea placeholder={user ? `Reply to ${comment.author.first_name}` : 'Login to comment'} disabled={!user || isUploading} value={commentTxt} onChange={(e) => setCommentTxt(e.target.value)} id="post"  style={{height: isOpen ? '5rem' : image ? '5rem' : null}}></textarea>
                     {(!isOpen && !image) && <button disabled={!user} type='submit'>
@@ -194,7 +224,7 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
                     </label>
                     <div className={styles.file} ref={fileDivRef}>
                         <div>
-                            <input type="file" id="image2" disabled={isUploading} accept='image/*' onChange={handleFileClick} />
+                            <input type="file" id="image2" disabled={isUploading} accept='image/*' onChange={handleFileClick} onClick={handleInputClick} />
                             <button onClick={cancelFile}><Trash color='white' size={24} /></button>
                         </div>
                     </div>
@@ -220,6 +250,7 @@ Comment.propTypes = {
     comment: PropTypes.object.isRequired,
     handleClick: PropTypes.func.isRequired,
     isSub: PropTypes.bool.isRequired,
+    isLast: PropTypes.bool.isRequired,
     setPosts: PropTypes.func.isRequired,
     setFullPosts: PropTypes.func.isRequired,
     setLikes: PropTypes.func.isRequired,

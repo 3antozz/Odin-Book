@@ -23,8 +23,9 @@ export default function Notifications () {
                         })
                     }
                 })
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
+                console.log('Error')
             }
         }
         const count = notifsCount.current
@@ -41,6 +42,10 @@ export default function Notifications () {
             </header>
             <ul className={styles.notifications}>
                 {
+                notificationsArray.length === 0 ?
+                <div className={styles.noNotifs}>
+                    <p>No notifications yet</p>
+                </div> :
                 notificationsArray.map(notification => <Notification key={notification.id} userId={user.id} notification={notification}/>)
                 }
             </ul>
@@ -56,8 +61,8 @@ const Notification = ({notification, userId}) => {
             <div className={styles.left}>
                 <img src={notification.actor.picture_url || '/no-profile-pic.jpg'} alt={`${notification.actor.first_name} ${notification.actor.last_name} profile picture`} loading='lazy' />
                 {(notification.type === 'Request_received' || notification.type === 'Request_accepted') ? 
-                <User size={24} fill='white' style={{backgroundColor: '#4444b0'}} /> : notification.type === 'Like' ?
-                <Heart size={24} fill='white' style={{backgroundColor: 'red'}} /> : <MessageSquareMore size={24} style={{backgroundColor: '#139c13'}} fill='white' />
+                <User size={24} fill='white' style={{backgroundColor: 'rgb(90 93 255)'}} /> : notification.type === 'Like' ?
+                <Heart size={24} fill='white' style={{backgroundColor: 'red'}} /> : <MessageSquareMore size={24} style={{backgroundColor: 'rgb(14 176 14)'}} fill='white' />
                 }
             </div>
             <div className={styles.right}>

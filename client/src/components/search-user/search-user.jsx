@@ -46,7 +46,7 @@ const SearchUser = memo(function CreatePost () {
                 throw error;
             }
             const response = await request.json();
-            console.log(response)
+            
             setResult(response.users);
             setCache(prev => ({...prev, [query]: response.users}))
         } catch(err) {

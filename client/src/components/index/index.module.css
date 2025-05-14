@@ -62,6 +62,27 @@
     font-size: max(1.1rem, 1.5vw);
 }
 
+.main > .bottom {
+    margin-bottom: 1rem;
+    display: none;
+}
+
+.bottom {
+    text-align: center;
+    color: grey;
+    font-size: 0.8rem;
+    margin-bottom: 0.2rem;
+}
+
+.bottom a {
+    text-decoration: none;
+    color: grey;
+}
+
+.bottom a:hover {
+    text-decoration: underline;
+}
+
 @keyframes loading {
     0% {
         transform: rotate(0);
@@ -74,5 +95,8 @@
 @media (max-width: 900px) {
     .happening {
         display: none;
+    }
+    .main > .bottom {
+        display: block;
     }
 }

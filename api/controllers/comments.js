@@ -62,8 +62,12 @@ exports.createCommentTextComment = async(req, res) => {
         ({comment, notification, notifications} = await db.createCommentOnComment(userId, +postId, existingComment.post.authorId, existingComment.commentOnId, content))
     }
     const io = req.app.get('io');
+    if(comment.commentOn.authorId !== userId) {
+        io.to(`user${comment.commentOn.authorId}`).emit('notification', notification)
+        io.to(`user${comment.commentOn.authorId}`).emit('new comment', comment)
+    }
     notifications.forEach((notif) => {
-        io.to(`user${notif.userId}`).emit('notification', notification)
+        io.to(`user${notif.userId}`).emit('notification', notif)
         io.to(`user${notif.userId}`).emit('new comment', comment)
     })
     setTimeout(() => res.json({comment}), 3000)

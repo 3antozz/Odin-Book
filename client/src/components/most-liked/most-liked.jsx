@@ -26,12 +26,12 @@ const MostLiked = memo(function CreatePost () {
                     throw error;
                 }
                 const response = await request.json();
-                console.log(response)
+                
                 setPosts(response.posts);
                 setFetched(true)
                 setError(false)
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.error(err);
                 setError(true)
             } finally {
                 setLoading(false)

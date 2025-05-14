@@ -62,7 +62,7 @@ const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, set
                 const error = new Error(response.message)
                 throw error;
             }
-            console.log(response)
+            
             setPosts(prev => ({[response.post.id]: response.post, ...prev}))
             setFullPosts((prev) => ({...prev, [response.post.id]: response.post}))
             setCachedUsers(prev => {
@@ -103,13 +103,13 @@ const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, set
         <dialog open={creatingPost} className={styles.backdrop}>
             <div className={styles.container}>
                 <div className={styles.head}>
-                    <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture`} />
+                    <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture` } loading='lazy' />
                     <h2>Create Post</h2>
                     <button type='button' className={styles.close} onClick={() => setCreatingPost(null)}><X size={30} color='#c4c4c4'/></button>
                 </div>
                 <form onSubmit={handlePostCreation} className={styles.form}>
                     <div className={styles.textarea}>
-                        <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture`} />
+                        <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.first_name} ${user.last_name} profile picture`} loading='lazy' />
                         <label htmlFor="text"></label>
                         <textarea  disabled={isUploading} ref={textArea} placeholder="What's happening?" value={postTxt} onChange={(e) => setPostTxt(e.target.value)} id="text"></textarea>
                     </div>

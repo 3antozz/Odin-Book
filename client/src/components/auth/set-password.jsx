@@ -1,21 +1,20 @@
 import styles from './layout.module.css'
 import { useState } from "react"
-import { useNavigate, Link, useParams } from "react-router"
+import { Navigate, useParams } from "react-router"
 import { useContext } from 'react'
 import { AuthContext } from "../../contexts"
 import Popup from "../popup/popup"
 import { LoaderCircle } from 'lucide-react'
 export default function SetPassword () {
-    const navigate = useNavigate();
     const { userId } = useParams();
-    const { user, setAuthentication } = useContext(AuthContext);
+    const { user, setUser, setAuthentication } = useContext(AuthContext);
+    const [success, setSuccess] = useState(false);
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState(null);
-    const [success, setSuccess] = useState(false);
     const handleSubmit = async(e) => {
         e.preventDefault();
         try {
@@ -35,7 +34,7 @@ export default function SetPassword () {
                 })
             })
             const response = await request.json();
-            console.log(response);
+            
             if(request.status === 401) {
                 window.location.href = '/login';
             }
@@ -46,16 +45,11 @@ export default function SetPassword () {
             }
             setSuccess(true)
             setTimeout(() => {
-                if(!success) {
-                    setSuccess(false)
-                }
-            }, 2500)
+                setSuccess(false)
+            }, 3000)
             setErrors(null)
             setAuthentication(true)
-            setTimeout(() => {
-                navigate('/')
-                setLoading(false)
-            }, 3000)
+            setUser(prev => ({...prev, pw_set: true}))
         } catch(err) {
             if(err.errors) {
                 setErrors(err.errors)
@@ -68,12 +62,8 @@ export default function SetPassword () {
         }
     }
 
-    if(!user || user.id != userId) {
-        return <h1>Unauthrorized Access</h1>
-    }
-
-    if(user?.pw_set) {
-        return <h1>Password already set</h1>
+    if((!user || user.id != userId || user?.pw_set) && !success) {
+        return <Navigate to='/' replace />
     }
 
 

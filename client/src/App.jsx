@@ -20,6 +20,7 @@ function App() {
   const [loadingUser, setLoadingUser] = useState(true)
   const socket = useRef(null)
   const [socketOn, setSocket] = useState(false)
+  const containerRef = useRef(document.querySelector("#parent-container"))
 
   const logout = async() => {
     try {
@@ -32,10 +33,11 @@ function App() {
         throw error;
       }
       window.location.href = '/login';
+    // eslint-disable-next-line no-unused-vars
     } catch(err) {
-      console.log(err)
       setFetched(false)
-    }
+      window.location.href = '/login';
+    } 
   }
 
   useEffect(() => {
@@ -50,7 +52,7 @@ function App() {
           throw error;
         }
         const response = await request.json();
-        console.log(response);
+        
         setUser(response.user);
         setFetched(true)
         setAuthentication(true)
@@ -84,7 +86,7 @@ function App() {
   }, [isAuthenticated, socketOn, user])
 
   return (
-    <AuthContext.Provider value={{user, setUser, loadingUser, setAuthentication, socketOn, socket, logout}}>
+    <AuthContext.Provider value={{user, setUser, loadingUser, setAuthentication, socketOn, socket, logout, containerRef}}>
         <Routes>
             <Route path="/" element={< Main />}>
               <Route index element={<Index />} />

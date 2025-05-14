@@ -24,12 +24,12 @@ const MostFollowed = memo(function CreatePost () {
                     throw error;
                 }
                 const response = await request.json();
-                console.log(response)
+                
                 setUsers(response.users);
                 setFetched(true)
                 setError(false)
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.error(err);
                 setError(true)
             } finally {
                 setLoading(false)

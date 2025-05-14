@@ -45,7 +45,7 @@
 
 .topComment > a:hover > img, .subComment > a:hover > img {
     /* border: 3px solid red; */
-    box-shadow: 0px 0px 4px 4px red;
+    box-shadow: 0px 0px 4px 2px red;
 }
 
 .info {
@@ -130,11 +130,13 @@
     border-radius: 5px;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
-    background-color: #252525;
-    width: 100%;
-    border: 1px solid rgba(128, 128, 128, 0.465);
-    border-right: none;
+    /* background-color: #252525; */
+    /* width: 100%; */
+    /* border: 1px solid rgba(128, 128, 128, 0.465); */
+    /* border-right: none; */
     padding: 0.4rem 1rem;
+    padding-left: 0;
+    margin-left: 5rem;
 }
 
 .text {
@@ -153,7 +155,7 @@
     resize: none;
     flex: 1;
     padding: 0.5rem;
-    background-color: inherit;
+    background-color: #282828;
     border: none;
     border-radius: 5px;
     height: 2.8rem;
@@ -167,7 +169,7 @@
 }
 
 .happening form img {
-    width: 2.6rem;
+    width: 2.8rem;
     border-radius: 50%;
     border: 1px solid rgba(128, 128, 128, 0.2);
 }
@@ -268,6 +270,10 @@
     margin: auto;
 }
 
+.animate {
+    animation: 100ms linear 0s forwards dropdown;
+}
+
 @keyframes loading {
     0% {
         transform: rotate(0);
@@ -286,6 +292,15 @@
     }
 }
 
+@keyframes dropdown {
+    from {
+        transform: scaleY(0);
+    }
+    to {
+        transform: scaleY(1);
+    }
+}
+
 @media (max-width: 500px) {
     .text button, .fileDiv > button {
         padding: 0.3rem 0.7rem;
@@ -296,8 +311,8 @@
     .send + p {
         display: none;
     }
-    .topComment > a > img, .subComment > a > img {
-        width: 2.5rem;
+    .topComment > a > img, .subComment > a > img, .happening form img {
+        width: 2.6rem;
     }
 }
 

@@ -1,8 +1,9 @@
 import styles from './main.module.css'
 import Sidebar from '../sidebar/sidebar'
-import { Outlet } from 'react-router'
+import { Outlet, Navigate } from 'react-router'
 import { useState, useEffect, useContext, useMemo, useRef } from 'react'
 import { AuthContext } from '../../contexts'
+import Popup from '../popup/popup'
 import CreatePost from '../create-post/create-post'
 import SearchUser from '../search-user/search-user';
 import MostFollowed from '../most-followed/most-followed';
@@ -10,7 +11,7 @@ import MostLiked from '../most-liked/most-liked'
 import { Link } from 'react-router'
 import { LoaderCircle } from 'lucide-react'
 export default function Main () {
-    const { user, loadingUser, socket, socketOn } = useContext(AuthContext);
+    const { user, setUser, loadingUser, socket, socketOn, containerRef } = useContext(AuthContext);
     const [cachedUsers, setCachedUsers] = useState({})
     const [posts, setPosts] = useState({})
     const [fullPosts, setFullPosts] = useState({})
@@ -78,7 +79,7 @@ export default function Main () {
                 const otherUser = prev[userId]?._count;
                 const copy = {...prev}
                 if(otherUser) {
-                    copy[userId] = {...prev[userId],_count: {...prev[userId]._count, followers: prev[userId]._count.followers + 1}, isPending: false, isFollowed: true, isLocked: false}
+                    copy[userId] = {...prev[userId], posts: null, _count: {...prev[userId]._count, followers: prev[userId]._count.followers + 1}, isPending: false, isFollowed: true, isLocked: false}
                 }
                 if(currentUser) {
                     copy[user.id] = {...prev[user.id],_count: {...prev[user.id]._count, following: prev[user.id]._count.following + 1}}
@@ -99,6 +100,7 @@ export default function Main () {
                 }
                 return copy;
             })
+            setUser(prev => ({...prev, following: [...prev.following, {followingId: userId}]}))
             setFetched(false);
             setConnectedToRooms(false)
         }
@@ -134,6 +136,8 @@ export default function Main () {
                     Object.entries(prev).filter(([_id, post]) => post.authorId !== userId)
                 )
             })
+            setUser(prev => ({...prev, following: prev.following.filter(follow => follow.followingId !== +userId)}))
+            setConnectedToRooms(false)
         }
         const removeFollower = (userId) => {
             setCachedUsers(prev => {
@@ -190,7 +194,7 @@ export default function Main () {
             setCachedUsers(prev => {
                 const profile = prev[post.authorId]?.posts;
                 if(!profile) return prev;
-                return {...prev, [post.authorId]: {...profile, posts: [post, ...profile.posts]}}
+                return {...prev, [post.authorId]: {...prev[post.authorId], posts: [post, ...profile]}}
             })
         }
         const removePost = (post) => {
@@ -446,7 +450,7 @@ export default function Main () {
                 listener.off();
             }
         };
-    }, [socket, socketOn, user])
+    }, [setUser, socket, socketOn, user])
     useEffect(() => {
         const fetchPosts = async() => {
             setPostsLoading(true)
@@ -462,15 +466,16 @@ export default function Main () {
                     throw error;
                 }
                 const response = await request.json();
-                console.log(response);
+                
                 const posts = {};
                 response.posts.forEach((post) => posts[post.id] = post)
                 setPosts(posts)
                 setPostsError(false)
                 setFetched(true)
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
                 setPostsError(true)
+                setTimeout(() => setPostsError(false), 3000)
             } finally {
                 setPostsLoading(false)
             }
@@ -487,14 +492,20 @@ export default function Main () {
         </div>
         )
     }
+    if(user && !user.pw_set) {
+        return <Navigate to={`/set-password/${user.id}`} replace />
+    }
     return (
-        <div className={styles.container}>
+        <div ref={containerRef} className={styles.container} id='parent-container'>
+            <Popup borderColor='red' shouldRender={postsError} close={setPostsError} >
+                <p>Couldn&apos;t load posts, please try again later</p>
+            </Popup>
             <div className={styles.main}>
                 <Sidebar notifsCount={unseenNotificationsCount} setCreatingPost={setCreatingPost} />
                 {creatingPost && 
                 <CreatePost creatingPost={creatingPost} setCreatingPost={setCreatingPost} setCachedUsers={setCachedUsers} setPosts={setPosts} setFullPosts={setFullPosts} />
                 }
-                <Outlet context={{cachedUsers, setCachedUsers, posts, setPosts, postsLoading, postsError, fullPosts, setFullPosts, followage, setFollowage, notifications, notificationsArray, setNotifications, notifsCount, setCreatingPost}} />
+                <Outlet context={{setConnectedToRooms, cachedUsers, setCachedUsers, posts, setPosts, postsLoading, postsError, fullPosts, setFullPosts, followage, setFollowage, notifications, notificationsArray, setNotifications, notifsCount, setCreatingPost}} />
                 <section className={styles.right}>
                     <SearchUser />
                     <MostLiked />

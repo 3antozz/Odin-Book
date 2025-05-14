@@ -15,7 +15,7 @@
 .container {
     position: relative;
     background-color: #101218;
-    width: 540px;
+    width: 520px;
     margin: auto;
     border-radius: 15px;
     border: 2px solid grey;
@@ -190,7 +190,7 @@
     }
 }
 
-@media (max-width: 540px) {
+@media (max-width: 560px) {
     .head img {
         display: block;
     }

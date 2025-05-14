@@ -1,21 +1,18 @@
 import styles from './layout.module.css'
 import { useState } from "react"
-import { Link, useOutletContext } from "react-router"
+import { Link, Navigate } from "react-router"
 import { useContext } from 'react'
 import { AuthContext } from "../../contexts"
 import Popup from "../popup/popup"
 import { LoaderCircle } from 'lucide-react'
 export default function Login () {
     const { user, setAuthentication } = useContext(AuthContext)
-    const {success, setSuccess} = useOutletContext()
+    const [success, setSuccess] = useState(false);
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState(null);
     const handleSubmit = async(e) => {
-        if(user) {
-            return;
-        }
         e.preventDefault();
         try {
             setLoading(true)
@@ -31,7 +28,7 @@ export default function Login () {
                 })
             })
             const response = await request.json();
-            console.log(response);
+            
             if(!request.ok) {
                 const error = new Error(response.message || 'Invalid Request')
                 error.errors = response.errors;
@@ -39,9 +36,7 @@ export default function Login () {
             }
             setSuccess(true)
             setTimeout(() => {
-                if(!success) {
-                    setSuccess(false)
-                }
+                setSuccess(false)
                 setLoading(false)
             }, 3000)
             setErrors(null)
@@ -55,6 +50,9 @@ export default function Login () {
         } finally {
             setLoading(false);
         }
+    }
+    if(user && !success) {
+        return <Navigate to='/' replace />
     }
     return (
         <>
@@ -76,10 +74,13 @@ export default function Login () {
                 <input type="password" id="password" required value={password} placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
             </div>
             <button disabled={success ? true : loading ? true : false}>{loading ? <LoaderCircle size={40} color='white' className={styles.loading}/> : 'Log in'}</button>
+            <button type='button' className={styles.github} onClick={() => window.location.href=`${import.meta.env.VITE_API_URL}/auth/github`}> 
+                <i className="devicon-github-original"></i>
+                <p>Sign in with GitHub</p>
+            </button> 
             <div>
                 <Link to='/register'>Create an Account</Link> 
-                <button onClick={() => window.location.href=`${import.meta.env.VITE_API_URL}/auth/github`}>Sign in with GitHub</button> 
-                <Link to='/'>Public Chat</Link>  
+                <Link to='/'>Guest Mode</Link>  
             </div>
         </form>
         </>

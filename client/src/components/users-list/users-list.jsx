@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router';
 import { AuthContext } from '../../contexts'
 import { X, LoaderCircle, Search } from 'lucide-react';
+import { Virtuoso } from 'react-virtuoso'
 
 export default function Users ({userId = null, type = null, setType = () => {}, cachedUsers, setCachedUsers, followage = {}, setFollowage = () => {}, handleFollowage = () => {}, removeFollower = () => {}, likes = null, setLikes = () => {}}) {
     const { user } = useContext(AuthContext)
@@ -18,6 +19,9 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
     if(searchValue && users) {
         filteredUsers = users.filter((id) => {
             let profile = cachedUsers[id];
+            if(likes) {
+                profile = id;
+            }
             return `${profile.first_name} ${profile.last_name}`.toLowerCase().includes(searchValue.toLowerCase()
         )});
     }
@@ -48,7 +52,7 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                     throw error;
                 }
                 const response = await request.json();
-                console.log(response)
+                
                 let followIds = [];
                 setCachedUsers((prev) => {
                     const follows = {};
@@ -66,8 +70,8 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                 })
                 setFollowage((prev) => ({...prev, [response.profile.id]: {...prev[response.profile.id], [type]: followIds}}))
                 setLoadingError(false)
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
                 setLoadingError(true);
                 setTimeout(() => setLoadingError(false), 3000)
             } finally {
@@ -110,7 +114,11 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                         <p>Couldn&apos;t Load Content</p>
                     </div> :
                 <ul className={styles.members}>
-                {filteredUsers.map((follow) => {
+                    <Virtuoso
+                    increaseViewportBy={{bottom: 100, top: 100}}
+                    style={{height: '100%'}}
+                    data={filteredUsers}
+                    itemContent={(_, follow) => {
                     let member;
                     if(!likes) {
                         member = cachedUsers[follow];
@@ -120,13 +128,13 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                     return (
                         <li className={styles.member} key={member.id}>
                             <div className={styles.memberButton}>
-                                <Link to={`/profile/${member.id}`} onClick={() => setType(null)}><img src={member.picture_url || '/no-profile-pic.jpg'} alt={`${member.first_name} ${member.last_name} profile picture`}></img></Link>
+                                <Link to={`/profile/${member.id}`} onClick={() => setType(null)}><img src={member.picture_url || '/no-profile-pic.jpg'} alt={`${member.first_name} ${member.last_name} profile picture`} loading='lazy'></img></Link>
                                 <Link to={`/profile/${member.id}`} onClick={() => setType(null)}>{member.first_name} {member.last_name}</Link>
                                 {
                                 (!likes && user && (+userId === user?.id && type !== 'followers' || +userId !== user?.id) && (member.id !== user?.id)) && 
                                 <button id={member.id} data-name={member.first_name} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} data-func={member.isFollowed ? 'unfollow' : member.isPending ? 'cancel' : 'follow'} onClick={handleFollowing} style={{backgroundColor: (member.isFollowed && hoverId === member.id) || (member.isPending && hoverId === member.id) ? '#d51111' : member.isPending || (member.isFollowed && hoverId !== member.id) ? '#181818' : null, color: member.isFollowed || member.isPending ? 'inherit' : 'black'}}>
                                 {userLoading === member.id ?
-                                <LoaderCircle  size={28} color='white' className={styles.loading}/> :
+                                <LoaderCircle  size={28} color={member.isPending ? 'white' : 'purple'} className={styles.loading}/> :
                                 member.isFollowed && hoverId !== member.id ? 'Following' : member.isFollowed && hoverId === member.id ? 'Unfollow' : member.isPending && hoverId !== member.id ? 'Pending' : member.isPending && hoverId === member.id ? 'Cancel' : 'Follow'}
                                 </button>
                                 }
@@ -138,9 +146,9 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                                 </button>}
                             </div>
                         </li>
-                    )
-                })}
-            </ul>
+                    )}}
+                    />
+                </ul>
                 }
                 <button className={styles.close} onClick={() => {
                     setType(null)

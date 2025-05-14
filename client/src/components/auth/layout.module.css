@@ -14,17 +14,17 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('/images/background.jpeg');
+    /* background-image: url('/images/background.jpeg');
     background-position: center;
     background-size: cover;
     background-attachment: fixed;
-    background-repeat: no-repeat;
+    background-repeat: no-repeat; */
     filter: blur(3px);
     z-index: -1;
 }
 
 .brand img {
-    width: 9rem;
+    width: 6rem;
 }
 
 .brand {
@@ -39,7 +39,7 @@
 
 .brand h1 {
     font-family: 'Merienda';
-    font-size: 5rem;
+    font-size: 4rem;
 }
 
 .form > form {
@@ -57,7 +57,7 @@
 
 .form > form button {
     width: 100%;
-    background-color: #ca3535;
+    background-color: #0866ff;
     margin-top: 1rem !important;
 }
 
@@ -192,6 +192,19 @@ em {
     gap: 0.8rem;
 }
 
+.login .github {
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(133 59 206);
+    font-size: 1.1rem;
+}
+
+.github i {
+    font-size: 2.5rem;
+}
+
 
 @keyframes loading {
     0% {
@@ -215,16 +228,16 @@ em {
         gap: 1rem;
     }
     .brand img {
-        width: 6rem;
+        width: 4rem;
     }
     .form > h1 {
         font-size: 2rem;
     }
     .brand h1 {
-        font-size: 3rem;
+        font-size: 2.5rem;
     }
     .form > form button, .login a {
-        font-size: 1.3rem;
+        font-size: 1.3rem !important;
     }
     .form input {
         font-size: 1.05rem;
@@ -234,7 +247,13 @@ em {
 }
 
 @media (max-width: 400px) {
+    .form > form button, .login a {
+        font-size: 1.15rem !important;
+    }
     .form > form {
         width: 100%;
+    }
+    .github i {
+    font-size: 2rem;
     }
 }

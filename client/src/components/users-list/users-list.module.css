@@ -102,8 +102,9 @@
 }
 
 .members {
-    overflow-y: auto;
-    padding-top: 0.4rem;
+    /* overflow-y: auto; */
+    height: 100%;
+    padding-top: 1rem;
 }
 
 .memberButton > button:disabled {
@@ -240,6 +241,12 @@
     }
     .member img{
         width: 2.6rem;
+    }
+    .members li {
+        padding: 0 0.5rem;
+    }
+    .memberButton > button, .memberButton > div > button {
+        padding: 0.3rem 0.5rem;
     }
 }
 

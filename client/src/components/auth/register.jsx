@@ -1,9 +1,11 @@
 import styles from './layout.module.css'
-import { useState } from "react"
+import { useState, useContext } from "react"
 import Popup from "../popup/popup"
-import { Link } from "react-router"
+import { Link, Navigate } from "react-router"
 import { LoaderCircle } from 'lucide-react'
+import { AuthContext } from "../../contexts"
 export default function Register () {
+    const { user } = useContext(AuthContext)
     const [firstName, setFirstname] = useState("")
     const [lastName, setLastname] = useState("")
     const [username, setUsername] = useState("")
@@ -47,6 +49,9 @@ export default function Register () {
         } finally {
             setLoading(false)
         }
+    }
+    if(user && !success) {
+        return <Navigate to='/' replace />
     }
     return (
         <>

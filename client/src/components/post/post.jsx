@@ -6,7 +6,7 @@ import { Heart, MessageCircle, Trash, LoaderCircle} from 'lucide-react';
 import { AuthContext } from '../../contexts'
 import { formatNumber, formatPostDate } from '../../date-format'
 import Popup from '../popup/popup'
-const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts}) {
+const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts, isLast = false}) {
     const { user, socket } = useContext(AuthContext);
     const commentsNumber = post._count.comments;
     const [error, setError] = useState(false)
@@ -39,8 +39,10 @@ const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts})
                         return {...prev, [postId]: {...prev[postId], likes: [like, ...prev[postId].likes], isLiked: true}}
                     })
                 })
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
+                setError(true)
+                setTimeout(() => setError(false), 3000)
             }
         } else if (e.currentTarget.dataset.func === 'unlike') {
             const postId = +e.currentTarget.id;
@@ -74,8 +76,10 @@ const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts})
                         })
                     }
                 })
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
+                setError(true)
+                setTimeout(() => setError(false), 3000)
             }
         } else if (e.currentTarget.dataset.func === 'comment') {
             const postId = e.currentTarget.id;
@@ -84,7 +88,6 @@ const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts})
               return;
             }
             navigate(`/post/${postId}`)
-            window.scrollTo({top: 0, behavior: 'instant'})
         } else if (e.currentTarget.dataset.func === 'delete') {
             const profileId = +e.currentTarget.dataset.author;
             const postId = e.currentTarget.id;
@@ -105,8 +108,6 @@ const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts})
                     const error = new Error('An error has occured, please try again later')
                     throw error;
                 }
-                const response = await request.json();
-                console.log(response)
                 setPosts(prev => {
                     const posts = {...prev};
                     delete posts[post.id]
@@ -127,8 +128,8 @@ const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts})
                     return fullPosts
                 })
                 setError(false)
+            // eslint-disable-next-line no-unused-vars
             } catch(err) {
-                console.log(err)
                 setError(true)
                 setTimeout(() => setError(false), 3000)
             } finally {
@@ -141,7 +142,7 @@ const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts})
         <Popup borderColor='red' shouldRender={error} close={setError} >
             <p>An error has occured, please try again later</p>
         </Popup>
-        <article className={styles.post} role="button" onClick={handlePostClick} tabIndex={0} data-func='comment' id={post.id}>
+        <article className={styles.post} role="button" onClick={handlePostClick} tabIndex={0} data-func='comment' id={post.id} style={{borderBottom: isLast ? 'none' : null}}>
             <Link to={`/profile/${post.authorId}`}
             onClick={(e) => e.stopPropagation()}><img src={post.author.picture_url || '/no-profile-pic.jpg'} alt={`${post.author.first_name} ${post.author.last_name} profile picture`} loading='lazy' /></Link>
             <div className={styles.right}>
@@ -184,6 +185,7 @@ Post.propTypes = {
     setPosts: PropTypes.func.isRequired,
     setCachedUsers: PropTypes.func.isRequired,
     setFullPosts: PropTypes.func.isRequired,
-}
+    isLast: PropTypes.bool.isRequired,
+};
 
 export default Post;

@@ -26,6 +26,7 @@
 
 
 .info img {
+    cursor: pointer;
     width: 9rem;
     border-radius: 50%;
     flex-shrink: 0;
@@ -87,6 +88,11 @@ em {
     flex: 1;
     font-weight: bold;
     font-size: 1.4rem;
+}
+
+.username {
+    color: grey;
+    font-weight: bold;
 }
 
 .top {
@@ -151,6 +157,7 @@ em {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .request button:first-of-type {
@@ -279,6 +286,7 @@ input::file-selector-button {
 @media (max-width: 500px) {
     .info {
         align-items: stretch;
+        padding: 2rem 0.5rem;
     }
     .info img {
         margin: auto;
@@ -286,10 +294,12 @@ input::file-selector-button {
     .top {
         align-items: stretch;
         text-align: center;
+        margin-bottom: 1.5rem;
     }
-
     .followage {
         justify-content: space-between;
+        padding: 0 5vw;
+        gap: 0.2rem;
     }
     .main em {
         display: block;
@@ -303,6 +313,25 @@ input::file-selector-button {
     .profileForm input[type='text'], .profileForm textarea {
         font-size: 1rem;
     }
+    .loadingDiv {
+        height: 50dvh;
+    }
+    .info img {
+        width: 7rem;
+    }
+    .top > button, .request button, .cancel, .edit {
+        font-size: 1rem;
+    }
+    .top > button {
+        width: 90%;
+        margin: auto;
+    }
+
+    .request p {
+        font-size: 1rem;
+    }
+    
+
 }
 
 
