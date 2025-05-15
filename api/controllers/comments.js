@@ -13,8 +13,7 @@ exports.createPostTextComment = async(req, res) => {
     if(notification) {
         io.to(`user${postAuthorId}`).emit('notification', notification);
     }
-    setTimeout(() => res.json({comment}), 3000)
-    // res.json({comment})
+    res.json({comment})
 }
 
 exports.createPostImageComment = async(req, res) => {
@@ -70,8 +69,7 @@ exports.createCommentTextComment = async(req, res) => {
         io.to(`user${notif.userId}`).emit('notification', notif)
         io.to(`user${notif.userId}`).emit('new comment', comment)
     })
-    setTimeout(() => res.json({comment}), 3000)
-    // res.json({comment})
+    res.json({comment})
 }
 
 exports.createCommentImageComment = async(req, res) => {
@@ -127,8 +125,7 @@ exports.deleteComment = async(req, res) => {
     } else if (comment.commentOnId) {
         comment.commentOn.comments.forEach((comment2) => (comment2.authorId !== userId) && io.to(`user${comment2.authorId}`).emit('delete comment', comment))
     }
-    setTimeout(() => res.json({done: true}), 3000)
-    // res.json({done: true})
+    res.json({done: true})
     if(comment.public_id) {
         cloudinary.uploader.destroy(comment.public_id)
     }

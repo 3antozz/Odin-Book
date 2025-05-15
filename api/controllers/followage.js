@@ -8,8 +8,7 @@ exports.sendRequest = async(req, res) => {
     const io = req.app.get('io');
     io.to(`user${receiverId}`).emit('new request', request.senderId);
     io.to(`user${receiverId}`).emit('notification', notification);
-    setTimeout(() => res.json({done: true}), 3000)
-    // res.json({done: true})
+    res.json({done: true})
 }
 
 exports.acceptRequest = async(req, res) => {
@@ -19,8 +18,7 @@ exports.acceptRequest = async(req, res) => {
     const io = req.app.get('io');
     io.to(`user${senderId}`).emit('new following', receiverId);
     io.to(`user${senderId}`).emit('notification', notification);
-    setTimeout(() => res.json({follower: request[0].follower}), 3000)
-    // res.json({follower: request[0].follower})
+    res.json({follower: request[0].follower})
 }
 
 exports.rejectRequest = async(req, res) => {
@@ -29,8 +27,7 @@ exports.rejectRequest = async(req, res) => {
     await db.rejectRequest(receiverId, senderId)
     const io = req.app.get('io');
     io.to(`user${senderId}`).emit('request rejected', receiverId);
-    setTimeout(() => res.json({done: true}), 3000)
-    // res.json({done: true})
+    res.json({done: true})
 }
 
 exports.cancelRequest = async(req, res) => {
@@ -39,8 +36,7 @@ exports.cancelRequest = async(req, res) => {
     await db.rejectRequest(receiverId, senderId)
     const io = req.app.get('io');
     io.to(`user${receiverId}`).emit('received request canceled', senderId);
-    setTimeout(() => res.json({done: true}), 3000)
-    // res.json({done: true})
+    res.json({done: true})
 }
 
 exports.unfollow = async(req, res) => {
@@ -49,8 +45,7 @@ exports.unfollow = async(req, res) => {
     await db.unfollow(clientId, userId)
     const io = req.app.get('io');
     io.to(`user${userId}`).emit('unfollowed', clientId);
-    setTimeout(() => res.json({done: true}), 3000)
-    // res.json({done: true})
+    res.json({done: true})
 }
 
 exports.removeFollower = async(req, res) => {
@@ -59,8 +54,7 @@ exports.removeFollower = async(req, res) => {
     await db.removeFollower(clientId, userId)
     const io = req.app.get('io');
     io.to(`user${userId}`).emit('removed following', clientId);
-    setTimeout(() => res.json({done: true}), 3000)
-    // res.json({done: true})
+    res.json({done: true})
 }
 
 exports.getFollowers = async(req, res) => {

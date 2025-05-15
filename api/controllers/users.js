@@ -111,6 +111,5 @@ exports.searchUsers = async(req, res) => {
 exports.getMostFollowed = async(req, res) => {
     const clientId = req.user?.id || 0;
     const users = await db.getMostFollowedUsers(clientId);
-    setTimeout(() => res.json({users}), 3000)
-    // res.json({users})
+    res.json({users})
 }

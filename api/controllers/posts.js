@@ -42,8 +42,7 @@ exports.getPost = async(req, res) => {
             }
         }
     }
-    setTimeout(() => res.json({post}), 3000)
-    // return res.json({post});
+    return res.json({post});
 }
 
 exports.getAllPosts = async(req, res) => {
@@ -74,8 +73,7 @@ exports.createTextPost = async(req, res) => {
     const post = await db.createPost(userId, content)
     const io = req.app.get('io');
     io.to(`following${userId}`).emit('new post', post);
-    setTimeout(() => res.json({post}), 3000);
-    // res.json({post});
+    res.json({post});
 }
 
 exports.deletePost = async(req, res) => {
@@ -95,8 +93,7 @@ exports.deletePost = async(req, res) => {
     await db.removePost(post.id);
     const io = req.app.get('io');
     io.to(`following${userId}`).emit('remove post', post);
-    setTimeout(() => res.json({done: true}), 3000);
-    // res.json({done: true})
+    res.json({done: true})
     if(post.public_id) {
         cloudinary.uploader.destroy(post.public_id)
     }
@@ -140,6 +137,5 @@ exports.removePostLike = async(userId, postId) => {
 exports.getPopularPosts = async(req, res) => {
     const clientId = req.user?.id || 0;
     const posts = await db.getPopularPosts(clientId);
-    setTimeout(() => res.json({posts}), 3000)
-    // res.json({posts})
+    res.json({posts})
 }
