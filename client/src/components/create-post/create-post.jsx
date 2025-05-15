@@ -119,7 +119,7 @@ const CreatePost = memo(function CreatePost ({creatingPost, setCreatingPost, set
                             <div>
                                 <input type="file" id="image"
                                 disabled={isUploading} accept='image/*' onChange={handleFileClick} />
-                                <button onClick={cancelFile}><Trash color='white' size={25} /></button>
+                                <button type='button' onClick={cancelFile}><Trash color='white' size={25} /></button>
                             </div>
                         </div>
                         <button className={styles.post} disabled={isUploading}>

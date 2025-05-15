@@ -225,7 +225,7 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
                     <div className={styles.file} ref={fileDivRef}>
                         <div>
                             <input type="file" id="image2" disabled={isUploading} accept='image/*' onChange={handleFileClick} onClick={handleInputClick} />
-                            <button onClick={cancelFile}><Trash color='white' size={24} /></button>
+                            <button  type='button' onClick={cancelFile}><Trash color='white' size={24} /></button>
                         </div>
                     </div>
                     <button type='submit' disabled={isUploading}>{isUploading ? 
