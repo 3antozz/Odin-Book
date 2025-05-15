@@ -154,7 +154,7 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
                 window.location.href = '/login';
             }
             if(!request.ok) {
-                const error = new Error('An error has occured, please try again later')
+                const error = new Error('An error has occured, please try refreshing the page')
                 throw error;
             }
             
@@ -204,7 +204,7 @@ function AddSubComment ({comment, setPosts, setFullPosts}) {
     return (
         <>
         <Popup borderColor='red' shouldRender={error} close={setError} >
-            <p>An error has occured, please try again later</p>
+            <p>An error has occured, please try refreshing the page</p>
         </Popup>
         <section className={styles.happening} onFocus={() => setOpen(true)} onBlur={handleBlur} style={{marginLeft: isOpen ? '0' : null, paddingLeft: !isOpen ? '0' : '1rem'}}>
             <form onSubmit={createComment}>

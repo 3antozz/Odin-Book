@@ -48,7 +48,7 @@ export default function Users ({userId = null, type = null, setType = () => {}, 
                     window.location.href = '/login';
                 }
                 if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
+                    const error = new Error('An error has occured, please try refreshing the page')
                     throw error;
                 }
                 const response = await request.json();

@@ -4,14 +4,25 @@ A full-stack social media application designed to provide seamless communication
 
 ![App Interface](./client/public/showcase/interface.png)
 
-## Signup page
+## Login page
 
-![Signup Page](./client/public/showcase/sign-up.png)
+![Login Page](./client/public/showcase/login.png)
 
+## Specific Post page
+
+![Post Page](./client/public/showcase/post.png)
+
+## Notifications page
+
+![Notifications Page](./client/public/showcase/notifications.png)
 
 ## User Profile
 
 ![User Profile](./client/public/showcase/profile.png)
+
+## Followers List
+
+![Followers List](./client/public/showcase/users.png)
 
 ## Features
 

@@ -107,7 +107,7 @@ export default function FullscreenPost () {
                     window.location.href = '/login';
                 }
                 if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
+                    const error = new Error('An error has occured, please try refreshing the page')
                     throw error;
                 }
                 setFullPosts(prev => {
@@ -267,7 +267,7 @@ export default function FullscreenPost () {
                     window.location.href = '/login';
                 }
                 if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
+                    const error = new Error('An error has occured, please try refreshing the page')
                     throw error;
                 }
                 
@@ -351,7 +351,7 @@ export default function FullscreenPost () {
                     window.location.href = '/login';
                 }
                 if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
+                    const error = new Error('An error has occured, please try refreshing the page')
                     throw error;
                 }
                 const response = await request.json();
@@ -398,7 +398,7 @@ export default function FullscreenPost () {
     return (
         <>
         <Popup borderColor='red' shouldRender={error} close={setError} >
-            <p>An error has occured, please try again later</p>
+            <p>An error has occured, please try refreshing the page</p>
         </Popup>
         <Image imageURL={imageURL} setImageURL={setImageURL}/>
         <Users likes={likes} setLikes={setLikes} cachedUsers={cachedUsers} />
@@ -555,7 +555,7 @@ function AddComment ({post, postId, setPosts, setFullPosts, setCachedUsers}) {
                 window.location.href = '/login';
             }
             if(!request.ok) {
-                const error = new Error('An error has occured, please try again later')
+                const error = new Error('An error has occured, please try refreshing the page')
                 throw error;
             }
             const response = await request.json();
@@ -605,7 +605,7 @@ function AddComment ({post, postId, setPosts, setFullPosts, setCachedUsers}) {
     return (
         <>
         <Popup borderColor='red' shouldRender={error} close={setError} >
-            <p>An error has occured, please try again later</p>
+            <p>An error has occured, please try refreshing the page</p>
         </Popup>
         <section className={styles.happening} onFocus={() => setOpen(true)} onBlur={handleBlur}>
             <form onSubmit={createComment}>

@@ -462,7 +462,7 @@ export default function Main () {
                     window.location.href = '/login';
                 }
                 if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
+                    const error = new Error('An error has occured, please try refreshing the page')
                     throw error;
                 }
                 const response = await request.json();
@@ -498,7 +498,7 @@ export default function Main () {
     return (
         <div ref={containerRef} className={styles.container} id='parent-container'>
             <Popup borderColor='red' shouldRender={postsError} close={setPostsError} >
-                <p>Couldn&apos;t load posts, please try again later</p>
+                <p>Couldn&apos;t load posts, please try refreshing the page</p>
             </Popup>
             <div className={styles.main}>
                 <Sidebar notifsCount={unseenNotificationsCount} setCreatingPost={setCreatingPost} />

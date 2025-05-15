@@ -56,7 +56,7 @@ export default function Profile () {
                     window.location.href = '/login';
                 }
                 if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
+                    const error = new Error('An error has occured, please try refreshing the page')
                     throw error;
                 }
                 setCachedUsers(prev => (prev[userId]?._count ? {...prev, [userId]: {...prev[userId], isFollowed: false, isLocked: true, _count: {...prev[userId]._count, followers: prev[userId]._count.followers - 1}}} : prev))
@@ -84,7 +84,7 @@ export default function Profile () {
             } catch(err) {
                 setError(true)
                 setTimeout(() => setError(false), 3000)
-                popupText.current = 'An error has occured, please try again later'
+                popupText.current = 'An error has occured, please try refreshing the page'
             } finally {
                 setLoading(false)
             }
@@ -100,7 +100,7 @@ export default function Profile () {
                     window.location.href = '/login';
                 }
                 if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
+                    const error = new Error('An error has occured, please try refreshing the page')
                     throw error;
                 }
                 setCachedUsers(prev => ({...prev, [userId]: {...prev[userId], isPending: true}}))
@@ -109,7 +109,7 @@ export default function Profile () {
             } catch(err) {
                 setError(true)
                 setTimeout(() => setError(false), 3000)
-                popupText.current = 'An error has occured, please try again later'
+                popupText.current = 'An error has occured, please try refreshing the page'
             } finally {
                 setLoading(false)
             }
@@ -129,7 +129,7 @@ export default function Profile () {
                     window.location.href = '/login';
                 }
                 if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
+                    const error = new Error('An error has occured, please try refreshing the page')
                     throw error;
                 }
                 setCachedUsers(prev => ({...prev, [userId]: {...prev[userId], isPending: false, isFollowed: false}}))
@@ -138,7 +138,7 @@ export default function Profile () {
             } catch(err) {
                 setError(true)
                 setTimeout(() => setError(false), 3000)
-                popupText.current = 'An error has occured, please try again later'
+                popupText.current = 'An error has occured, please try refreshing the page'
             } finally {
                 setLoading(false)
             }
@@ -155,7 +155,7 @@ export default function Profile () {
                 window.location.href = '/login';
             }
             if(!request.ok) {
-                const error = new Error('An error has occured, please try again later')
+                const error = new Error('An error has occured, please try refreshing the page')
                 throw error;
             }
             setCachedUsers(prev => {
@@ -187,7 +187,7 @@ export default function Profile () {
         } catch(err) {
             setError(true)
             setTimeout(() => setError(false), 3000)
-            popupText.current = 'An error has occured, please try again later'
+            popupText.current = 'An error has occured, please try refreshing the page'
         } finally {
             setRequestLoading(false)
         }
@@ -207,7 +207,7 @@ export default function Profile () {
                 window.location.href = '/login';
             }
             if(!request.ok) {
-                const error = new Error('An error has occured, please try again later')
+                const error = new Error('An error has occured, please try refreshing the page')
                 throw error;
             }
             setCachedUsers(prev => ({...prev, [profile.id]: {...prev[profile.id], hasRequested: false}}))
@@ -216,7 +216,7 @@ export default function Profile () {
         } catch(err) {
             setError(true)
             setTimeout(() => setError(false), 3000)
-            popupText.current = 'An error has occured, please try again later'
+            popupText.current = 'An error has occured, please try refreshing the page'
         } finally {
             setRequestLoading(false)
         }
@@ -238,7 +238,7 @@ export default function Profile () {
                 window.location.href = '/login';
             }
             if(!request.ok) {
-                const error = new Error('An error has occured, please try again later')
+                const error = new Error('An error has occured, please try refreshing the page')
                 throw error;
             }
             setFollowage(prev => {
@@ -255,7 +255,7 @@ export default function Profile () {
         } catch(err) {          
             setError(true)
             setTimeout(() => setError(false), 3000)
-            popupText.current = 'An error has occured, please try again later'
+            popupText.current = 'An error has occured, please try refreshing the page'
         } finally {
             setLoading(false)
         }
@@ -368,7 +368,7 @@ export default function Profile () {
                     credentials: 'include'
                 })
                 if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
+                    const error = new Error('An error has occured, please try refreshing the page')
                     throw error;
                 }
                 const response = await request.json();
@@ -402,7 +402,7 @@ export default function Profile () {
             {profileSuccess ? 
             <p>Profile edited successfully</p>
             : error ?
-            <p>An error has occured, please try again later</p>
+            <p>An error has occured, please try refreshing the page</p>
             : <p>{popupText.current}</p>
             }
         </Popup>

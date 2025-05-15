@@ -29,7 +29,7 @@ function App() {
         credentials: 'include'
       })
       if(!request.ok) {
-        const error = new Error('An error has occured, please try again later')
+        const error = new Error('An error has occured, please try refreshing the page')
         throw error;
       }
       window.location.href = '/login';
@@ -48,7 +48,7 @@ function App() {
           credentials: 'include'
         })
         if(!request.ok) {
-          const error = new Error('An error has occured, please try again later')
+          const error = new Error('An error has occured, please try refreshing the page')
           throw error;
         }
         const response = await request.json();

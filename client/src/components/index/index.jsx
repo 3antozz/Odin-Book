@@ -21,7 +21,7 @@ export default function Index () {
             </div> :
             postsError ?
             <div className={styles.loadingDiv}>
-                <h1>An Error has occured, please try again later.</h1>
+                <h1>An Error has occured, please try refreshing the page.</h1>
             </div> : postsArray.length > 0 ?
             <Virtuoso
                     increaseViewportBy={{bottom: 200, top: 200}}

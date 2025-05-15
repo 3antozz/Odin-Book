@@ -75,7 +75,7 @@ export default function SetPassword () {
         <form onSubmit={handleSubmit} className={styles.setPw}>
             <div className={styles.info}>
                 <img src={user.picture_url || '/no-profile-pic.jpg'} alt={`${user.username} profile picture`} />
-                <p>Welcome <em>{user.username}</em> ! Please finish creating an account so you can login with a password in the future!</p>
+                <p>Welcome <em>@{user.username}</em> ! Please finish creating an account so you can login with a password in the future!</p>
             </div>
             {errors && 
             <ul>

@@ -105,7 +105,7 @@ const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts, 
                     window.location.href = '/login';
                 }
                 if(!request.ok) {
-                    const error = new Error('An error has occured, please try again later')
+                    const error = new Error('An error has occured, please try refreshing the page')
                     throw error;
                 }
                 setPosts(prev => {
@@ -140,7 +140,7 @@ const Post = memo(function Post ({post, setPosts, setCachedUsers, setFullPosts, 
     return (
         <>
         <Popup borderColor='red' shouldRender={error} close={setError} >
-            <p>An error has occured, please try again later</p>
+            <p>An error has occured, please try refreshing the page</p>
         </Popup>
         <article className={styles.post} role="button" onClick={handlePostClick} tabIndex={0} data-func='comment' id={post.id} style={{borderBottom: isLast ? 'none' : null}}>
             <Link to={`/profile/${post.authorId}`}
