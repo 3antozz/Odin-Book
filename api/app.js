@@ -48,8 +48,9 @@ const corsOptions = {
 };
 const sessionMiddleware = session({
       cookie: {
-      maxAge: 3 * 24 * 60 * 60 * 1000, // ms  3 days
-      secure: true
+        maxAge: 3 * 24 * 60 * 60 * 1000, // ms  3 days
+        secure: true,
+        sameSite: 'none'
       },
       secret: process.env.SESSION_SECRET,
       resave: false,
