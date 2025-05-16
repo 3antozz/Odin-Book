@@ -572,7 +572,7 @@ function AddComment ({post, postId, setPosts, setFullPosts, setCachedUsers}) {
                 const posts = profile.slice();
                 const index = posts.findIndex(post => post.id === +postId);
                 posts[index] = {...posts[index], _count: {...posts[index]._count, comments: posts[index]._count.comments + 1}}
-                return {...prev, [post.authorId]: {...profile, posts}}
+                return {...prev, [post.authorId]: {...prev[post.authorId], posts}}
             })
             setError(false)
             setCommentTxt('')

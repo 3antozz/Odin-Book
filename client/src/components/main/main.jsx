@@ -372,7 +372,7 @@ export default function Main () {
                 const posts = profile.slice();
                 const index = posts.findIndex(post => post.id === +postId);
                 posts[index] = {...posts[index], _count: {...posts[index]._count, comments: posts[index]._count.comments + 1}}
-                return {...prev, [comment.post.authorId]: {...profile, posts}}
+                return {...prev, [comment.post.authorId]: {...prev[comment.post.authorId], posts}}
             })
         }
         const deleteComment = (comment) => {

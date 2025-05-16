@@ -260,7 +260,7 @@
 
 .loadingDiv {
     align-content: center;
-    height: 50%;
+    height: 50dvh;
     text-align: center;
 }
 

@@ -395,6 +395,7 @@ export default function Profile () {
     useEffect(() => {
         containerRef.current.scrollTo({top: 0, behavior: 'instant'})
     }, [containerRef])
+    useEffect(() => setEdit(false), [userId])
     return (
         <>
         <Image imageURL={imageURL} setImageURL={setImageURL}/>

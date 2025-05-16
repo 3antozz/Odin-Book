@@ -114,6 +114,7 @@ em {
     cursor: pointer;
     transition: transform 200ms ease;
     border: 2px solid grey;
+    width: 8rem;
 }
 
 .edit {
