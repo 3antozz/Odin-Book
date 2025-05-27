@@ -1,6 +1,6 @@
 # Odinbook
 
-A full-stack social media application designed to provide seamless communication.
+A full-stack social media application built for real-time content sharing and interaction.
 
 ![App Interface](./client/public/showcase/interface.png)
 
@@ -26,10 +26,14 @@ A full-stack social media application designed to provide seamless communication
 
 ## Features
 
-- Authentification with username/password AND Github Auth (cookies based)
-- Real time interaction updates (posts, follow requests, comments, likes)
-- Image sharing capabilities
-- User connection and interaction
+- Authentification with username/password AND Github Auth (cookies based).
+- Real time interaction updates (posts, follow requests, comments, likes).
+- Image sharing capability.
+- User connection and interaction.
+
+## Why build this project ?
+
+This was one of the first FullStack projects I created, it's purpose was to tie everything I learned together in a relatively complex project. Social media apps are among the most widely used applications on the web today.
 
 ## Technologies Used
 
@@ -52,14 +56,76 @@ A full-stack social media application designed to provide seamless communication
 - OnRender
 - Aiven
 
+## 🛠️ How to Run the Project Locally
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/)
+- [npm](https://www.npmjs.com/)
+- [PostgreSQL](https://www.postgresql.org/) (ensure your database is running)
+- Basic knowledge of using a terminal (steps are beginner-friendly)
+
+---
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/3antozz/Odin-Book
+cd Odin-Book
+```
+
+### 2. Setup the Backend (API)
+
+```bash
+cd api
+npm install
+```
+
+> [!IMPORTANT]
+> Github Authentification won't work unless you register a [Github OAuth](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app#registering-a-github-app) application and acquire your own Tokens.
+
+**1- Create a .env file in the api/ directory (based on .env.example) and fill in the required environment variables such as:** 
+
+* Database connection URL
+* Session secret
+* Cloudinary credentials
+* Github Tokens (if available)
+
+2- Start the backend server:
+
+```bash
+npm start
+```
+> [!NOTE]
+> The backend will run on http://localhost:3000 by default.
+
+### 3. Setup the Frontend (Client)
+
+1- Open a new terminal window or tab:
+```bash
+cd client
+npm install
+npm run dev
+```
+**2- Rename the .env.example file to .env in the client/ directory**
+
+> [!NOTE]
+> The frontend will run on http://localhost:5173 by default.
+
+### 4. Open in Browser
+
+1- Once both servers are running:
+
+2- Visit http://localhost:5173 in your browser
+
 ## Libraries Used
 
 ### Frontend
 
-- [Lucide React](https://lucide.dev/guide/packages/lucide-react) – Import Icons
-- [react-virtuoso](https://virtuoso.dev/) –  React component that displays large data sets using virtualized rendering (render when visible in viewport)
-- [Socket.IO](https://socket.io/) – Low-latency, bidirectional and event-based communication between a client and a server for real time updates
-- [date-fns](https://date-fns.org/docs/Getting-Started) – Used for manipulating JavaScript dates
+- [Lucide React](https://lucide.dev/guide/packages/lucide-react) – Import Icons.
+- [react-virtuoso](https://virtuoso.dev/) –  React component that displays large data sets using virtualized rendering (render when visible in viewport).
+- [Socket.IO](https://socket.io/) – Low-latency, bidirectional and event-based communication between a client and a server for real time updates.
+- [date-fns](https://date-fns.org/docs/Getting-Started) – Used for manipulating JavaScript dates.
 
 ### Backend
 
@@ -69,8 +135,8 @@ A full-stack social media application designed to provide seamless communication
 - [passport-local](https://www.npmjs.com/package/passport-local) – This module lets you authenticate using a username and password in your Node.js applications.
 - [passport-github2](https://www.npmjs.com/package/passport-github2) – This module lets you authenticate using GitHub OAuth 2.0 in your Node.js applications. 
 - [express-validator](https://www.npmjs.com/package/express-validator) – User input validation middleware.
-- [cloudinary](https://cloudinary.com/) – Images storage service
+- [cloudinary](https://cloudinary.com/) – Images storage service.
 - [multer](https://www.npmjs.com/package/multer) – Node.js middleware for handling multipart/form-data, used for uploading files.
 - [express-async-handler](https://www.npmjs.com/package/express-async-handler) – Asynchronous exception-handling middleware.
-- [Socket.IO](https://socket.io/) – Low-latency, bidirectional and event-based communication between a client and a server for real time updates
-- [cors](https://www.npmjs.com/package/cors) – Package for providing a Connect/Express middleware that can be used to enable CORS
+- [Socket.IO](https://socket.io/) – Low-latency, bidirectional and event-based communication between a client and a server for real time updates.
+- [cors](https://www.npmjs.com/package/cors) – Package for providing a Connect/Express middleware that can be used to enable CORS.
