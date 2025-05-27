@@ -91,6 +91,9 @@ npm install
 * Cloudinary credentials
 * Github Tokens (if available)
 
+> [!NOTE]
+> Cloudinary credentials are needed to upload images, else it's not possible.
+
 2- Start the backend server:
 
 ```bash
