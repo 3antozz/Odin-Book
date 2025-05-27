@@ -82,7 +82,7 @@ npm install
 ```
 
 > [!IMPORTANT]
-> Github Authentification won't work unless you register a [Github OAuth](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app#registering-a-github-app) application and acquire your own Tokens.
+> Github Authentification won't work unless you register a [Github OAuth](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app#registering-a-github-app) application and acquire your own tokens, set ***Authorization callback URL*** field to: <ins>http://localhost:3000/auth/github/callback</ins>. Others fields may be required but are not important.
 
 **1- Create a .env file in the api/ directory (based on .env.example) and fill in the required environment variables such as:** 
 
