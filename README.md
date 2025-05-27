@@ -131,6 +131,7 @@ npm run dev
 
 - [bcryptjs](https://www.npmjs.com/package/bcryptjs) – For securing passwords by hashing and salting.
 - [express-session](https://www.npmjs.com/package/express-session) – Simple session middleware for Authenticating.
+- [prisma-session-store](https://www.npmjs.com/package/@quixo3/prisma-session-store) – An express session store implementation for the Prisma ORM.
 - [passport](https://www.npmjs.com/package/passport) – Express-compatible authentication middleware for Node.js.
 - [passport-local](https://www.npmjs.com/package/passport-local) – This module lets you authenticate using a username and password in your Node.js applications.
 - [passport-github2](https://www.npmjs.com/package/passport-github2) – This module lets you authenticate using GitHub OAuth 2.0 in your Node.js applications. 
