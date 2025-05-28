@@ -24,6 +24,11 @@ A full-stack social media application built for real-time content sharing and in
 
 ![Followers List](./client/public/showcase/users.png)
 
+# [Live Preview](https://odinbook-beta.vercel.app)
+
+> [!NOTE]
+> App is hosted with free tier services, first load might take some time.
+
 ## Why build this project ?
 
 This was one of the first FullStack projects I created, it's purpose was to tie everything I learned from The Odin Project's course together in a relatively complex project. Social media apps are among the most widely used applications on the web today.
