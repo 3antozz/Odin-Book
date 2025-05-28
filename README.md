@@ -24,16 +24,16 @@ A full-stack social media application built for real-time content sharing and in
 
 ![Followers List](./client/public/showcase/users.png)
 
+## Why build this project ?
+
+This was one of the first FullStack projects I created, it's purpose was to tie everything I learned from The Odin Project's course together in a relatively complex project. Social media apps are among the most widely used applications on the web today.
+
 ## Features
 
 - Authentification with username/password AND Github Auth (cookies based).
 - Real time interaction updates (posts, follow requests, comments, likes).
 - Image sharing capability.
 - User connection and interaction.
-
-## Why build this project ?
-
-This was one of the first FullStack projects I created, it's purpose was to tie everything I learned together in a relatively complex project. Social media apps are among the most widely used applications on the web today.
 
 ## Technologies Used
 
@@ -134,12 +134,13 @@ npm run dev
 
 - [bcryptjs](https://www.npmjs.com/package/bcryptjs) – For securing passwords by hashing and salting.
 - [express-session](https://www.npmjs.com/package/express-session) – Simple session middleware for Authenticating.
+- [prisma/client](https://www.npmjs.com/package/@prisma/client) – ORM - Auto-generated and type-safe query builder for Node.js.
 - [prisma-session-store](https://www.npmjs.com/package/@quixo3/prisma-session-store) – An express session store implementation for the Prisma ORM.
 - [passport](https://www.npmjs.com/package/passport) – Express-compatible authentication middleware for Node.js.
 - [passport-local](https://www.npmjs.com/package/passport-local) – This module lets you authenticate using a username and password in your Node.js applications.
 - [passport-github2](https://www.npmjs.com/package/passport-github2) – This module lets you authenticate using GitHub OAuth 2.0 in your Node.js applications. 
 - [express-validator](https://www.npmjs.com/package/express-validator) – User input validation middleware.
-- [cloudinary](https://cloudinary.com/) – Images storage service.
+- [cloudinary](https://cloudinary.com/) – Images storage service integration.
 - [multer](https://www.npmjs.com/package/multer) – Node.js middleware for handling multipart/form-data, used for uploading files.
 - [express-async-handler](https://www.npmjs.com/package/express-async-handler) – Asynchronous exception-handling middleware.
 - [Socket.IO](https://socket.io/) – Low-latency, bidirectional and event-based communication between a client and a server for real time updates.
